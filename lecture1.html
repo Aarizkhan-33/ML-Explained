@@ -17,6 +17,20 @@ section.slide::-webkit-scrollbar { width: 8px; } section.slide::-webkit-scrollba
 section.slide.active{display:block; animation:arrive .22s ease}
 @keyframes arrive{from{opacity:.4}to{opacity:1}}
 
+/* Add solid background to prevent transparency bleed */
+section.slide {
+    background: var(--paper); 
+}
+
+/* Handle the cover slide layout properly without inline styles */
+section.slide.cover-slide.active {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
 /* Typography */
 h1,h2,h3,p,ul,li{margin:0}
 h1{font-size:85px;line-height:1.01;letter-spacing:-2px;font-weight:650; margin-bottom:20px;}
@@ -79,7 +93,7 @@ canvas {max-width: 100%; height: auto;}
 <main id="stage" aria-label="CS463 Presentation">
 
 <!-- Cover Slide -->
-<section class="slide active" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+<section class="slide active cover-slide">
   <p class="label">CS463 — Machine Learning & Expert Systems</p>
   <h1 class="blue">Lecture 1: Introduction</h1>
   <p class="lead" style="font-size:30px;">Complete Conceptual Study Guide & Interactive Visuals</p>
