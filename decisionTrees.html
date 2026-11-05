@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decision Trees & Random Forests</title>
+    <style>
+        /* CSS Variables & Theme Setup */
+        :root {
+            --bg-color: #0d1117;
+            --bg-gradient: radial-gradient(circle at top right, #161b22, #0d1117 70%);
+            --neon-blue: #00d4ff;
+            --neon-blue-light: #00E5FF;
+            --text-main: #e6edf3;
+            --text-muted: #8b949e;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            
+            --high-risk: #ff4757;
+            --low-risk: #00d4ff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background: var(--bg-color);
+            background-image: var(--bg-gradient);
+            color: var(--text-main);
+            overflow: hidden; /* Main window doesn't scroll */
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Custom Scrollbar for inner slides */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--neon-blue); }
+
+        /* Glassmorphism Utility */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            box-shadow: var(--glass-shadow);
+        }
+
+        .neon-text {
+            color: var(--neon-blue);
+            text-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
+        }
+
+        /* Layout */
+        #presentation-container {
+            flex-grow: 1;
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 80px); /* Leave exact room for nav */
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 2rem 8% 4rem 8%; /* Extra padding bottom for scrolling */
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            pointer-events: none;
+            overflow-y: auto; /* Fixes content cutting off */
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            border-bottom: 2px solid var(--glass-border);
+            padding-bottom: 0.5rem;
+        }
+
+        p.concept {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        /* Specific Slide Layouts */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            flex-grow: 1;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            .content-grid { grid-template-columns: 1fr; }
+        }
+
+        .formula-box {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        /* Interactive Buttons */
+        .btn {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--neon-blue);
+            border: 1px solid var(--neon-blue);
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+            margin-bottom: 1rem;
+            display: block;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: var(--neon-blue);
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+        }
+
+        /* Avatars */
+        .avatar-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 1rem;
+            justify-content: center;
+            min-height: 80px;
+            transition: all 0.5s ease;
+        }
+        .avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px rgba(255,255,255,0.2);
+        }
+        .avatar.high { background-color: var(--high-risk); box-shadow: 0 0 10px var(--high-risk); }
+        .avatar.low { background-color: var(--low-risk); box-shadow: 0 0 10px var(--low-risk); }
+
+        /* Step Animations & Explanation Texts */
+        .step-list { list-style: none; }
+        .step-item {
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            border-left: 3px solid var(--neon-blue);
+            font-size: 0.95rem;
+        }
+        .step-item.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .step-title { font-weight: bold; font-size: 1.05rem; margin-bottom: 5px; color: #fff; }
+        .step-formula { color: #f39c12; font-family: monospace; font-size: 1.05rem; margin-bottom: 5px; }
+        .step-why { color: var(--text-muted); font-size: 0.9rem; font-style: italic; margin-bottom: 5px; }
+        .step-math { font-weight: bold; color: var(--neon-blue-light); }
+
+        /* Trees */
+        .tree-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        .node {
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            text-align: center;
+            min-width: 140px;
+            z-index: 2;
+            font-weight: 500;
+        }
+        .node-root { border-top: 3px solid #fff; }
+        .node-internal { border-top: 3px solid #f39c12; }
+        .node-leaf { border-top: 3px solid var(--neon-blue); }
+        
+        /* SVG Line container */
+        .svg-arrows {
+            width: 100%;
+            height: 40px;
+            overflow: visible;
+            display: block;
+        }
+
+        /* Navigation Bar */
+        nav {
+            height: 80px;
+            background: rgba(13, 17, 23, 0.9);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .nav-dots { display: flex; gap: 10px; }
+        .dot {
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            background: var(--glass-border);
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .dot.active { background: var(--neon-blue); box-shadow: 0 0 8px var(--neon-blue); }
+        
+        .nav-btn {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--glass-border);
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .nav-btn:hover:not(:disabled) {
+            background: var(--glass-bg);
+            border-color: var(--neon-blue);
+            color: var(--neon-blue);
+        }
+        .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        /* Pruning animation */
+        .prunable { transition: opacity 0.5s, transform 0.5s; }
+        .pruned { opacity: 0 !important; transform: scale(0.5); pointer-events: none; }
+    </style>
+</head>
+<body>
+
+    <!-- Global SVG Definitions for Arrows -->
+    <svg width="0" height="0" style="position:absolute;">
+        <defs>
+            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#00d4ff" />
+            </marker>
+            <marker id="arrowhead-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#ff4757" />
+            </marker>
+        </defs>
+    </svg>
+
+    <div id="presentation-container">
+        
+        <!-- SLIDE 1: Intro -->
+        <div class="slide glass active" id="slide-0">
+            <h1>Introduction to <span class="neon-text">Decision Trees</span></h1>
+            <p class="concept">A supervised machine learning algorithm for classification and regression that mirrors human decision-making by splitting data into smaller subsets based on rules.</p>
+            
+            <div class="content-grid">
+                <div class="glass" style="padding: 1.5rem;">
+                    <h3 class="neon-text" style="margin-bottom: 1rem;">Anatomy of a Tree</h3>
+                    <ul style="list-style: none; line-height: 2;">
+                        <li><strong style="color: #fff;">Root Node:</strong> Top node, entire dataset, first split.</li>
+                        <li><strong style="color: #f39c12;">Internal Node:</strong> Sub-nodes testing specific conditions.</li>
+                        <li><strong style="color: var(--neon-blue);">Leaf Node:</strong> Final endpoints containing predicted outcome.</li>
+                    </ul>
+                </div>
+                
+                <!-- Fixed Tree with SVG Arrows -->
+                <div class="glass tree-container" style="padding: 1.5rem;">
+                    <div class="node node-root glass"><strong>Root:</strong> Age < 18?</div>
+                    
+                    <svg class="svg-arrows">
+                        <line x1="50%" y1="0" x2="25%" y2="40" stroke="#00d4ff" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        <line x1="50%" y1="0" x2="75%" y2="40" stroke="#00d4ff" stroke-width="2" marker-end="url(#arrowhead)"/>
+                    </svg>
+
+                    <div style="display: flex; width: 100%; justify-content: space-around;">
+                        <div class="node node-leaf glass"><strong>Leaf (Yes):</strong><br>Deny Loan</div>
+                        
+                        <div style="display: flex; flex-direction: column; align-items: center; width: 50%;">
+                            <div class="node node-internal glass"><strong>Internal (No):</strong><br>Income > $40k?</div>
+                            
+                            <svg class="svg-arrows">
+                                <line x1="50%" y1="0" x2="10%" y2="40" stroke="#00d4ff" stroke-width="2" marker-end="url(#arrowhead)"/>
+                                <line x1="50%" y1="0" x2="90%" y2="40" stroke="#00d4ff" stroke-width="2" marker-end="url(#arrowhead)"/>
+                            </svg>
+
+                            <div style="display: flex; width: 100%; justify-content: space-between;">
+                                <div class="node node-leaf glass"><strong>Leaf (Yes):</strong><br>Approve</div>
+                                <div class="node node-leaf glass"><strong>Leaf (No):</strong><br>Deny</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: Entropy -->
+        <div class="slide glass" id="slide-1">
+            <h1>The Mathematics of Purity: <span class="neon-text">Entropy</span></h1>
+            <p class="concept">Entropy measures the messiness or randomness of data (0 = perfect purity, 1 = maximum mix).</p>
+            
+            <div class="content-grid">
+                <div>
+                    <div class="formula-box glass">
+                        Entropy(S) = - &Sigma; (p<sub>i</sub> * log<sub>2</sub>(p<sub>i</sub>))
+                    </div>
+                    
+                    <div class="glass avatar-container" id="s2-avatars">
+                        <!-- High Risk (Red) -->
+                        <div class="avatar high"></div><div class="avatar high"></div>
+                        <div class="avatar high"></div><div class="avatar high"></div>
+                        <div class="avatar high"></div><div class="avatar high"></div>
+                        <!-- Low Risk (Blue) -->
+                        <div class="avatar low"></div><div class="avatar low"></div>
+                        <div class="avatar low"></div><div class="avatar low"></div>
+                    </div>
+                    <p style="text-align: center; margin-top: 1rem;">10 Patients: <span style="color: var(--high-risk);">6 High Risk</span>, <span style="color: var(--low-risk);">4 Low Risk</span></p>
+                </div>
+
+                <div>
+                    <button class="btn" onclick="revealNextStep('s2')">Calculate Entropy Step-by-Step</button>
+                    <ul class="step-list" id="s2-steps">
+                        <li class="step-item glass">
+                            <div class="step-title">1. Find Class Probabilities</div>
+                            <div class="step-formula">Formula: p = class_count / total</div>
+                            <div class="step-why">Why: We need the ratio of each class to measure the mix.</div>
+                            <div class="step-math">p(High) = 6/10 = 0.6 | p(Low) = 4/10 = 0.4</div>
+                        </li>
+                        <li class="step-item glass">
+                            <div class="step-title">2. Calculate High Risk Penalty</div>
+                            <div class="step-formula">Formula: - p * log₂(p)</div>
+                            <div class="step-why">Why: The Logarithm heavily penalizes evenly mixed data.</div>
+                            <div class="step-math">-0.6 * log₂(0.6) = 0.442</div>
+                        </li>
+                        <li class="step-item glass">
+                            <div class="step-title">3. Calculate Low Risk Penalty</div>
+                            <div class="step-formula">Formula: - p * log₂(p)</div>
+                            <div class="step-math">-0.4 * log₂(0.4) = 0.529</div>
+                        </li>
+                        <li class="step-item glass" style="border-left-color: var(--high-risk);">
+                            <div class="step-title">4. Total Entropy (Sum)</div>
+                            <div class="step-formula">Formula: Sum of all class penalties</div>
+                            <div class="step-why">Why: Combining them gives the total dataset messiness (0 to 1).</div>
+                            <div class="step-math" style="font-size: 1.3rem;">0.442 + 0.529 = <span class="neon-text">0.971</span></div>
+                            <em style="color: var(--high-risk);">Result is close to 1, meaning data is highly mixed!</em>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: Information Gain -->
+        <div class="slide glass" id="slide-2">
+            <h1>Splitting the Data: <span class="neon-text">Information Gain</span></h1>
+            <p class="concept">Information Gain is the reduction in entropy after applying a rule. The tree picks the rule with the highest gain.</p>
+            
+            <div class="formula-box glass" style="padding: 1rem;">
+                Info Gain = Entropy(Parent) - &Sigma; (Weight of Child * Entropy(Child))
+            </div>
+
+            <div class="content-grid">
+                <div style="text-align: center;">
+                    <p style="margin-bottom: 0.5rem;"><strong>Parent (Entropy = 0.971)</strong></p>
+                    <div class="glass avatar-container" id="s3-parent" style="margin-bottom: 1rem;">
+                        <div class="avatar high"></div><div class="avatar high"></div><div class="avatar high"></div>
+                        <div class="avatar high"></div><div class="avatar high"></div><div class="avatar high"></div>
+                        <div class="avatar low"></div><div class="avatar low"></div><div class="avatar low"></div><div class="avatar low"></div>
+                    </div>
+                    
+                    <button class="btn" onclick="triggerSplit()">Split by Rule: Cholesterol > 250</button>
+
+                    <div style="display: flex; gap: 1rem; justify-content: center; opacity: 0; transition: 1s;" id="s3-children">
+                        <div class="glass avatar-container" style="flex-direction: column; align-items: center; width: 45%;">
+                            <p><strong>Left Child (Yes)</strong></p>
+                            <div style="display:flex; flex-wrap:wrap; gap:5px; justify-content:center;">
+                                <div class="avatar high"></div><div class="avatar high"></div><div class="avatar high"></div>
+                                <div class="avatar high"></div><div class="avatar high"></div><div class="avatar high"></div>
+                            </div>
+                        </div>
+                        <div class="glass avatar-container" style="flex-direction: column; align-items: center; width: 45%;">
+                            <p><strong>Right Child (No)</strong></p>
+                            <div style="display:flex; flex-wrap:wrap; gap:5px; justify-content:center;">
+                                <div class="avatar low"></div><div class="avatar low"></div>
+                                <div class="avatar low"></div><div class="avatar low"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <ul class="step-list" id="s3-steps">
+                        <li class="step-item glass">
+                            <div class="step-title">1. Parent Entropy Baseline</div>
+                            <div class="step-why">Why: We need to know how messy data was before splitting.</div>
+                            <div class="step-math">Parent Entropy = 0.971</div>
+                        </li>
+                        <li class="step-item glass">
+                            <div class="step-title">2. Evaluate Left Child</div>
+                            <div class="step-formula">Formula: Weight = Child_Count / Total_Count</div>
+                            <div class="step-why">Why: Catches all 6 High Risk. It's 100% pure (Entropy=0).</div>
+                            <div class="step-math">Weight = 6/10 (0.6). Entropy = 0.</div>
+                        </li>
+                        <li class="step-item glass">
+                            <div class="step-title">3. Evaluate Right Child</div>
+                            <div class="step-why">Why: Catches all 4 Low Risk. It's 100% pure (Entropy=0).</div>
+                            <div class="step-math">Weight = 4/10 (0.4). Entropy = 0.</div>
+                        </li>
+                        <li class="step-item glass" style="border-left-color: var(--neon-blue);">
+                            <div class="step-title">4. Calculate Information Gain</div>
+                            <div class="step-formula">Gain = Parent - [ (W_left * E_left) + (W_right * E_right) ]</div>
+                            <div class="step-why">Why: Shows how much "purity" we gained from this split.</div>
+                            <div class="step-math" style="font-size: 1.2rem;">0.971 - [ (0.6 * 0) + (0.4 * 0) ] = <span class="neon-text">0.971</span></div>
+                            <em>Perfect Split! The tree will choose this rule.</em>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: Gini Impurity -->
+        <div class="slide glass" id="slide-3">
+            <h1>A Faster Metric: <span class="neon-text">Gini Impurity</span></h1>
+            <p class="concept">Similar to Entropy, but computationally faster because it uses squaring instead of logarithms. Ranges from 0 (pure) to 0.5 (maximum mix for binary classification).</p>
+            
+            <div class="content-grid">
+                <div>
+                    <div class="formula-box glass">
+                        Gini(S) = 1 - &Sigma; (p<sub>i</sub>)<sup>2</sup>
+                    </div>
+                    
+                    <div class="glass avatar-container">
+                        <div class="avatar high"></div><div class="avatar high"></div>
+                        <div class="avatar high"></div><div class="avatar high"></div>
+                        <div class="avatar high"></div><div class="avatar high"></div>
+                        <div class="avatar low"></div><div class="avatar low"></div>
+                        <div class="avatar low"></div><div class="avatar low"></div>
+                    </div>
+                    <p style="text-align: center; margin-top: 1rem;">Same 10 Patients (6 High, 4 Low)</p>
+                </div>
+
+                <div>
+                    <button class="btn" onclick="revealNextStep('s4')">Calculate Gini Step-by-Step</button>
+                    <ul class="step-list" id="s4-steps">
+                        <li class="step-item glass">
+                            <div class="step-title">1. Find Probabilities</div>
+                            <div class="step-math">p(High) = 0.6 | p(Low) = 0.4</div>
+                        </li>
+                        <li class="step-item glass">
+                            <div class="step-title">2. Square the Probabilities</div>
+                            <div class="step-formula">Formula: p²</div>
+                            <div class="step-why">Why: Squaring penalizes smaller probabilities quickly, replacing the heavy log math.</div>
+                            <div class="step-math">0.6² = 0.36 | 0.4² = 0.16</div>
+                        </li>
+                        <li class="step-item glass">
+                            <div class="step-title">3. Sum the Squares</div>
+                            <div class="step-math">0.36 + 0.16 = 0.52</div>
+                        </li>
+                        <li class="step-item glass" style="border-left-color: var(--neon-blue);">
+                            <div class="step-title">4. Calculate Gini</div>
+                            <div class="step-formula">Formula: 1 - Sum</div>
+                            <div class="step-why">Why: Subtracting from 1 flips the scale so 0 = pure and 0.5 = mixed.</div>
+                            <div class="step-math" style="font-size: 1.3rem;">1 - 0.52 = <span class="neon-text">0.48</span></div>
+                            <em>Close to 0.5 max = Highly mixed!</em>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: Pruning -->
+        <div class="slide glass" id="slide-4">
+            <h1>Overfitting & <span class="neon-text">Cost-Complexity Pruning</span></h1>
+            <p class="concept">Trees that grow too deep memorize noise (overfitting). Pruning chops off weak branches to improve generalization on unseen data.</p>
+            
+            <div class="formula-box glass" style="padding: 1rem;">
+                Cost = R(T) + (&alpha; * |T|)<br>
+                <span style="font-size: 0.9rem; color: var(--text-muted);">R(T) = Error count | |T| = Number of leaves | &alpha; = Penalty per leaf</span>
+            </div>
+
+            <div class="content-grid">
+                <div class="glass tree-container" style="padding: 1rem;">
+                    <div class="node glass">Root</div>
+                    
+                    <svg class="svg-arrows">
+                        <line x1="50%" y1="0" x2="25%" y2="40" stroke="#00d4ff" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        <line x1="50%" y1="0" x2="75%" y2="40" stroke="#00d4ff" stroke-width="2" marker-end="url(#arrowhead)"/>
+                    </svg>
+
+                    <div style="display: flex; width: 100%; justify-content: space-around;">
+                        <div class="node glass">Branch 1</div>
+                        <div class="node glass">Branch 2</div>
+                    </div>
+                    
+                    <!-- Prunable Arrows -->
+                    <svg class="svg-arrows prunable" id="prune-arrows">
+                        <!-- Branch 1 children -->
+                        <line x1="25%" y1="0" x2="10%" y2="40" stroke="#ff4757" stroke-width="2" marker-end="url(#arrowhead-red)"/>
+                        <line x1="25%" y1="0" x2="40%" y2="40" stroke="#ff4757" stroke-width="2" marker-end="url(#arrowhead-red)"/>
+                        <!-- Branch 2 children -->
+                        <line x1="75%" y1="0" x2="60%" y2="40" stroke="#ff4757" stroke-width="2" marker-end="url(#arrowhead-red)"/>
+                        <line x1="75%" y1="0" x2="90%" y2="40" stroke="#ff4757" stroke-width="2" marker-end="url(#arrowhead-red)"/>
+                    </svg>
+
+                    <!-- Prunable Leaves -->
+                    <div style="display: flex; width: 100%; justify-content: space-between;" class="prunable">
+                        <div class="node glass" style="border-top: 2px solid var(--high-risk); font-size: 0.8rem;">Weak Leaf A</div>
+                        <div class="node glass" style="border-top: 2px solid var(--high-risk); font-size: 0.8rem;">Weak Leaf B</div>
+                        <div class="node glass" style="border-top: 2px solid var(--high-risk); font-size: 0.8rem;">Weak Leaf C</div>
+                        <div class="node glass" style="border-top: 2px solid var(--high-risk); font-size: 0.8rem;">Weak Leaf D</div>
+                    </div>
+
+                    <button class="btn" style="margin-top: 1.5rem;" onclick="pruneTree()">Prune Tree</button>
+                </div>
+
+                <div>
+                    <ul class="step-list" id="s5-steps">
+                        <li class="step-item glass visible">
+                            <div class="step-title">1. Overfitted Tree Score</div>
+                            <div class="step-why">Why: Complex tree has low error (15) but high complexity (10 leaves). Penalty alpha is 2.</div>
+                            <div class="step-math">Cost = 15 + (2 * 10) = <span style="color: var(--high-risk);">35</span></div>
+                        </li>
+                        <li class="step-item glass" id="prune-math" style="border-left-color: var(--neon-blue);">
+                            <div class="step-title">2. Pruned Tree Score</div>
+                            <div class="step-why">Why: Pruning chops weak leaves. Errors go up slightly (16), but complexity drops massively (5 leaves).</div>
+                            <div class="step-math">Cost = 16 + (2 * 5) = <span class="neon-text">26</span></div>
+                            <br>
+                            <em>Result: 26 < 35. The algorithm prefers the smaller, pruned tree!</em>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: Random Forests -->
+        <div class="slide glass" id="slide-5">
+            <h1>Wisdom of Crowds: <span class="neon-text">Random Forests</span></h1>
+            <p class="concept">Fixes single-tree overfitting by building hundreds of independent trees and averaging their predictions.</p>
+            
+            <div class="content-grid" style="gap: 1rem;">
+                <div class="glass" style="padding: 1.5rem;">
+                    <h3 class="neon-text">Mechanism 1: Bootstrapping (Row Randomness)</h3>
+                    <p style="margin-top: 0.5rem; font-size: 0.95rem;">Draw N rows randomly with replacement. Each tree only sees <strong>~63.2%</strong> of the original data, leaving <strong>36.8%</strong> as Out-of-Bag (OOB) test data.</p>
+                    
+                    <h3 class="neon-text" style="margin-top: 1.5rem;">Mechanism 2: Feature Subsetting (Column Randomness)</h3>
+                    <p style="margin-top: 0.5rem; font-size: 0.95rem;">Instead of looking at all features <em>M</em>, each tree looks at a random subset <em>m</em> to prevent correlation (trees making the same mistakes).</p>
+                    <ul style="margin-top: 0.5rem; margin-left: 1.5rem; color: var(--text-muted); font-size: 0.95rem;">
+                        <li><strong>Classification:</strong> m = &radic;M (e.g., 100 cols &rarr; 10 cols)</li>
+                        <li><strong>Regression:</strong> m = M/3 (e.g., 100 cols &rarr; 33 cols)</li>
+                    </ul>
+                </div>
+
+                <div class="glass" style="padding: 1.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <div class="glass" style="padding: 0.5rem 2rem; border-color: var(--neon-blue);">Original Dataset</div>
+                    
+                    <svg width="100%" height="40" style="margin: 5px 0;">
+                        <line x1="50%" y1="0" x2="15%" y2="40" stroke="#00d4ff" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        <line x1="50%" y1="0" x2="50%" y2="40" stroke="#00d4ff" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        <line x1="50%" y1="0" x2="85%" y2="40" stroke="#00d4ff" stroke-width="2" marker-end="url(#arrowhead)"/>
+                    </svg>
+
+                    <div style="display: flex; gap: 1rem; margin-bottom: 0.5rem; width: 100%; justify-content: space-between;">
+                        <div class="glass" style="padding: 1rem; text-align: center; flex:1;">Tree 1<br><span style="font-size: 0.8rem; color:var(--text-muted);">Predicts: A</span></div>
+                        <div class="glass" style="padding: 1rem; text-align: center; flex:1;">Tree 2<br><span style="font-size: 0.8rem; color:var(--text-muted);">Predicts: A</span></div>
+                        <div class="glass" style="padding: 1rem; text-align: center; flex:1;">Tree 3<br><span style="font-size: 0.8rem; color:var(--text-muted);">Predicts: B</span></div>
+                    </div>
+                    
+                    <svg width="100%" height="40" style="margin: 5px 0;">
+                        <line x1="15%" y1="0" x2="50%" y2="40" stroke="#00d4ff" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        <line x1="50%" y1="0" x2="50%" y2="40" stroke="#00d4ff" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        <line x1="85%" y1="0" x2="50%" y2="40" stroke="#00d4ff" stroke-width="2" marker-end="url(#arrowhead)"/>
+                    </svg>
+
+                    <div class="glass" style="padding: 1rem 3rem; background: rgba(0,212,255,0.1); border-color: var(--neon-blue); text-align: center;">
+                        <strong>Majority Vote</strong><br>
+                        <span class="neon-text" style="font-size: 1.5rem;">Final Prediction: A</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav>
+        <button class="nav-btn" id="prevBtn" onclick="prevSlide()" disabled>&#8592; Previous</button>
+        <div class="nav-dots" id="dots">
+            <div class="dot active" onclick="goToSlide(0)"></div>
+            <div class="dot" onclick="goToSlide(1)"></div>
+            <div class="dot" onclick="goToSlide(2)"></div>
+            <div class="dot" onclick="goToSlide(3)"></div>
+            <div class="dot" onclick="goToSlide(4)"></div>
+            <div class="dot" onclick="goToSlide(5)"></div>
+        </div>
+        <button class="nav-btn" id="nextBtn" onclick="nextSlide()">Next &#8594;</button>
+    </nav>
+
+    <script>
+        // --- Presentation Navigation Logic ---
+        let currentSlide = 0;
+        const totalSlides = 6;
+        const slides = document.querySelectorAll('.slide');
+        const dots = document.querySelectorAll('.dot');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        function updateNav() {
+            slides.forEach((slide, index) => {
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                    slide.scrollTop = 0; // Reset scroll position when entering slide
+                } else {
+                    slide.classList.remove('active');
+                }
+            });
+
+            dots.forEach((dot, index) => {
+                if (index === currentSlide) dot.classList.add('active');
+                else dot.classList.remove('active');
+            });
+
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === totalSlides - 1;
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateNav();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateNav();
+            }
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            updateNav();
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        // --- Interactive Step Reveal Logic ---
+        const state = {
+            s2: 0,
+            s3: 0,
+            s4: 0
+        };
+
+        function revealNextStep(slidePrefix) {
+            const steps = document.querySelectorAll(`#${slidePrefix}-steps .step-item`);
+            if (state[slidePrefix] < steps.length) {
+                steps[state[slidePrefix]].classList.add('visible');
+                // Scroll into view slightly for smaller screens
+                steps[state[slidePrefix]].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                state[slidePrefix]++;
+            }
+        }
+
+        // Slide 3 Specific: Information Gain Animation
+        function triggerSplit() {
+            const parent = document.getElementById('s3-parent');
+            const children = document.getElementById('s3-children');
+            
+            parent.style.opacity = '0';
+            setTimeout(() => {
+                parent.style.display = 'none';
+                children.style.opacity = '1';
+                
+                let stepDelay = 0;
+                const steps = document.querySelectorAll(`#s3-steps .step-item`);
+                steps.forEach((step, index) => {
+                    setTimeout(() => {
+                        step.classList.add('visible');
+                        if (index === steps.length - 1) {
+                            step.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }
+                    }, stepDelay);
+                    stepDelay += 800; // 800ms between each math step
+                });
+            }, 500);
+        }
+
+        // Slide 5 Specific: Pruning Animation
+        function pruneTree() {
+            const prunableElements = document.querySelectorAll('.prunable');
+            prunableElements.forEach(el => {
+                el.classList.add('pruned');
+            });
+
+            // Reveal new math after animation
+            setTimeout(() => {
+                const mathEl = document.getElementById('prune-math');
+                mathEl.classList.add('visible');
+                mathEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 600);
+        }
+    </script>
+</body>
+</html>

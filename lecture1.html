@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CS463: Lecture 1 - Introduction to ML</title>
+<style>
+/* CSS Variables for Dark Theme */
+:root{--paper:#0f172a;--ink:#f8fafc;--muted:#94a3b8;--rule:#334155;--blue:#38bdf8;--bluewash:#0369a133;--amber:#fbbf24;--amberwash:#b4530933;--green:#34d399;--greenwash:#065f4633;--red:#f87171;--redwash:#7f1d1d33;--soft:#1e293b;--neon:#00f3ff;--pink:#f43f5e;--pinkwash:#9f123933;--scale:1}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden}
+body{background:#020617;color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+
+/* Presentation Stage & Slide Animations */
+#stage{width:1600px;height:900px;position:absolute;left:50%;top:50%;margin:-450px 0 0 -800px;transform:scale(var(--scale));background:var(--paper);overflow:hidden;transform-origin:center; box-shadow: 0 0 50px rgba(0,0,0,0.8);}
+section.slide{display:none;position:absolute;inset:0;padding:64px 76px 100px; overflow-y: auto;} /* Allow scrolling on packed slides */
+section.slide::-webkit-scrollbar { width: 8px; } section.slide::-webkit-scrollbar-thumb { background: var(--rule); }
+section.slide.active{display:block; animation:arrive .22s ease}
+@keyframes arrive{from{opacity:.4}to{opacity:1}}
+
+/* Typography */
+h1,h2,h3,p,ul,li{margin:0}
+h1{font-size:85px;line-height:1.01;letter-spacing:-2px;font-weight:650; margin-bottom:20px;}
+h2{font-size:48px;line-height:1.1;letter-spacing:-1.2px;font-weight:650; margin-bottom: 15px; color:var(--blue);}
+h3{font-size:30px;line-height:1.25;font-weight:650; margin-bottom:10px;}
+p, li{font-size:24px;line-height:1.5;}
+ul {padding-left: 30px; margin-bottom: 15px;}
+.lead{font-size:26px;color:var(--muted);margin-bottom:25px;max-width:1400px}
+.label{font-size:20px;letter-spacing:1.6px;text-transform:uppercase;font-weight:650;color:var(--muted)}
+.blue{color:var(--blue)} .amber{color:var(--amber)} .green{color:var(--green)} .red{color:var(--red)} .pink{color:var(--pink)} .neon{color:var(--neon)}
+
+/* Layout Grids */
+.columns{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:20px;}
+.columns-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:30px;margin-top:20px;}
+.divider{border-left:1.5px solid var(--rule);padding-left:40px}
+.rule{border-top:1.5px solid var(--rule); margin-top:20px; padding-top:20px;}
+.reveal{opacity:0;transform:translateY(9px);visibility:hidden;transition:opacity .28s ease,transform .28s ease}
+.reveal.shown{opacity:1;transform:none;visibility:visible}
+
+/* Info Cards */
+.card{background:var(--soft);padding:25px;border-radius:12px;border-top:4px solid var(--blue);box-shadow:0 10px 25px rgba(0,0,0,0.4); margin-bottom:20px;}
+.card h4{font-size:28px;margin:0 0 15px 0;color:var(--ink);}
+.card p{font-size:22px;color:var(--muted);}
+.card.amber{border-color:var(--amber);} .card.green{border-color:var(--green);} .card.pink{border-color:var(--pink);}
+
+/* Math Boards & Info Boxes */
+.math-board {background: #111827; border: 1px solid var(--rule); border-radius: 8px; padding: 25px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; margin-bottom: 20px;}
+.formula-main {font-family: Georgia, serif; font-size:40px; transition: all 0.3s; color:var(--blue);}
+.info-box {background: var(--soft); padding: 20px; border-radius: 8px; border-left: 4px solid var(--neon); margin-bottom: 20px;}
+.info-box .badge {display: inline-block; background: rgba(0, 243, 255, 0.15); color: var(--neon); padding: 4px 12px; border-radius: 4px; font-size: 16px; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;}
+
+/* Live Layout Panels */
+.live-slide{padding-top:45px!important}
+.live-grid{display:grid;grid-template-columns: 700px 1fr; gap: 40px; margin-top: 15px; height: 650px;}
+.calc-pane {display: flex; flex-direction: column; gap: 20px;}
+.live-explanation{font-size: 24px; line-height: 1.45; padding: 25px; background: var(--soft); border-radius: 8px; border-left: 5px solid var(--blue); min-height: 200px;}
+.live-explanation strong{color: var(--blue);}
+table.stats-table {width: 100%; border-collapse: collapse; font-size: 22px; text-align: center; background: var(--soft); border-radius: 8px; overflow: hidden;}
+table.stats-table th {background: #111827; color: var(--muted); padding: 15px; border-bottom: 2px solid var(--rule);}
+table.stats-table td {padding: 12px; border-bottom: 1px solid var(--rule);}
+.hl-row {background: var(--bluewash);} .hl-cell {font-weight: bold; color: var(--blue);}
+
+/* Canvas */
+.curve-visual {background: #111827; border: 1px solid var(--rule); border-radius: 12px; display: flex; align-items: center; justify-content: center; padding: 20px; width: 100%;}
+canvas {max-width: 100%; height: auto;}
+
+/* Nested Diagram CSS */
+.nested-box {border: 2px solid; padding: 20px; border-radius: 12px; text-align: center; font-weight: bold;}
+.box-ai {border-color: var(--blue); background: rgba(56,189,248,0.1); margin: 20px;}
+.box-ml {border-color: var(--green); background: rgba(52,211,153,0.1); margin: 20px;}
+.box-dl {border-color: var(--amber); background: rgba(251,191,36,0.1); margin: 20px;}
+.box-genai {border-color: var(--pink); background: rgba(244,63,94,0.1); margin: 20px;}
+
+/* Navigation */
+#nav{position:absolute;left:76px;right:76px;bottom:25px;display:flex;justify-content:space-between;align-items:center;z-index:5;height:42px}
+.slide-number{font-size:20px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:center;}
+</style>
+</head>
+<body>
+<main id="stage" aria-label="CS463 Presentation">
+
+<!-- Cover Slide -->
+<section class="slide active" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+  <p class="label">CS463 — Machine Learning & Expert Systems</p>
+  <h1 class="blue">Lecture 1: Introduction</h1>
+  <p class="lead" style="font-size:30px;">Complete Conceptual Study Guide & Interactive Visuals</p>
+  <p style="color:var(--muted); margin-top:50px;">Use Left/Right Arrows or Spacebar to navigate.<br>Content covers Topics 1-11, Math Derivations, and Mock Exam.</p>
+</section>
+
+<!-- T1: AI -->
+<section class="slide" data-steps="4">
+  <h2>Topic 1: Artificial Intelligence</h2>
+  <p class="lead">Building systems that perform tasks associated with human intelligence.</p>
+  <div class="columns">
+    <div>
+      <div class="info-box reveal" data-step="1">
+        <span class="badge">What it is [Slide]</span>
+        <p>AI is defined by <strong>what the system does</strong> (behavior needing intelligence), not by <strong>how</strong> it is built. It is an umbrella field encompassing many techniques.</p>
+      </div>
+      <div class="info-box reveal" data-step="2" style="border-color:var(--amber)">
+        <span class="badge" style="color:var(--amber)">Why it exists</span>
+        <p>To automate complex tasks (perception, reasoning, learning, language, planning, decision-making) beyond literal instruction execution.</p>
+      </div>
+    </div>
+    <div class="divider">
+      <h3 class="reveal" data-step="3">Capabilities & Examples</h3>
+      <ul class="reveal" data-step="3">
+        <li><strong>Perception:</strong> Image recognition</li>
+        <li><strong>Reasoning:</strong> Rule-based Expert Systems</li>
+        <li><strong>Language:</strong> Chatbots</li>
+        <li><strong>Decision-making:</strong> Game-playing agents</li>
+      </ul>
+      <div class="card pink reveal" data-step="4" style="margin-top:20px;">
+        <h4 class="pink">Trap: AI &ne; ML</h4>
+        <p>A system following hand-written if-else rules (Expert System) to diagnose illness <strong>is AI</strong> (it reasons), but it is <strong>not ML</strong> (it learns nothing from data).</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- T2: ML -->
+<section class="slide" data-steps="3">
+  <h2>Topic 2: Machine Learning</h2>
+  <p class="lead">"The field of study that gives computers the ability to learn without being explicitly programmed." — Arthur Samuel</p>
+  
+  <div class="columns">
+    <div class="reveal" data-step="1">
+      <div class="info-box">
+        <span class="badge">Classical Programming vs ML [Ext]</span>
+        <p><strong>Classical:</strong> Rules + Data &rarr; Answers</p>
+        <p><strong>ML:</strong> Data + Answers &rarr; <strong>Rules (Model)</strong></p>
+      </div>
+      <p style="margin-top:20px;">The algorithm learns useful patterns from data rather than relying on manual rules. The goal is to make predictions on <strong>new, unseen cases</strong> (Generalization).</p>
+    </div>
+    
+    <div class="divider reveal" data-step="2">
+      <h3>Exam Practice</h3>
+      <p><strong>Q: What does the computer "learn", and what does the programmer actually program?</strong></p>
+      <p style="color:var(--muted); margin-top:10px;"><em>Answer:</em> The computer learns the decision rules (parameters) from the data. The programmer programs the <em>learning procedure</em> (e.g., optimization algorithm), data pipeline, and architecture, not the specific if-then logic.</p>
+    </div>
+  </div>
+  
+  <div class="card amber reveal" data-step="3" style="margin-top:30px;">
+    <h4>Trap: "Zero human intervention"</h4>
+    <p>The slides say <strong>minimal</strong> human intervention. Humans still define the problem, clean data, engineer features, and evaluate metrics. The algorithm only replaces the manual rule-writing.</p>
+  </div>
+</section>
+
+<!-- T2: ML Math (Live) -->
+<section class="slide live-slide" data-live="gd">
+  <h2>Topic 2 Math: How "Learning" Actually Works</h2>
+  <p class="lead">Learning is an optimization process: finding parameters (&theta;) that minimize a Cost function.</p>
+  <div class="live-grid">
+    <div class="calc-pane">
+      <table class="stats-table" id="gd-table"></table>
+      <div class="math-board">
+        <div id="gd-math-1" class="formula-main" style="font-size:32px; margin-bottom:15px;">J(&theta;) = (1/m) &sum; (ŷ - y)²</div>
+        <div id="gd-math-2" class="formula-main" style="font-size:32px; color:var(--green);">&theta; &larr; &theta; - &alpha; &middot; (&part;J/&part;&theta;)</div>
+      </div>
+    </div>
+    <div class="calc-pane">
+      <div class="live-explanation" id="gd-explanation"></div>
+    </div>
+  </div>
+</section>
+
+<!-- T3: AI vs ML vs DL -->
+<section class="slide" data-steps="4">
+  <h2>Topic 3: AI vs ML vs DL vs GenAI</h2>
+  <p class="lead">Nested hierarchies of intelligent systems.</p>
+  
+  <div class="columns">
+    <div class="reveal" data-step="1">
+      <div class="nested-box box-ai">
+        Artificial Intelligence (AI)
+        <div class="nested-box box-ml reveal" data-step="2">
+          Machine Learning (ML)
+          <div class="nested-box box-dl reveal" data-step="3">
+            Deep Learning (DL)
+            <div class="nested-box box-genai reveal" data-step="4">
+              Generative AI
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="divider">
+      <ul style="font-size: 22px;">
+        <li class="reveal" data-step="1"><strong>AI:</strong> The umbrella. (e.g. Rule-based Expert System).</li>
+        <li class="reveal" data-step="2"><strong>ML:</strong> Learns from data. (e.g. Linear Regression).</li>
+        <li class="reveal" data-step="3"><strong>DL:</strong> Subset of ML based on <strong>multi-layer neural networks</strong>. <br><em>Math Ext:</em> Multiple layers allow hierarchical feature extraction (edges&rarr;shapes). Needs non-linear activation (ReLU) otherwise layers collapse into one linear map.</li>
+        <li class="reveal" data-step="4"><strong>GenAI:</strong> Subset of DL that generates <em>new</em> content (text/images) instead of just classifying it.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- T4 & T5: Why ML & Terminology -->
+<section class="slide" data-steps="4">
+  <h2>Topics 4 & 5: Why ML? & Terminology</h2>
+  
+  <div class="columns">
+    <div>
+      <h3>Why choose ML over traditional code?</h3>
+      <ul class="reveal" data-step="1">
+        <li><strong>Rules hard to specify:</strong> e.g., Spam. You can't code every possible spam word.</li>
+        <li><strong>Hidden patterns in large data:</strong> Humans can't see trends in millions of rows; algorithms can.</li>
+        <li><strong>Changing environment:</strong> Fraudsters adapt. Manual rules go stale, but ML can be retrained.</li>
+      </ul>
+      <div class="info-box reveal pink" data-step="2" style="border-color:var(--pink)">
+        <span class="badge" style="color:var(--pink)">When NOT to use ML</span>
+        <p>If rules are simple, 100% exact (like tax math), or if you have zero data.</p>
+      </div>
+    </div>
+    
+    <div class="divider">
+      <h3 class="reveal" data-step="3">Core Terminology</h3>
+      <ul class="reveal" data-step="3">
+        <li><strong>Feature:</strong> Input variable (House size).</li>
+        <li><strong>Label/Target:</strong> Desired output (House price).</li>
+        <li><strong>Model:</strong> The learned patterns.</li>
+      </ul>
+      <div class="card reveal" data-step="4" style="margin-top:20px;">
+        <h4>Training vs. Inference [Ext]</h4>
+        <p><strong>Training:</strong> Fits model to data. Expensive, uses features + labels to adjust parameters.</p>
+        <p><strong>Inference:</strong> Uses trained model on new data. Cheap, uses ONLY features (no labels), parameters are fixed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- T6: Types of Learning -->
+<section class="slide" data-steps="4">
+  <h2>Topic 6: Types of Learning</h2>
+  <p class="lead">Defined by the type of <strong>feedback</strong> the algorithm receives.</p>
+  
+  <table class="stats-table reveal" data-step="1" style="margin-bottom:30px;">
+    <tr>
+      <th>Type</th>
+      <th>Feedback / Data</th>
+      <th>Goal</th>
+      <th>Sub-types</th>
+    </tr>
+    <tr class="reveal" data-step="2">
+      <td class="blue"><strong>Supervised</strong></td>
+      <td>Right answer given (Labelled data)</td>
+      <td>Predict target for new data</td>
+      <td>Regression, Classification</td>
+    </tr>
+    <tr class="reveal" data-step="3">
+      <td class="green"><strong>Unsupervised</strong></td>
+      <td>No feedback (Unlabelled data)</td>
+      <td>Discover structure/groups</td>
+      <td>Clustering, Association</td>
+    </tr>
+    <tr class="reveal" data-step="4">
+      <td class="amber"><strong>Reinforcement</strong></td>
+      <td>Reward/Penalty after actions</td>
+      <td>Maximize cumulative reward</td>
+      <td>Policy learning</td>
+    </tr>
+  </table>
+</section>
+
+<!-- T7: Supervised -->
+<section class="slide" data-steps="3">
+  <h2>Topic 7: Supervised Learning (Reg vs Class)</h2>
+  
+  <div class="columns">
+    <div class="reveal" data-step="1">
+      <h3 class="blue">Regression</h3>
+      <p>Predicts a <strong>continuous</strong> numerical output.</p>
+      <p style="color:var(--muted); font-size:20px;">Example: Housing price based on size.</p>
+      <div class="curve-visual" style="height: 250px; margin-top:10px;"><canvas id="canvas-reg"></canvas></div>
+      <p style="margin-top:10px; font-size:20px;"><em>Math:</em> h(x) = &theta;<sub>0</sub> + &theta;<sub>1</sub>x. Fits a smooth curve to generalize, minimizing Mean Squared Error.</p>
+    </div>
+    
+    <div class="divider reveal" data-step="2">
+      <h3 class="amber">Classification</h3>
+      <p>Predicts a <strong>discrete</strong> category.</p>
+      <p style="color:var(--muted); font-size:20px;">Example: Tumour is Malignant (1) or Benign (0).</p>
+      <div class="curve-visual" style="height: 250px; margin-top:10px;"><canvas id="canvas-class"></canvas></div>
+      <p style="margin-top:10px; font-size:20px;"><em>Math:</em> Finds a <strong>decision boundary</strong> (line for 2 features). Uses Sigmoid to squash scores to probabilities.</p>
+    </div>
+  </div>
+  
+  <div class="info-box reveal pink" data-step="3" style="border-color:var(--pink); margin-top:20px;">
+    <p><strong>Trap:</strong> Classification is determined by the <strong>output</strong> being categorical, not the input. You can use continuous inputs (tumour size, age) to predict a discrete class (0/1).</p>
+  </div>
+</section>
+
+<!-- T8: Unsupervised -->
+<section class="slide" data-steps="4">
+  <h2>Topic 8: Unsupervised Learning</h2>
+  <p class="lead">Deriving structure from data with <strong>no predefined labels or feedback</strong>.</p>
+  
+  <div class="columns">
+    <div>
+      <div class="card reveal" data-step="1">
+        <h4>Clustering</h4>
+        <p>Grouping items so members of a group are more similar to each other than to other groups.</p>
+        <p style="font-size:20px; color:var(--blue); margin-top:10px;"><em>App:</em> Google News grouping articles; Customer Personas.</p>
+      </div>
+      <div class="card reveal" data-step="2">
+        <h4>Association</h4>
+        <p>Finding items that occur together ("customers who buy A often buy B").</p>
+        <p style="font-size:20px; color:var(--blue); margin-top:10px;"><em>App:</em> Checkout recommendations (Cross-selling).</p>
+      </div>
+    </div>
+    
+    <div class="divider">
+      <div class="info-box reveal" data-step="3">
+        <span class="badge">Math Ext: Distance</span>
+        <p>Clustering relies on distance (e.g., Euclidean: d = &radic;&sum;(a<sub>k</sub> - b<sub>k</sub>)²). This is exactly why <strong>Scaling</strong> is required—otherwise, large-numbered features dominate the distance calculation.</p>
+      </div>
+      
+      <div class="card pink reveal" data-step="4">
+        <h4 class="pink">Clustering &ne; Classification</h4>
+        <p>Clustering discovers un-named groupings organically. Classification learns to map data to predefined, human-labelled classes.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- T9: Reinforcement Learning -->
+<section class="slide" data-steps="4">
+  <h2>Topic 9: Reinforcement Learning (RL)</h2>
+  <p class="lead">An autonomous agent learns optimal decisions by interacting with an environment through trial and error.</p>
+  
+  <div class="columns" style="gap:20px;">
+    <div class="reveal" data-step="1">
+      <div class="info-box">
+        <span class="badge">The RL Loop</span>
+        <p><strong>Observe</strong> current State (s).<br>
+           <strong>Act</strong> using Policy (a).<br>
+           <strong>Measure</strong> next state & Reward (R).<br>
+           <strong>Update</strong> strategy.</p>
+      </div>
+      <p style="font-size:20px;"><em>Example:</em> Waymo self-driving car (Agent) in traffic (Environment). Reward = +1 for moving safely, -100 for crash.</p>
+    </div>
+    
+    <div class="divider reveal" data-step="2">
+      <h3 class="blue">Exploration vs Exploitation</h3>
+      <p><strong>Explore:</strong> Try random actions to find better strategies (risks immediate reward).<br>
+         <strong>Exploit:</strong> Use known good actions (risks missing the global best).</p>
+      <p style="margin-top:10px; font-size:20px; color:var(--muted)"><em>Math (&epsilon;-greedy):</em> Random action with prob &epsilon;, best action with 1-&epsilon;.</p>
+    </div>
+  </div>
+
+  <div class="card green reveal" data-step="3" style="margin-top:20px;">
+    <h4 class="green">Long-term vs Immediate [Ext]</h4>
+    <p>RL maximizes <strong>cumulative long-term</strong> reward (Return G = r<sub>1</sub> + &gamma;r<sub>2</sub> + &gamma;²r<sub>3</sub>...). The discount factor (&gamma; < 1) makes sooner rewards worth more. This is why Netflix optimizes for long-term engagement over a single click.</p>
+  </div>
+</section>
+
+<!-- T10: Workflow -->
+<section class="slide" data-steps="4">
+  <h2>Topic 10: General ML Workflow</h2>
+  
+  <ol class="reveal" data-step="1" style="font-size:22px; column-count: 2; column-gap: 40px; margin-bottom: 20px;">
+    <li>Define problem</li>
+    <li>Collect & understand data</li>
+    <li>Preprocess (Topic 11)</li>
+    <li><strong>Split data</strong> (Train/Val/Test)</li>
+    <li>Select model</li>
+    <li>Train</li>
+    <li>Validate (tune/detect overfitting)</li>
+    <li>Test (final check)</li>
+    <li>Deploy & Monitor</li>
+  </ol>
+
+  <div class="columns-3">
+    <div class="info-box reveal" data-step="2">
+      <span class="badge">Data Splitting [Ext]</span>
+      <p style="font-size:18px;"><strong>Train:</strong> Fit parameters.<br><strong>Validation:</strong> Tune hyperparameters & check overfitting.<br><strong>Test:</strong> Unbiased final test. Touch only once! (Data Leakage if reused).</p>
+    </div>
+    <div class="info-box reveal" data-step="3" style="border-color:var(--amber);">
+      <span class="badge" style="color:var(--amber);">Metric Choice</span>
+      <p style="font-size:18px;">Accuracy fails on imbalanced data (e.g., 99% benign tumours). Need Precision/Recall. Metric must reflect the business objective.</p>
+    </div>
+    <div class="info-box reveal" data-step="4" style="border-color:var(--pink);">
+      <span class="badge" style="color:var(--pink);">Data Drift</span>
+      <p style="font-size:18px;">Why monitor? The real-world environment changes over time. Models must be retrained to stay relevant.</p>
+    </div>
+  </div>
+</section>
+
+<!-- T11.1 - 11.4: Preprocessing -->
+<section class="slide" data-steps="4">
+  <h2>Topics 11.1 - 11.4: Preprocessing & Data Quality</h2>
+  
+  <div class="columns">
+    <div>
+      <div class="reveal" data-step="1">
+        <h3>11.2 Quality</h3>
+        <p>Issues: missing values, duplicates, inconsistent units (kg vs lb), impossible values (-5 age). <strong>Must document cleaning choices</strong> to avoid hidden biases.</p>
+      </div>
+      <div class="reveal" data-step="3" style="margin-top:20px;">
+        <h3>11.4 Outliers</h3>
+        <p>Not all outliers are errors. In fraud or anomaly detection, outliers are the <strong>signal</strong>. Math detection: z-score > 3, or outside 1.5 * IQR.</p>
+      </div>
+    </div>
+    
+    <div class="divider">
+      <h3 class="reveal" data-step="2">11.3 Missing Values</h3>
+      <ul class="reveal" data-step="2" style="font-size:22px;">
+        <li><strong>Deletion:</strong> Fine if MCAR, bad if missingness is a signal (e.g., rich people skip income).</li>
+        <li><strong>Mean Imputation:</strong> Bad if data has outliers.</li>
+        <li><strong>Median Imputation:</strong> Robust to outliers.</li>
+        <li><strong>Model Imputation:</strong> Use other columns to predict missing value.</li>
+      </ul>
+      <div class="card amber reveal" data-step="4" style="margin-top:20px; padding:15px;">
+        <h4 style="font-size:22px;">Math Example: Mean vs Median</h4>
+        <p style="font-size:18px;">Data: [5, 6, 7, 8, 100]. Mean = 25.2. Median = 7.<br>Imputing a missing value with 25.2 misrepresents the typical item. Median is better here.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- T11.5 Scaling (Live) -->
+<section class="slide live-slide" data-live="scaling">
+  <h2>Topic 11.5: Scaling (Standardization vs Min-Max)</h2>
+  <p class="lead">Scaling is mandatory for distance-based (k-NN) and gradient-based algorithms.</p>
+  <div class="live-grid">
+    <div class="calc-pane">
+      <table class="stats-table" id="scale-table"></table>
+      <div class="math-board">
+        <div class="formula-main" style="font-size:28px;">Standardization: z = (x - &mu;) / &sigma;</div>
+        <div class="formula-main" style="font-size:28px; color:var(--amber); margin-top:10px;">Min-Max: x' = (x - min) / (max - min)</div>
+      </div>
+    </div>
+    <div class="calc-pane">
+      <div class="live-explanation" id="scale-explanation"></div>
+    </div>
+  </div>
+</section>
+
+<!-- T11.6 & 11.7: Encoding & Features -->
+<section class="slide" data-steps="3">
+  <h2>Topics 11.6 & 11.7: Encoding and Feature Engineering</h2>
+  
+  <div class="columns">
+    <div class="reveal" data-step="1">
+      <h3>11.6 Categorical Variables</h3>
+      <p>Algorithms only understand numbers. If you encode City names as (Paris=1, London=2, Tokyo=3), the model assumes Tokyo > Paris and calculates false distances.</p>
+      <p style="margin-top:10px;"><strong>Solution: One-Hot Encoding</strong><br>Paris = [1,0,0], London = [0,1,0]. Keeps categories equidistant.</p>
+      <p style="margin-top:10px;"><strong>Ordinal Encoding:</strong> Acceptable for (Low=1, Med=2, High=3) because order exists.</p>
+    </div>
+    
+    <div class="divider reveal" data-step="2">
+      <h3>11.7 Feature Engineering</h3>
+      <p>Transforming raw info into useful signals.</p>
+      <ul style="font-size:22px; margin-top:10px;">
+        <li><strong>Dates:</strong> Extract Month/Day (captures seasonality).</li>
+        <li><strong>Birth year:</strong> Calculate Age (what actually matters).</li>
+        <li><strong>Ratios:</strong> Price / Sq Ft, or BMI (Weight/Height²). Captures complex relationships a basic model can't easily build itself.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card pink reveal" data-step="3" style="margin-top:20px;">
+    <h4>Trap: Leakage [Ext]</h4>
+    <p>Scaling parameters (&mu;, &sigma;, min, max) and Encoders must be fit on the <strong>Training Set ONLY</strong>, and then applied to Validation/Test sets. Doing it on the whole dataset leaks future information into training.</p>
+  </div>
+</section>
+
+<!-- Comparison Tables -->
+<section class="slide" data-steps="3">
+  <h2>Cross-Topic Comparison Tables</h2>
+  
+  <div class="columns reveal" data-step="1" style="gap:20px; margin-bottom:20px;">
+    <table class="stats-table">
+      <tr><th colspan="2">Regression vs Classification (T7)</th></tr>
+      <tr><td>Output</td><td>Continuous (Reg) vs Discrete (Class)</td></tr>
+      <tr><td>Goal</td><td>Fit curve vs Find boundary</td></tr>
+      <tr><td>Metric</td><td>MSE / RMSE vs Accuracy / F1</td></tr>
+    </table>
+    <table class="stats-table">
+      <tr><th colspan="2">Clustering vs Classification (T7/8)</th></tr>
+      <tr><td>Clustering</td><td>No labels. Groups discovered.</td></tr>
+      <tr><td>Classification</td><td>Labels provided. Maps to predefined classes.</td></tr>
+    </table>
+  </div>
+  
+  <div class="columns reveal" data-step="2" style="gap:20px;">
+    <table class="stats-table">
+      <tr><th colspan="2">Training vs Inference (T5)</th></tr>
+      <tr><td>Training</td><td>Uses Features + Labels. Modifies params. Slow.</td></tr>
+      <tr><td>Inference</td><td>Uses Features only. Params fixed. Fast.</td></tr>
+    </table>
+    <table class="stats-table">
+      <tr><th colspan="2">Exploration vs Exploitation (T9)</th></tr>
+      <tr><td>Explore</td><td>Gather info. May lose immediate reward.</td></tr>
+      <tr><td>Exploit</td><td>Use known info. May miss global optimum.</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- Question Bank Selection -->
+<section class="slide" data-steps="6">
+  <h2>Conceptual Question Bank (Selected)</h2>
+  <div style="display:flex; flex-direction:column; gap:15px;">
+    
+    <div class="reveal" data-step="1" style="background:var(--soft); padding:15px; border-radius:8px;">
+      <p style="color:var(--blue); font-weight:bold;">Q: Bank fraud is 0.1% of data. Which learning type, metric, and handle outliers?</p>
+      <p style="font-size:20px; margin-top:5px;">Classification / Anomaly Detection. Metric: Recall or F1 (Accuracy misleadingly reads 99.9%). Keep outliers, they are the fraud!</p>
+    </div>
+    
+    <div class="reveal" data-step="2" style="background:var(--soft); padding:15px; border-radius:8px;">
+      <p style="color:var(--amber); font-weight:bold;">Q: Why is "will it rain: yes/no" classification but "how many mm" regression?</p>
+      <p style="font-size:20px; margin-top:5px;">Because supervised types are determined by the OUTPUT, not the input features.</p>
+    </div>
+    
+    <div class="reveal" data-step="3" style="background:var(--soft); padding:15px; border-radius:8px;">
+      <p style="color:var(--green); font-weight:bold;">Q: Why fit a smooth curve for housing instead of joining all dots?</p>
+      <p style="font-size:20px; margin-top:5px;">Joining dots memorizes noise (Overfitting). A smooth curve generalizes to unseen data.</p>
+    </div>
+    
+    <div class="reveal" data-step="4" style="background:var(--soft); padding:15px; border-radius:8px;">
+      <p style="color:var(--pink); font-weight:bold;">Q: What happens in RL with &epsilon; = 0?</p>
+      <p style="font-size:20px; margin-top:5px;">Pure exploitation. The agent never explores, potentially getting stuck in a sub-optimal strategy forever.</p>
+    </div>
+    
+    <div class="reveal" data-step="5" style="background:var(--soft); padding:15px; border-radius:8px;">
+      <p style="color:var(--blue); font-weight:bold;">Q: Why split before scaling?</p>
+      <p style="font-size:20px; margin-top:5px;">To prevent test set statistics (min, max, mean) from leaking into the training process.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- Mock Exam -->
+<section class="slide">
+  <h2>Mock Exam (12 Conceptual Questions)</h2>
+  <div style="font-size:18px; column-count: 2; column-gap: 40px;">
+    <p><strong>1. (What)</strong> Define ML without using the word "learning".</p>
+    <p><strong>2. (What)</strong> Explain "decision boundary" in classification.</p>
+    <p><strong>3. (What)</strong> What is the difference between a feature and a parameter?</p>
+    <p><strong>4. (How)</strong> A hospital wants to cluster patient records. How does scaling impact distance-based clustering?</p>
+    <p><strong>5. (How)</strong> How does gradient descent use the cost function to update weights?</p>
+    <p><strong>6. (How)</strong> How does an RL agent balance exploration and exploitation?</p>
+    <p><strong>7. (How)</strong> How do you fix the false ordinality in categorical variables like 'Color'?</p>
+    <p><strong>8. (Why)</strong> Why is Deep Learning a subset of ML?</p>
+    <p><strong>9. (Why)</strong> Why can't accuracy be computed for unsupervised clustering?</p>
+    <p><strong>10. (Why)</strong> Why do we need a separate Validation set if we have a Test set?</p>
+    <p><strong>11. (Why)</strong> Why is Median imputation sometimes preferred over Mean?</p>
+    <p><strong>12. (Why)</strong> Why does a recommender system maximize cumulative rather than immediate reward?</p>
+    
+    <div class="card" style="break-inside: avoid; margin-top:15px; padding:15px;">
+      <p style="font-weight:bold; font-size:18px;">Calculation 1:</p>
+      <p style="font-size:16px;">Standardize [4, 8, 12, 16]. (Mean=10, Std=&radic;20&approx;4.47). <br>z = [-1.34, -0.45, 0.45, 1.34].</p>
+    </div>
+    <div class="card" style="break-inside: avoid; margin-top:10px; padding:15px;">
+      <p style="font-weight:bold; font-size:18px;">Calculation 2:</p>
+      <p style="font-size:16px;">RL Return: Rewards = 10, 10, 10. &gamma; = 0.9. <br>G = 10 + 9 + 8.1 = 27.1.</p>
+    </div>
+  </div>
+</section>
+
+<div class="slide-number" id="counter" aria-label="Slide number"></div>
+</main>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+
+// ==========================================
+// LIVE TRACE 1: GRADIENT DESCENT (Topic 2)
+// ==========================================
+function buildGDTrace() {
+  return [
+    {
+      exp: `<strong>Step 1: Initialization</strong><br><br>We want to learn the relationship between House Size (x) and Price (y).<br><br>Data: x=2, True Price y=10.<br>Model: ŷ = &theta; * x.<br>Current Parameter &theta; = 0.<br><br>Let's make our first prediction.`,
+      theta: 0, pred: 0, err: '-', cost: '-', grad: '-', newTheta: '-'
+    },
+    {
+      exp: `<strong>Step 2: Forward Pass & Error</strong><br><br>Prediction ŷ = 0 * 2 = <strong>0</strong>.<br>Error = (0 - 10) = <strong>-10</strong>.<br><br>Cost J = (-10)² = <strong>100</strong>.<br>The model is very wrong.`,
+      theta: 0, pred: 0, err: -10, cost: 100, grad: '-', newTheta: '-'
+    },
+    {
+      exp: `<strong>Step 3: Gradient Calculation</strong><br><br>To fix it, we calculate the slope of the error w.r.t &theta;.<br>Derivative = 2 * Error * x = 2 * (-10) * 2 = <strong>-40</strong>.<br><br>The negative gradient points "downhill" towards lower error.`,
+      theta: 0, pred: 0, err: -10, cost: 100, grad: -40, newTheta: '-'
+    },
+    {
+      exp: `<strong>Step 4: Parameter Update</strong><br><br>We update &theta; using a Learning Rate (&alpha;=0.1).<br>&theta; = 0 - (0.1 * -40) = <strong>+4</strong>.<br><br>Next prediction will be ŷ = 4 * 2 = 8. Error drops from 100 to 4! The model has "learned".`,
+      theta: 0, pred: 0, err: -10, cost: 100, grad: -40, newTheta: 4
+    }
+  ];
+}
+const GD_TRACE = buildGDTrace();
+
+function renderGDLive(step) {
+  const t = GD_TRACE[step];
+  let tableHTML = `
+    <tr><th>Metric</th><th>Value</th></tr>
+    <tr><td>Input (x)</td><td>2</td></tr>
+    <tr><td>True Target (y)</td><td>10</td></tr>
+    <tr class="${step===0?'hl-row':''}"><td>Current &theta;</td><td class="hl-cell">${t.theta}</td></tr>
+    <tr class="${step===1?'hl-row':''}"><td>Prediction (ŷ)</td><td>${t.pred}</td></tr>
+    <tr class="${step===1?'hl-row':''}"><td>Cost (J)</td><td class="hl-cell" style="color:var(--pink)">${t.cost}</td></tr>
+    <tr class="${step===2?'hl-row':''}"><td>Gradient</td><td>${t.grad}</td></tr>
+    <tr class="${step===3?'hl-row':''}"><td>Updated &theta;</td><td class="hl-cell" style="color:var(--green)">${t.newTheta}</td></tr>
+  `;
+  $('gd-table').innerHTML = tableHTML;
+  $('gd-explanation').innerHTML = t.exp;
+}
+
+// ==========================================
+// LIVE TRACE 2: SCALING (Topic 11.5)
+// ==========================================
+const SCALE_DATA = [10, 20, 30, 40, 100]; // Includes outlier
+const S_MEAN = 40; const S_STD = 31.62; const S_MIN = 10; const S_MAX = 100;
+
+function buildScaleTrace() {
+  return [
+    {
+      exp: `<strong>The Problem with Raw Data</strong><br><br>We have values: [10, 20, 30, 40, 100]. Notice the outlier (100).<br><br>Distance-based algorithms (like k-means) will be dominated by this feature if we don't scale it.`,
+      hlCol: 'raw'
+    },
+    {
+      exp: `<strong>Standardization (Z-Score)</strong><br><br>Subtract the mean (40) and divide by Std Dev (31.62).<br><br>Result: Data is centered around 0. The outlier (100) becomes ~1.9, preserving its structural distance without breaking the algorithm.`,
+      hlCol: 'z'
+    },
+    {
+      exp: `<strong>Min-Max Normalization</strong><br><br>Maps exactly to [0, 1]. x' = (x - 10) / 90.<br><br><span style="color:var(--pink)">The Danger:</span> The single outlier (100) takes the value 1.0, squashing all normal data (10-40) into a tiny range [0, 0.33]!`,
+      hlCol: 'mm'
+    }
+  ];
+}
+const SCALE_TRACE = buildScaleTrace();
+
+function renderScaleLive(step) {
+  const t = SCALE_TRACE[step];
+  let tableHTML = `<tr><th>Raw (x)</th><th>Z-Score</th><th>Min-Max [0,1]</th></tr>`;
+  
+  SCALE_DATA.forEach(val => {
+    let z = ((val - S_MEAN) / S_STD).toFixed(2);
+    let mm = ((val - S_MIN) / (S_MAX - S_MIN)).toFixed(2);
+    
+    tableHTML += `<tr>
+      <td class="${t.hlCol==='raw'?'hl-cell':''}">${val}</td>
+      <td class="${t.hlCol==='z'?'hl-cell':''}"><span style="${step<1?'opacity:0':''}">${z}</span></td>
+      <td class="${t.hlCol==='mm'?'hl-cell':''}"><span style="${step<2?'opacity:0':''}">${mm}</span></td>
+    </tr>`;
+  });
+  
+  $('scale-table').innerHTML = tableHTML;
+  $('scale-explanation').innerHTML = t.exp;
+}
+
+
+// ==========================================
+// CANVAS DRAWING LOGIC (Topic 7)
+// ==========================================
+function drawRegression() {
+  const c = $('canvas-reg'); if(!c) return;
+  const ctx = c.getContext('2d');
+  c.width = 400; c.height = 250;
+  ctx.clearRect(0,0,400,250);
+  
+  // Axes
+  ctx.strokeStyle = '#334155'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(30, 220); ctx.lineTo(380, 220); ctx.moveTo(30, 30); ctx.lineTo(30, 220); ctx.stroke();
+  
+  // Points
+  const pts = [{x:80,y:180}, {x:120,y:140}, {x:180,y:130}, {x:240,y:90}, {x:320,y:60}];
+  ctx.fillStyle = '#f87171';
+  pts.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI*2); ctx.fill(); });
+  
+  // Line
+  ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(40, 200); ctx.lineTo(360, 40); ctx.stroke();
+}
+
+function drawClassification() {
+  const c = $('canvas-class'); if(!c) return;
+  const ctx = c.getContext('2d');
+  c.width = 400; c.height = 250;
+  ctx.clearRect(0,0,400,250);
+  
+  // Axes
+  ctx.strokeStyle = '#334155'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(30, 220); ctx.lineTo(380, 220); ctx.moveTo(30, 30); ctx.lineTo(30, 220); ctx.stroke();
+  
+  // Points (Class 0 and 1)
+  const pts0 = [{x:60,y:180}, {x:100,y:160}, {x:120,y:190}, {x:140,y:150}];
+  const pts1 = [{x:240,y:80}, {x:280,y:60}, {x:320,y:90}, {x:350,y:50}];
+  
+  ctx.fillStyle = '#34d399';
+  pts0.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI*2); ctx.fill(); });
+  ctx.fillStyle = '#f43f5e';
+  pts1.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI*2); ctx.fill(); });
+  
+  // Boundary
+  ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 3; ctx.setLineDash([5,5]);
+  ctx.beginPath(); ctx.moveTo(180, 240); ctx.lineTo(220, 20); ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+
+// ==========================================
+// NAVIGATION ENGINE
+// ==========================================
+const slides = [...document.querySelectorAll('section.slide')];
+let index = 0, step = 0;
+let traceIndexes = { gd: 0, scaling: 0 };
+
+function maxSteps(slide) {
+  if (slide.dataset.live === 'gd') return GD_TRACE.length - 1;
+  if (slide.dataset.live === 'scaling') return SCALE_TRACE.length - 1;
+  return Number(slide.dataset.steps || 0);
+}
+
+function renderSlide() {
+  const slide = slides[index];
+  slide.querySelectorAll('.reveal').forEach(el => el.classList.toggle('shown', Number(el.dataset.step) <= step));
+  
+  if (slide.dataset.live === 'gd') renderGDLive(traceIndexes.gd);
+  if (slide.dataset.live === 'scaling') renderScaleLive(traceIndexes.scaling);
+  
+  $('counter').textContent = `${index + 1} / ${slides.length}`;
+}
+
+function showSlide(n, end = false) {
+  index = Math.max(0, Math.min(slides.length - 1, n));
+  if (slides[index].dataset.live) {
+    let type = slides[index].dataset.live;
+    traceIndexes[type] = end ? maxSteps(slides[index]) : 0;
+  } else {
+    step = end ? maxSteps(slides[index]) : 0;
+  }
+  slides.forEach((s, i) => s.classList.toggle('active', i === index));
+  renderSlide();
+  
+  // Trigger Canvas drawing on relevant slides to ensure they render
+  if(index === 7) { drawRegression(); drawClassification(); }
+}
+
+function traceStep(delta, type) {
+  let trc = type === 'gd' ? GD_TRACE : SCALE_TRACE;
+  traceIndexes[type] = Math.max(0, Math.min(trc.length - 1, traceIndexes[type] + delta));
+  renderSlide();
+}
+
+function next() {
+  let type = slides[index].dataset.live;
+  if (type) {
+    let max = (type === 'gd' ? GD_TRACE.length : SCALE_TRACE.length) - 1;
+    if (traceIndexes[type] < max) { traceStep(1, type); return; }
+  } else {
+    if (step < maxSteps(slides[index])) { step++; renderSlide(); return; }
+  }
+  if (index < slides.length - 1) showSlide(index + 1);
+}
+
+function previous() {
+  let type = slides[index].dataset.live;
+  if (type) {
+    if (traceIndexes[type] > 0) { traceStep(-1, type); return; }
+  } else {
+    if (step > 0) { step--; renderSlide(); return; }
+  }
+  if (index > 0) showSlide(index - 1, true);
+}
+
+function fit() { document.documentElement.style.setProperty('--scale', Math.min(innerWidth / 1600, innerHeight / 900)); }
+
+function setup() {
+  addEventListener('resize', fit);
+  addEventListener('keydown', e => {
+    if(['ArrowRight','PageDown',' ','Enter'].includes(e.key)) { e.preventDefault(); next(); }
+    else if(['ArrowLeft','PageUp','Backspace'].includes(e.key)) { e.preventDefault(); previous(); }
+    else if(e.key === 'Home') { e.preventDefault(); showSlide(0); }
+    else if(e.key === 'End') { e.preventDefault(); showSlide(slides.length - 1); }
+  });
+  
+  fit();
+  showSlide(0);
+}
+setup();
+</script>
+</body>
+</html>
