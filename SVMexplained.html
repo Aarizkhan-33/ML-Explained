@@ -60,18 +60,16 @@ html, body {
 }
 
 /* ==========================================
-   Slide Base & Transition (Solid Background)
+   Slide Base & Transition (STRICTLY NO SCROLLBARS)
    ========================================== */
 section.slide {
-  display: none;
   position: absolute;
   inset: 0;
-  padding: 50px 70px 85px;
-  overflow-y: auto;
+  padding: 55px 76px 95px;
+  overflow: hidden; /* STRICTLY NO SCROLLBARS */
   background: var(--paper); /* Critical: prevents slide bleeding */
+  display: none;
 }
-section.slide::-webkit-scrollbar { width: 8px; }
-section.slide::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 4px; }
 section.slide.active { display: block; animation: arrive 0.22s ease; }
 @keyframes arrive { from { opacity: 0.35; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -86,19 +84,19 @@ section.slide.cover-slide.active {
 }
 
 /* ==========================================
-   Typography & Utilites
+   Typography & Utilities
    ========================================== */
 h1, h2, h3, h4, p, ul, li { margin: 0; }
-h1 { font-size: 80px; line-height: 1.05; letter-spacing: -2px; font-weight: 700; margin-bottom: 20px; }
-h2 { font-size: 44px; line-height: 1.15; letter-spacing: -1.2px; font-weight: 700; margin-bottom: 12px; color: var(--blue); }
-h3 { font-size: 28px; line-height: 1.3; font-weight: 650; margin-bottom: 12px; }
-h4 { font-size: 23px; line-height: 1.3; font-weight: 650; margin-bottom: 8px; }
-p, li { font-size: 22px; line-height: 1.5; color: var(--ink); }
-ul { padding-left: 28px; margin-bottom: 15px; }
-li { margin-bottom: 8px; }
+h1 { font-size: 76px; line-height: 1.05; letter-spacing: -2px; font-weight: 700; margin-bottom: 18px; }
+h2 { font-size: 40px; line-height: 1.15; letter-spacing: -1.2px; font-weight: 700; margin-bottom: 10px; color: var(--blue); }
+h3 { font-size: 26px; line-height: 1.25; font-weight: 650; margin-bottom: 10px; }
+h4 { font-size: 21px; line-height: 1.3; font-weight: 650; margin-bottom: 6px; }
+p, li { font-size: 20px; line-height: 1.45; color: var(--ink); }
+ul { padding-left: 26px; margin-bottom: 12px; }
+li { margin-bottom: 6px; }
 
-.lead { font-size: 24px; color: var(--muted); margin-bottom: 22px; max-width: 1440px; line-height: 1.45; }
-.label { font-size: 19px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; color: var(--muted); margin-bottom: 16px; }
+.lead { font-size: 22px; color: var(--muted); margin-bottom: 18px; max-width: 1440px; line-height: 1.4; }
+.label { font-size: 17px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; color: var(--muted); margin-bottom: 12px; }
 
 .blue { color: var(--blue); }
 .amber { color: var(--amber); }
@@ -111,24 +109,23 @@ li { margin-bottom: 8px; }
 /* ==========================================
    Layout Grids
    ========================================== */
-.columns { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 20px; }
-.columns-wide-left { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 40px; margin-top: 15px; }
-.columns-wide-right { display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 40px; margin-top: 15px; }
-.columns-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 25px; margin-top: 20px; }
-.columns-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 20px; margin-top: 15px; }
-.divider { border-left: 1.5px solid var(--rule); padding-left: 40px; }
+.columns { display: grid; grid-template-columns: 1fr 1fr; gap: 35px; margin-top: 15px; }
+.columns-wide-left { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 35px; margin-top: 15px; }
+.columns-wide-right { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 35px; margin-top: 15px; }
+.columns-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 15px; }
+.columns-sim { display: grid; grid-template-columns: 500px 1fr; gap: 30px; margin-top: 15px; }
 
 /* ==========================================
    Cards & Callouts
    ========================================== */
 .card {
   background: var(--soft);
-  padding: 24px 28px;
+  padding: 20px 24px;
   border-radius: 12px;
   border: 1px solid var(--rule);
   border-top: 4px solid var(--blue);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 .card.amber { border-top-color: var(--amber); }
 .card.green { border-top-color: var(--green); }
@@ -138,10 +135,10 @@ li { margin-bottom: 8px; }
 
 .info-box {
   background: var(--soft);
-  padding: 20px 24px;
+  padding: 16px 20px;
   border-radius: 10px;
   border-left: 5px solid var(--neon);
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   border-right: 1px solid rgba(255, 255, 255, 0.05);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -156,13 +153,13 @@ li { margin-bottom: 8px; }
   display: inline-block;
   background: rgba(0, 243, 255, 0.15);
   color: var(--neon);
-  padding: 4px 12px;
+  padding: 4px 10px;
   border-radius: 4px;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   border: 1px solid rgba(0, 243, 255, 0.25);
 }
 .badge.amber { background: var(--amberwash); color: var(--amber); border-color: rgba(251, 191, 36, 0.3); }
@@ -171,19 +168,19 @@ li { margin-bottom: 8px; }
 .badge.red { background: var(--redwash); color: var(--red); border-color: rgba(248, 113, 113, 0.3); }
 .badge.purple { background: var(--purplewash); color: var(--purple); border-color: rgba(192, 132, 252, 0.3); }
 
-/* Math Box */
+/* Math Board */
 .math-board {
   background: #111827;
   border: 1px solid var(--rule);
   border-radius: 8px;
-  padding: 16px 20px;
+  padding: 14px 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: "Cambria Math", "Times New Roman", serif;
-  font-size: 24px;
+  font-family: "Cambria Math", "Georgia", serif;
+  font-size: 22px;
   color: var(--blue);
-  margin: 12px 0;
+  margin: 10px 0;
 }
 
 /* ==========================================
@@ -197,7 +194,7 @@ li { margin-bottom: 8px; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: 12px;
   position: relative;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
@@ -208,20 +205,19 @@ canvas {
 }
 
 /* ==========================================
-   Interactive Controls (Slide 7)
+   Interactive Controls (Simulation Slide)
    ========================================== */
 .controls-card {
   background: var(--soft);
   border: 1px solid var(--rule);
   border-radius: 12px;
-  padding: 22px 26px;
-  margin-bottom: 20px;
+  padding: 18px 22px;
+  margin-bottom: 14px;
 }
 .slider-container {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 8px;
 }
 .slider-label-row {
   display: flex;
@@ -229,7 +225,7 @@ canvas {
   align-items: center;
 }
 .slider-title {
-  font-size: 21px;
+  font-size: 19px;
   font-weight: 700;
   color: var(--ink);
 }
@@ -237,31 +233,31 @@ canvas {
   background: #111827;
   border: 1px solid var(--neon);
   color: var(--neon);
-  padding: 4px 14px;
-  border-radius: 20px;
-  font-size: 18px;
+  padding: 3px 12px;
+  border-radius: 16px;
+  font-size: 17px;
   font-weight: 700;
 }
 
 input[type=range] {
   -webkit-appearance: none;
   width: 100%;
-  height: 12px;
-  border-radius: 6px;
+  height: 10px;
+  border-radius: 5px;
   background: #111827;
   outline: none;
   border: 1px solid var(--rule);
   cursor: pointer;
-  margin: 10px 0;
+  margin: 8px 0;
 }
 input[type=range]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: var(--neon);
-  box-shadow: 0 0 14px var(--neon);
+  box-shadow: 0 0 12px var(--neon);
   cursor: pointer;
   border: 2px solid #ffffff;
   transition: transform 0.1s;
@@ -272,17 +268,17 @@ input[type=range]::-webkit-slider-thumb:hover {
 
 .preset-group {
   display: flex;
-  gap: 12px;
-  margin-top: 10px;
+  gap: 8px;
+  margin-top: 6px;
 }
 .preset-btn {
   flex: 1;
   background: #111827;
   color: var(--muted);
   border: 1px solid var(--rule);
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-radius: 6px;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -300,14 +296,14 @@ input[type=range]::-webkit-slider-thumb:hover {
 }
 
 .status-callout {
-  padding: 18px 22px;
+  padding: 14px 18px;
   border-radius: 10px;
-  font-size: 22px;
+  font-size: 19px;
   font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 14px;
   border: 1px solid;
   transition: all 0.25s ease;
 }
@@ -330,24 +326,24 @@ input[type=range]::-webkit-slider-thumb:hover {
 .metrics-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 15px;
+  gap: 12px;
 }
 .metric-box {
   background: #111827;
   border: 1px solid var(--rule);
   border-radius: 8px;
-  padding: 14px 18px;
+  padding: 10px 14px;
 }
 .metric-box .metric-label {
-  font-size: 15px;
+  font-size: 13px;
   color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
   font-weight: 600;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 .metric-box .metric-value {
-  font-size: 22px;
+  font-size: 19px;
   font-weight: 700;
   color: var(--ink);
 }
@@ -398,7 +394,7 @@ input[type=range]::-webkit-slider-thumb:hover {
   font-weight: 600;
 }
 .nav-hint {
-  font-size: 15px;
+  font-size: 14px;
   color: var(--muted);
 }
 </style>
@@ -415,19 +411,19 @@ input[type=range]::-webkit-slider-thumb:hover {
     <h1 style="background: linear-gradient(135deg, #38bdf8 0%, #00f3ff 50%, #c084fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
       Support Vector Machines (SVM)
     </h1>
-    <p class="lead" style="font-size: 28px; max-width: 1100px; margin-top: 15px;">
+    <p class="lead" style="font-size: 26px; max-width: 1100px; margin-top: 15px;">
       Course Instructor: Dr. Shafaq Mussadiq | Institute of Computing (IOC), KUST
     </p>
 
-    <div style="display: flex; gap: 18px; margin-top: 40px;">
+    <div style="display: flex; gap: 16px; margin-top: 35px;">
       <span class="badge blue">Large Margin Classification</span>
       <span class="badge green">Support Vectors</span>
       <span class="badge amber">The Kernel Trick</span>
       <span class="badge purple">Soft Margin (C)</span>
-      <span class="badge red">SVR & Multi-Class</span>
+      <span class="badge red">Multi-Class & SVR</span>
     </div>
 
-    <p style="color: var(--muted); font-size: 18px; margin-top: 55px;">
+    <p style="color: var(--muted); font-size: 18px; margin-top: 50px;">
       Use Left/Right Arrow Keys, Spacebar, or the bottom controls to navigate.
     </p>
   </section>
@@ -440,17 +436,17 @@ input[type=range]::-webkit-slider-thumb:hover {
     <h2>Topic 1: Introduction to SVM</h2>
     <p class="lead">A gold-standard algorithm delivering robust, principled learning for both linear and non-linear spaces.</p>
 
-    <div class="info-box blue">
-      <span class="badge blue">Core Philosophy [Slide Core]</span>
-      <p style="font-size: 24px; line-height: 1.5; margin-bottom: 12px;">
+    <div class="info-box blue" style="margin-bottom: 20px;">
+      <span class="badge blue">Core Philosophy</span>
+      <p style="font-size: 22px; line-height: 1.45; margin-bottom: 8px;">
         <strong>SVM is a very powerful algorithm widely used in both industry and academia.</strong>
       </p>
-      <p style="font-size: 23px; line-height: 1.5; color: var(--muted);">
+      <p style="font-size: 21px; line-height: 1.45; color: var(--muted);">
         <strong>Compared to logistic regression and neural networks, the Support Vector Machine sometimes gives a cleaner, and sometimes more powerful way of learning complex non-linear functions.</strong>
       </p>
     </div>
 
-    <div class="columns" style="margin-top: 25px;">
+    <div class="columns">
       <div class="card amber">
         <span class="badge amber">Linear Models & Deep Networks</span>
         <h3 class="amber">Standard Approaches</h3>
@@ -487,7 +483,7 @@ input[type=range]::-webkit-slider-thumb:hover {
         <div class="info-box blue">
           <span class="badge blue">The Margin</span>
           <p><strong>SVM looks for the decision boundary (the black line) that has the larger minimum distance from any of the training examples.</strong></p>
-          <p style="margin-top: 8px; color: var(--muted); font-size: 20px;">
+          <p style="margin-top: 6px; color: var(--muted); font-size: 19px;">
             <strong>Other algorithms might draw lines that come too close to training examples. SVM separates data with as large a margin as possible, providing robustness. Therefore, it is often called a large margin classifier.</strong>
           </p>
         </div>
@@ -500,15 +496,15 @@ input[type=range]::-webkit-slider-thumb:hover {
         <div class="card amber" style="margin-bottom: 0;">
           <h4 class="amber">Why Maximize Margin?</h4>
           <p><strong>It provides the best generalization. A wider street means the model is less sensitive to slight noise or variations in future test data.</strong></p>
-          <p style="color: var(--muted); font-size: 19px; margin-top: 8px;">
+          <p style="color: var(--muted); font-size: 18px; margin-top: 6px;">
             The margin width equals <span style="font-family: Georgia, serif; color: var(--amber);">2 / ||w||</span>. Maximizing the margin is mathematically equivalent to minimizing <span style="font-family: Georgia, serif; color: var(--amber);">½ ||w||²</span>.
           </p>
         </div>
       </div>
 
       <div class="canvas-panel">
-        <canvas id="margin-canvas" width="640" height="520"></canvas>
-        <div style="display: flex; justify-content: space-around; width: 100%; margin-top: 8px; font-size: 15px; color: var(--muted);">
+        <canvas id="margin-canvas" width="620" height="470"></canvas>
+        <div style="display: flex; justify-content: space-around; width: 100%; margin-top: 8px; font-size: 14px; color: var(--muted);">
           <span><strong style="color: var(--blue);">●</strong> Class +1</span>
           <span><strong style="color: var(--red);">●</strong> Class -1</span>
           <span><strong style="color: var(--amber); border-bottom: 1px dashed var(--amber);">--</strong> Margins</span>
@@ -526,204 +522,221 @@ input[type=range]::-webkit-slider-thumb:hover {
     <h2>Topic 3: The Kernel Trick & Non-Linear SVM</h2>
     <p class="lead">Overcoming non-linearly separable data without suffering from the curse of dimensionality.</p>
 
-    <div class="columns-4" style="margin-top: 15px;">
-      <div class="card red">
-        <span class="badge red">1. The Problem</span>
-        <h4 class="red">Inseparable Data</h4>
-        <p><strong>When data cannot be split by a straight line in its current dimension.</strong></p>
-        <p style="font-size: 18px; color: var(--muted); margin-top: 10px;">
-          Example: Concentric rings or XOR distributions in 2D where every linear cut misclassifies roughly 50% of instances.
-        </p>
+    <div class="columns">
+      <!-- Left Column: The 4-Stage Concept -->
+      <div>
+        <div class="info-box red" style="padding: 12px 18px; margin-bottom: 10px;">
+          <span class="badge red">1. The Problem</span>
+          <p style="font-size: 19px;"><strong>When data cannot be split by a straight line in its current dimension.</strong></p>
+        </div>
+
+        <div class="info-box blue" style="padding: 12px 18px; margin-bottom: 10px;">
+          <span class="badge blue">2. The Solution</span>
+          <p style="font-size: 19px;"><strong>We transform the features into a higher-dimensional space where they become linearly separable (e.g., if 2D is inseparable, adding a 3rd dimension might reveal a gap between classes where a separating hyperplane can be drawn).</strong></p>
+        </div>
+
+        <div class="info-box amber" style="padding: 12px 18px; margin-bottom: 10px;">
+          <span class="badge amber">3. The Computational Barrier</span>
+          <p style="font-size: 19px;"><strong>The Computational Barrier: Mapping thousands of points into a high-dimensional (or infinite) space makes calculating distances computationally impossible.</strong></p>
+        </div>
+
+        <div class="info-box green" style="padding: 12px 18px; margin-bottom: 0;">
+          <span class="badge green">4. The Kernel</span>
+          <p style="font-size: 19px;"><strong>The Kernel: A mathematical function that solves this computing problem.</strong> It computes dot products in the target space directly from original inputs: <span style="font-family: Georgia, serif; color: var(--green);">K(x, z) = &lang;&phi;(x), &phi;(z)&rang;</span>.</p>
+        </div>
       </div>
 
-      <div class="card blue">
-        <span class="badge blue">2. The Solution</span>
-        <h4 class="blue">Feature Mapping</h4>
-        <p><strong>We transform the features into a higher-dimensional space where they become linearly separable (e.g., if 2D is inseparable, adding a 3rd dimension might reveal a gap between classes where a separating hyperplane can be drawn).</strong></p>
-        <p style="font-size: 17px; color: var(--blue); margin-top: 8px; font-family: Georgia, serif;">
-          (x₁, x₂) &rarr; (x₁, x₂, x₁² + x₂²)
-        </p>
-      </div>
+      <!-- Right Column: Popular Kernels Reference -->
+      <div class="card purple" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <span class="badge purple">Standard Reference</span>
+          <h3 class="purple" style="margin-bottom: 8px;">Popular Kernels</h3>
+          <p style="font-size: 19px; margin-bottom: 14px;">
+            <strong>Popular kernels include: Linear Kernel, Polynomial Kernel, Gaussian Kernel, Radial Basis Function (RBF), Laplace RBF Kernel, and Sigmoid Kernel.</strong>
+          </p>
+        </div>
 
-      <div class="card amber">
-        <span class="badge amber">3. The Barrier</span>
-        <h4 class="amber">Computational Wall</h4>
-        <p><strong>The Computational Barrier: Mapping thousands of points into a high-dimensional (or infinite) space makes calculating distances computationally impossible.</strong></p>
-        <p style="font-size: 18px; color: var(--muted); margin-top: 10px;">
-          Direct coordinate calculation triggers memory explosion and catastrophic CPU time.
-        </p>
-      </div>
-
-      <div class="card green">
-        <span class="badge green">4. The Kernel</span>
-        <h4 class="green">The Kernel Trick</h4>
-        <p><strong>The Kernel: A mathematical function that solves this computing problem.</strong></p>
-        <p style="font-size: 18px; color: var(--muted); margin-top: 10px;">
-          Computes inner products in the high-dimensional space <em>directly</em> from the original features: <span style="color:var(--green); font-family:Georgia, serif;">K(x, z) = &lang;&phi;(x), &phi;(z)&rang;</span>!
-        </p>
-      </div>
-    </div>
-
-    <div class="card purple" style="margin-top: 15px; padding: 20px 28px;">
-      <span class="badge purple">Standard Reference</span>
-      <h3 class="purple" style="margin-bottom: 12px;">Popular Kernels</h3>
-      <p style="margin-bottom: 15px;">
-        <strong>Popular kernels include: Linear Kernel, Polynomial Kernel, Gaussian Kernel, Radial Basis Function (RBF), Laplace RBF Kernel, and Sigmoid Kernel.</strong>
-      </p>
-
-      <div class="columns-3" style="gap: 16px; margin-top: 10px;">
-        <div style="background: #111827; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--rule);">
-          <strong style="color: var(--blue); font-size: 19px;">Linear Kernel</strong>
-          <p style="font-family: Georgia, serif; font-size: 18px; color: var(--muted); margin-top: 4px;">K(x, z) = xᵀz + c</p>
-        </div>
-        <div style="background: #111827; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--rule);">
-          <strong style="color: var(--green); font-size: 19px;">Polynomial Kernel</strong>
-          <p style="font-family: Georgia, serif; font-size: 18px; color: var(--muted); margin-top: 4px;">K(x, z) = (xᵀz + c)ᵈ</p>
-        </div>
-        <div style="background: #111827; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--rule);">
-          <strong style="color: var(--amber); font-size: 19px;">Gaussian Kernel / RBF</strong>
-          <p style="font-family: Georgia, serif; font-size: 18px; color: var(--muted); margin-top: 4px;">K(x, z) = exp(-&gamma; ||x - z||²)</p>
-        </div>
-        <div style="background: #111827; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--rule);">
-          <strong style="color: var(--neon); font-size: 19px;">Radial Basis Function (RBF)</strong>
-          <p style="font-family: Georgia, serif; font-size: 18px; color: var(--muted); margin-top: 4px;">Infinite-dimensional Hilbert projection</p>
-        </div>
-        <div style="background: #111827; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--rule);">
-          <strong style="color: var(--pink); font-size: 19px;">Laplace RBF Kernel</strong>
-          <p style="font-family: Georgia, serif; font-size: 18px; color: var(--muted); margin-top: 4px;">K(x, z) = exp(-&gamma; ||x - z||)</p>
-        </div>
-        <div style="background: #111827; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--rule);">
-          <strong style="color: var(--purple); font-size: 19px;">Sigmoid Kernel</strong>
-          <p style="font-family: Georgia, serif; font-size: 18px; color: var(--muted); margin-top: 4px;">K(x, z) = tanh(&alpha; xᵀz + c)</p>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="background: #111827; padding: 10px 14px; border-radius: 6px; border: 1px solid var(--rule); display: flex; justify-content: space-between; align-items: center;">
+            <strong style="color: var(--blue); font-size: 18px;">Linear Kernel</strong>
+            <span style="font-family: Georgia, serif; font-size: 18px; color: var(--muted);">K(x, z) = xᵀz + c</span>
+          </div>
+          <div style="background: #111827; padding: 10px 14px; border-radius: 6px; border: 1px solid var(--rule); display: flex; justify-content: space-between; align-items: center;">
+            <strong style="color: var(--green); font-size: 18px;">Polynomial Kernel</strong>
+            <span style="font-family: Georgia, serif; font-size: 18px; color: var(--muted);">K(x, z) = (xᵀz + c)ᵈ</span>
+          </div>
+          <div style="background: #111827; padding: 10px 14px; border-radius: 6px; border: 1px solid var(--rule); display: flex; justify-content: space-between; align-items: center;">
+            <strong style="color: var(--amber); font-size: 18px;">Gaussian Kernel</strong>
+            <span style="font-family: Georgia, serif; font-size: 18px; color: var(--muted);">K(x, z) = exp(-&gamma; ||x - z||²)</span>
+          </div>
+          <div style="background: #111827; padding: 10px 14px; border-radius: 6px; border: 1px solid var(--rule); display: flex; justify-content: space-between; align-items: center;">
+            <strong style="color: var(--neon); font-size: 18px;">Radial Basis Function (RBF)</strong>
+            <span style="font-size: 16px; color: var(--muted);">Infinite-dimensional Hilbert projection</span>
+          </div>
+          <div style="background: #111827; padding: 10px 14px; border-radius: 6px; border: 1px solid var(--rule); display: flex; justify-content: space-between; align-items: center;">
+            <strong style="color: var(--pink); font-size: 18px;">Laplace RBF Kernel</strong>
+            <span style="font-family: Georgia, serif; font-size: 18px; color: var(--muted);">K(x, z) = exp(-&gamma; ||x - z||)</span>
+          </div>
+          <div style="background: #111827; padding: 10px 14px; border-radius: 6px; border: 1px solid var(--rule); display: flex; justify-content: space-between; align-items: center;">
+            <strong style="color: var(--purple); font-size: 18px;">Sigmoid Kernel</strong>
+            <span style="font-family: Georgia, serif; font-size: 18px; color: var(--muted);">K(x, z) = tanh(&alpha; xᵀz + c)</span>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
   <!-- ==========================================
-       Slide 5: Extensions — Multi-Class & Regression
+       Slide 5: Multi-Class SVM
        ========================================== -->
   <section class="slide">
-    <p class="label">Advanced Frameworks</p>
-    <h2>Topic 4: Extensions — Multi-Class & Regression</h2>
-    <p class="lead">Generalizing Support Vector Machines from binary classification to multi-category discrimination and continuous value estimation.</p>
+    <p class="label">Extensions (Part 1)</p>
+    <h2>Topic 4: Multi-Class SVM</h2>
+    <p class="lead">Extending the binary margin classifier to handle datasets with 3 or more target classes.</p>
+
+    <div class="info-box blue" style="margin-bottom: 20px;">
+      <span class="badge blue">Core Architecture</span>
+      <p style="font-size: 22px;">
+        <strong>SVM is natively a binary (two-class) classifier. To handle multi-class problems, two strategies are used:</strong>
+      </p>
+    </div>
 
     <div class="columns">
-      <!-- Column 1: Multi-Class SVM -->
-      <div>
-        <div class="card blue">
-          <span class="badge blue">Multi-Category</span>
-          <h3 class="blue">Multi-Class SVM</h3>
-          <p style="margin-bottom: 16px;">
-            <strong>SVM is natively a binary (two-class) classifier. To handle multi-class problems, two strategies are used:</strong>
-          </p>
+      <!-- Strategy 1: OvR -->
+      <div class="card blue" style="margin-bottom: 0;">
+        <span class="badge blue">Strategy 1</span>
+        <h3 class="blue">One-vs-Rest (OvR)</h3>
+        <p style="font-size: 21px; margin-bottom: 14px;">
+          <strong>One-vs-Rest (OvR): Trains one classifier per class against all other classes combined. The class with the highest confidence score wins.</strong>
+        </p>
 
-          <div class="info-box blue" style="margin-bottom: 15px;">
-            <strong style="font-size: 21px; color: var(--blue);">One-vs-Rest (OvR)</strong>
-            <p style="margin-top: 6px; font-size: 20px;">
-              <strong>One-vs-Rest (OvR): Trains one classifier per class against all other classes combined. The class with the highest confidence score wins.</strong>
-            </p>
-            <p style="font-size: 17px; color: var(--muted); margin-top: 6px;">
-              • For N classes, builds N total models.<br>
-              • Fast to train; standard in <code style="color:var(--blue)">LinearSVC</code>.
-            </p>
-          </div>
-
-          <div class="info-box green" style="margin-bottom: 0;">
-            <strong style="font-size: 21px; color: var(--green);">One-vs-One (OvO)</strong>
-            <p style="margin-top: 6px; font-size: 20px;">
-              <strong>One-vs-One (OvO): Trains a classifier for every possible pair of classes (N(N-1)/2 models). A voting system determines the winner.</strong>
-            </p>
-            <p style="font-size: 17px; color: var(--muted); margin-top: 6px;">
-              • For N classes, trains N(N-1)/2 binary pairs.<br>
-              • Less vulnerable to severe class imbalance; standard in kernel <code style="color:var(--green)">SVC</code>.
-            </p>
-          </div>
+        <div style="background: #111827; border: 1px solid var(--rule); border-radius: 8px; padding: 16px; margin-top: 15px;">
+          <h4 style="color: var(--ink); font-size: 18px; margin-bottom: 6px;">Key Characteristics:</h4>
+          <ul>
+            <li><strong>Model Count:</strong> Exactly <strong>N</strong> binary models for N classes.</li>
+            <li><strong>Decision Rule:</strong> Evaluates decision function fᵢ(x) = wᵢᵀx + bᵢ; argmax wins.</li>
+            <li><strong>Speed:</strong> Highly scalable and fast to train. Standard in <code style="color:var(--blue)">LinearSVC</code>.</li>
+            <li><strong>Potential Issue:</strong> Asymmetry and class imbalance (1 class vs N-1 classes).</li>
+          </ul>
         </div>
       </div>
 
-      <!-- Column 2: Support Vector Regression (SVR) -->
-      <div>
-        <div class="card purple">
-          <span class="badge purple">Continuous Outputs</span>
-          <h3 class="purple">Support Vector Regression (SVR)</h3>
-          <p style="margin-bottom: 16px;">
-            <strong>Instead of finding a line that separates classes, SVR finds a line that fits the data.</strong>
-          </p>
-          <div class="info-box purple" style="margin-bottom: 15px;">
-            <strong style="font-size: 21px; color: var(--purple);">The &epsilon;-Insensitive Tube</strong>
-            <p style="margin-top: 6px; font-size: 20px;">
-              <strong>It reverses the objective: it maximizes the margin while ensuring that as many data points as possible fall inside a tube around the line (defined by a tolerance threshold &epsilon;).</strong>
-            </p>
-          </div>
+      <!-- Strategy 2: OvO -->
+      <div class="card green" style="margin-bottom: 0;">
+        <span class="badge green">Strategy 2</span>
+        <h3 class="green">One-vs-One (OvO)</h3>
+        <p style="font-size: 21px; margin-bottom: 14px;">
+          <strong>One-vs-One (OvO): Trains a classifier for every possible pair of classes (N(N-1)/2 models). A voting system determines the winner.</strong>
+        </p>
 
-          <div style="background: #111827; border: 1px solid var(--rule); border-radius: 8px; padding: 18px;">
-            <h4 style="color: var(--ink); font-size: 20px; margin-bottom: 8px;">Key SVR Properties:</h4>
-            <ul>
-              <li><strong>Zero Loss Inside Tube:</strong> Errors smaller than &epsilon; are completely ignored (cost = 0).</li>
-              <li><strong>Slack Outside Tube:</strong> Points outside the &epsilon;-tube suffer linear penalty (&xi;ᵢ, &xi;ᵢ*).</li>
-              <li><strong>Sparse Solution:</strong> Only data points falling <em>on or outside</em> the &epsilon;-tube boundary become Support Vectors!</li>
-            </ul>
-          </div>
+        <div style="background: #111827; border: 1px solid var(--rule); border-radius: 8px; padding: 16px; margin-top: 15px;">
+          <h4 style="color: var(--ink); font-size: 18px; margin-bottom: 6px;">Key Characteristics:</h4>
+          <ul>
+            <li><strong>Model Count:</strong> <strong>N(N-1) / 2</strong> pairwise binary models.</li>
+            <li><strong>Decision Rule:</strong> Each pair votes; the class accumulating the most votes wins.</li>
+            <li><strong>Imbalance Robustness:</strong> Balanced training since each model only sees two classes.</li>
+            <li><strong>Implementation:</strong> Default behavior in Scikit-Learn's kernel <code style="color:var(--green)">SVC</code>.</li>
+          </ul>
         </div>
       </div>
     </div>
   </section>
 
   <!-- ==========================================
-       Slide 6: Hard Margin vs Soft Margin
+       Slide 6: Support Vector Regression (SVR)
+       ========================================== -->
+  <section class="slide">
+    <p class="label">Extensions (Part 2)</p>
+    <h2>Topic 5: Support Vector Regression (SVR)</h2>
+    <p class="lead">Reversing the classification principle to fit continuous target functions with sparse support vectors.</p>
+
+    <div class="columns">
+      <!-- Left Column: The SVR Concept -->
+      <div>
+        <div class="card purple" style="margin-bottom: 16px;">
+          <span class="badge purple">Reversing The Objective</span>
+          <h3 class="purple">Fitting Instead of Separating</h3>
+          <p style="font-size: 21px; margin-bottom: 12px;">
+            <strong>Instead of finding a line that separates classes, SVR finds a line that fits the data.</strong>
+          </p>
+          <p style="font-size: 20px; color: var(--muted);">
+            <strong>It reverses the objective: it maximizes the margin while ensuring that as many data points as possible fall inside a tube around the line (defined by a tolerance threshold ε).</strong>
+          </p>
+        </div>
+
+        <div class="math-board">
+          min ½||w||² + C &sum;(&xi;ᵢ + &xi;ᵢ*) &nbsp; s.t. |yᵢ - (wᵀxᵢ + b)| &le; &epsilon; + &xi;ᵢ
+        </div>
+      </div>
+
+      <!-- Right Column: The epsilon-Tube & Sparsity -->
+      <div class="card green" style="margin-bottom: 0;">
+        <span class="badge green">Mechanism</span>
+        <h3 class="green">The &epsilon;-Insensitive Loss Function</h3>
+        <ul>
+          <li><strong>Zero Loss Inside Tube:</strong> Any prediction error smaller than &epsilon; has a cost of exactly 0! Points inside the tube are completely ignored.</li>
+          <li><strong>Slack Penalty Outside Tube:</strong> Points deviating beyond the &epsilon;-band incur a linear penalty (&xi;ᵢ above the tube, &xi;ᵢ* below the tube).</li>
+          <li><strong>Sparse Representation:</strong> Just like in classification, only data points falling <em>on or outside</em> the &epsilon;-tube boundary become Support Vectors!</li>
+          <li><strong>Outlier Robustness:</strong> Because the loss penalty is linear (L1) rather than squared (L2), SVR is immune to being pulled drastically off course by distant outliers.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       Slide 7: Hard Margin vs Soft Margin
        ========================================== -->
   <section class="slide">
     <p class="label">Handling Noise & Outliers</p>
-    <h2>Topic 5: Hard Margin vs Soft Margin</h2>
+    <h2>Topic 6: Hard Margin vs Soft Margin</h2>
     <p class="lead">Balancing mathematical perfection against the noisy, overlapping realities of empirical datasets.</p>
 
     <div class="columns">
       <!-- Box 1: Hard Margin -->
-      <div class="card red" style="display: flex; flex-direction: column; justify-content: space-between;">
+      <div class="card red" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
         <div>
           <span class="badge red">Strict Formulation</span>
           <h3 class="red">Hard Margin ("Zero Tolerance")</h3>
-          <div class="info-box red" style="margin-top: 15px;">
+          <div class="info-box red" style="margin-top: 12px; margin-bottom: 12px;">
             <p><strong>Assumes data is perfectly linearly separable (a clean, straight line can completely separate classes without a single error).</strong></p>
           </div>
-          <div style="background: #111827; border: 1px solid var(--rule); border-radius: 8px; padding: 18px; margin-top: 15px;">
-            <strong style="color: var(--red); font-size: 20px;">The Rule:</strong>
+          <div style="background: #111827; border: 1px solid var(--rule); border-radius: 8px; padding: 14px;">
+            <strong style="color: var(--red); font-size: 19px;">The Rule:</strong>
             <p style="margin-top: 4px;"><strong>The Rule: No data points are allowed to cross margin boundaries.</strong></p>
-            <p style="font-family: Georgia, serif; color: var(--muted); font-size: 19px; margin-top: 8px;">
+            <p style="font-family: Georgia, serif; color: var(--muted); font-size: 18px; margin-top: 6px;">
               yᵢ(wᵀxᵢ + b) &ge; 1, &forall; i
             </p>
           </div>
         </div>
 
-        <div style="background: rgba(248, 113, 113, 0.1); border: 1px solid var(--red); border-radius: 8px; padding: 16px; margin-top: 20px;">
-          <strong style="color: var(--red); font-size: 20px;">The Fatal Vulnerability:</strong>
-          <p style="font-size: 19px; margin-top: 4px;">
+        <div style="background: rgba(248, 113, 113, 0.1); border: 1px solid var(--red); border-radius: 8px; padding: 14px; margin-top: 16px;">
+          <strong style="color: var(--red); font-size: 19px;">The Fatal Vulnerability:</strong>
+          <p style="font-size: 18px; margin-top: 4px;">
             <strong>The Problem: If there is even a single outlier or a tiny bit of noise, it will fail completely or severely overfit.</strong>
           </p>
         </div>
       </div>
 
       <!-- Box 2: Soft Margin -->
-      <div class="card green" style="display: flex; flex-direction: column; justify-content: space-between;">
+      <div class="card green" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
         <div>
           <span class="badge green">Real-World Pragmatism</span>
           <h3 class="green">Soft Margin ("Real-World Pragmatism")</h3>
-          <div class="info-box green" style="margin-top: 15px;">
+          <div class="info-box green" style="margin-top: 12px; margin-bottom: 12px;">
             <p><strong>Real-world data is messy and overlapping. Introduces Slack Variables (&xi;), acting as a "hall pass" allowing some data points to violate the margin.</strong></p>
           </div>
-          <div style="background: #111827; border: 1px solid var(--rule); border-radius: 8px; padding: 18px; margin-top: 15px;">
-            <strong style="color: var(--green); font-size: 20px;">The Optimization Goal:</strong>
+          <div style="background: #111827; border: 1px solid var(--rule); border-radius: 8px; padding: 14px;">
+            <strong style="color: var(--green); font-size: 19px;">The Optimization Goal:</strong>
             <p style="margin-top: 4px;"><strong>The Rule: Maximizes the width of the street while keeping total classification errors to a minimum.</strong></p>
-            <p style="font-family: Georgia, serif; color: var(--muted); font-size: 19px; margin-top: 8px;">
+            <p style="font-family: Georgia, serif; color: var(--muted); font-size: 18px; margin-top: 6px;">
               min ½||w||² + C &sum; &xi;ᵢ &nbsp; s.t. &nbsp; yᵢ(wᵀxᵢ + b) &ge; 1 - &xi;ᵢ, &xi;ᵢ &ge; 0
             </p>
           </div>
         </div>
 
-        <div style="background: rgba(52, 211, 153, 0.1); border: 1px solid var(--green); border-radius: 8px; padding: 16px; margin-top: 20px;">
-          <strong style="color: var(--green); font-size: 20px;">Slack Variable (&xi;ᵢ) Meaning:</strong>
-          <p style="font-size: 18px; margin-top: 4px; color: var(--muted);">
+        <div style="background: rgba(52, 211, 153, 0.1); border: 1px solid var(--green); border-radius: 8px; padding: 14px; margin-top: 16px;">
+          <strong style="color: var(--green); font-size: 19px;">Slack Variable (&xi;ᵢ) Meaning:</strong>
+          <p style="font-size: 17px; margin-top: 4px; color: var(--muted);">
             • &xi;ᵢ = 0: Point outside the street (strictly correct).<br>
             • 0 &lt; &xi;ᵢ &le; 1: Inside margin street, but on correct side.<br>
             • &xi;ᵢ &gt; 1: Crosses boundary (misclassified error).
@@ -734,15 +747,72 @@ input[type=range]::-webkit-slider-thumb:hover {
   </section>
 
   <!-- ==========================================
-       Slide 7: Interactive Simulation: The 'C' Parameter
+       Slide 8: The 'C' Parameter (Theory)
        ========================================== -->
   <section class="slide">
-    <p class="label">Live Hyperparameter Tuning</p>
-    <h2>Topic 6: Interactive Simulation: The 'C' Parameter</h2>
+    <p class="label">Hyperparameter Optimization</p>
+    <h2>Topic 7: The 'C' Parameter (Theory)</h2>
     <p class="lead"><strong>The hyperparameter C dictates exactly how strict the model should be.</strong></p>
 
-    <div class="columns-wide-left">
-      <!-- Left Column: Controls & Dynamic Stats -->
+    <div class="columns">
+      <!-- Card 1: Low C -->
+      <div class="card green" style="margin-bottom: 0;">
+        <span class="badge green">Tolerant Mode</span>
+        <h3 class="green">Low C (Tolerant & Generalizing)</h3>
+        <div class="info-box green" style="margin-top: 12px; margin-bottom: 14px;">
+          <p style="font-size: 21px;">
+            <strong>Low C (Tolerant): Prioritizes a wide, safe margin street even if a few points sit on the wrong side, improving generalization.</strong>
+          </p>
+        </div>
+
+        <div style="background: #111827; border: 1px solid var(--rule); border-radius: 8px; padding: 16px;">
+          <h4 style="color: var(--green); font-size: 18px; margin-bottom: 6px;">Behavioral Details:</h4>
+          <ul>
+            <li><strong>Margin Width:</strong> Prioritizes a very wide margin street ("wide corridor").</li>
+            <li><strong>Slack Weight:</strong> Small penalty on slack variables (&xi;ᵢ). Allows points to violate the margin.</li>
+            <li><strong>Support Vectors:</strong> Many points fall inside or on the margin, generating higher support vector density.</li>
+            <li><strong>Trade-off:</strong> Highly resilient to noise; slight risk of underfitting if set excessively low.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Card 2: High C -->
+      <div class="card red" style="margin-bottom: 0;">
+        <span class="badge red">Strict Mode</span>
+        <h3 class="red">High C (Closer to Hard Margin)</h3>
+        <div class="info-box red" style="margin-top: 12px; margin-bottom: 14px;">
+          <p style="font-size: 21px;">
+            <strong>High C (Closer to Hard Margin): Heavily penalizes mistakes. Forces a narrow margin street to avoid errors, risking overfitting.</strong>
+          </p>
+        </div>
+
+        <div style="background: #111827; border: 1px solid var(--rule); border-radius: 8px; padding: 16px;">
+          <h4 style="color: var(--red); font-size: 18px; margin-bottom: 6px;">Behavioral Details:</h4>
+          <ul>
+            <li><strong>Margin Width:</strong> Forces a narrow margin street to wrap tightly around the data.</li>
+            <li><strong>Slack Weight:</strong> Massive penalty factor on mistakes; forces &xi;ᵢ &rarr; 0 wherever possible.</li>
+            <li><strong>Support Vectors:</strong> Very sparse; only 2 or 3 critical points hug the boundary.</li>
+            <li><strong>Trade-off:</strong> Highly sensitive to individual noisy outliers; severe risk of overfitting.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Math Banner -->
+    <div class="math-board" style="margin-top: 20px;">
+      Objective: min ½||w||² + C &sum; &xi;ᵢ &nbsp; | &nbsp; Small C &rarr; Margin Maximization &nbsp;&bull;&nbsp; Large C &rarr; Error Minimization
+    </div>
+  </section>
+
+  <!-- ==========================================
+       Slide 9: Interactive Simulation (Live Tool)
+       ========================================== -->
+  <section class="slide">
+    <p class="label">Live Interactive Simulation</p>
+    <h2>Topic 8: Interactive Tool — The 'C' Parameter</h2>
+
+    <div class="columns-sim">
+      <!-- Left Column: Slider & Live Stats (Width 500px) -->
       <div>
         <div class="controls-card">
           <div class="slider-container">
@@ -750,40 +820,30 @@ input[type=range]::-webkit-slider-thumb:hover {
               <span class="slider-title">Strictness (C) - Drag to adjust</span>
               <span id="c-pill" class="slider-value-pill">C = 1.0</span>
             </div>
-            <input type="range" id="c-slider" min="1" max="100" value="30">
+            <input type="range" id="c-slider" min="1" max="100" value="28">
             <div class="preset-group">
-              <button class="preset-btn" id="btn-low-c" onclick="setPreset(10)">Low C (Tolerant)</button>
-              <button class="preset-btn" id="btn-mid-c" onclick="setPreset(50)">Medium C (Balanced)</button>
-              <button class="preset-btn" id="btn-high-c" onclick="setPreset(95)">High C (Strict)</button>
+              <button class="preset-btn" id="btn-low-c" onclick="setPreset(8)">Low C (0.01)</button>
+              <button class="preset-btn" id="btn-mid-c" onclick="setPreset(50)">Medium C (1.0)</button>
+              <button class="preset-btn" id="btn-high-c" onclick="setPreset(95)">High C (100)</button>
             </div>
           </div>
         </div>
 
         <!-- Dynamic Status Callout -->
         <div id="status-banner" class="status-callout low-c">
-          <span id="status-icon" style="font-size: 28px;">🛡️</span>
+          <span id="status-icon" style="font-size: 26px;">🛡️</span>
           <span id="status-text">Low C: Wide Margin, High Tolerance</span>
-        </div>
-
-        <!-- Explanatory Details -->
-        <div class="info-box blue" style="padding: 16px 20px; margin-bottom: 16px;">
-          <p style="font-size: 19px; line-height: 1.45;">
-            <strong>Low C (Tolerant): Prioritizes a wide, safe margin street even if a few points sit on the wrong side, improving generalization.</strong>
-          </p>
-          <p style="font-size: 19px; line-height: 1.45; margin-top: 8px;">
-            <strong>High C (Closer to Hard Margin): Heavily penalizes mistakes. Forces a narrow margin street to avoid errors, risking overfitting.</strong>
-          </p>
         </div>
 
         <!-- Live KPI Telemetry -->
         <div class="metrics-grid">
           <div class="metric-box">
             <div class="metric-label">Margin Street Width</div>
-            <div id="stat-margin-width" class="metric-value blue">Wide (140 px)</div>
+            <div id="stat-margin-width" class="metric-value blue">Wide (160 px)</div>
           </div>
           <div class="metric-box">
             <div class="metric-label">Support Vectors</div>
-            <div id="stat-sv-count" class="metric-value amber">9 Active Points</div>
+            <div id="stat-sv-count" class="metric-value amber">11 Active Points</div>
           </div>
           <div class="metric-box">
             <div class="metric-label">Noise Sensitivity</div>
@@ -796,10 +856,10 @@ input[type=range]::-webkit-slider-thumb:hover {
         </div>
       </div>
 
-      <!-- Right Column: Interactive Live Canvas -->
+      <!-- Right Column: Massive Interactive Canvas (Width 1fr) -->
       <div class="canvas-panel">
-        <canvas id="sim-canvas" width="670" height="520"></canvas>
-        <div style="display: flex; justify-content: space-between; width: 100%; margin-top: 10px; font-size: 14px; color: var(--muted);">
+        <canvas id="sim-canvas" width="880" height="510"></canvas>
+        <div style="display: flex; justify-content: space-between; width: 100%; margin-top: 8px; font-size: 14px; color: var(--muted); padding: 0 10px;">
           <span><strong style="color: var(--blue);">●</strong> Class A (Blue)</span>
           <span><strong style="color: var(--red);">●</strong> Class B (Red)</span>
           <span><strong style="color: var(--pink);">★</strong> Noisy Outliers</span>
@@ -819,7 +879,7 @@ input[type=range]::-webkit-slider-thumb:hover {
     <span>&larr;</span> Previous
   </button>
   <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
-    <span id="counter" class="slide-number">1 / 7</span>
+    <span id="counter" class="slide-number">1 / 9</span>
     <span class="nav-hint">Arrows &bull; Spacebar</span>
   </div>
   <button id="btn-next" class="nav-btn" onclick="next()">
@@ -851,7 +911,7 @@ function showSlide(index) {
   // Trigger relevant canvas renderings
   if (currentIndex === 2) {
     drawMarginCanvas();
-  } else if (currentIndex === 6) {
+  } else if (currentIndex === 8) {
     updateSimulation();
   }
 }
@@ -877,7 +937,6 @@ function fit() {
 // Keyboard shortcuts
 window.addEventListener('keydown', (e) => {
   if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(e.key)) {
-    // Avoid interfering with slider thumb arrows when slider is focused
     if (document.activeElement && document.activeElement.id === 'c-slider' && ['ArrowRight','ArrowLeft'].includes(e.key)) {
       return;
     }
@@ -924,14 +983,12 @@ function drawMarginCanvas() {
     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
   }
 
-  // Geometry: Line equation 0.65x + y - 430 = 0
-  // Normal vector: (0.65, 1) / sqrt(0.65^2 + 1) = (0.545, 0.838)
-  // Distance d = 82 px
+  // Geometry: Line equation 0.65x + y - 390 = 0
   const m = -0.65;
-  const b0 = 430;
-  const d = 82;
+  const b0 = 390;
+  const d = 75;
   const normLen = Math.sqrt(m * m + 1); // 1.192
-  const offset = d * normLen; // 97.8
+  const offset = d * normLen; // 89.4
 
   // Margin Street Shading
   ctx.fillStyle = 'rgba(56, 189, 248, 0.08)';
@@ -971,7 +1028,7 @@ function drawMarginCanvas() {
   ctx.stroke();
 
   // Dimension Arrow: Margin = 2 / ||w||
-  const arrowX = 490;
+  const arrowX = 470;
   const yCenter = m * arrowX + b0;
   const yTop = yCenter - offset;
   const yBottom = yCenter + offset;
@@ -1004,40 +1061,40 @@ function drawMarginCanvas() {
   ctx.fillRect(arrowX + 12, yCenter - 18, 120, 36);
   ctx.strokeRect(arrowX + 12, yCenter - 18, 120, 36);
   ctx.fillStyle = '#fbbf24';
-  ctx.font = 'bold 15px sans-serif';
-  ctx.fillText('Margin = 2/||w||', arrowX + 18, yCenter + 5);
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillText('Margin = 2/||w||', arrowX + 16, yCenter + 5);
 
   // Line Labels
-  ctx.font = 'bold 14px monospace';
+  ctx.font = 'bold 13px monospace';
   ctx.fillStyle = '#38bdf8';
-  ctx.fillText('Decision Boundary: wᵀx + b = 0', 25, b0 - 12);
+  ctx.fillText('Decision Boundary: wᵀx + b = 0', 20, b0 - 10);
   ctx.fillStyle = '#fbbf24';
-  ctx.fillText('Margin (+1): wᵀx + b = +1', 25, (b0 - offset) - 10);
-  ctx.fillText('Margin (-1): wᵀx + b = -1', 25, (b0 + offset) + 22);
+  ctx.fillText('Margin (+1): wᵀx + b = +1', 20, (b0 - offset) - 8);
+  ctx.fillText('Margin (-1): wᵀx + b = -1', 20, (b0 + offset) + 20);
 
   // Data Points Data
   // Blue Points (Class +1)
   const bluePoints = [
-    { x: 380, y: 120 }, { x: 440, y: 70 }, { x: 520, y: 130 },
-    { x: 570, y: 60 },  { x: 480, y: 170 }, { x: 590, y: 160 },
-    { x: 340, y: 60 }
+    { x: 360, y: 110 }, { x: 420, y: 60 }, { x: 500, y: 110 },
+    { x: 550, y: 50 },  { x: 460, y: 150 }, { x: 570, y: 140 },
+    { x: 320, y: 60 }
   ];
-  // Blue Support Vectors (Touching +1 Margin: y = m*x + b0 - offset)
+  // Blue Support Vectors (Touching +1 Margin)
   const blueSVs = [
-    { x: 260, y: m * 260 + (b0 - offset) }, // approx (260, 163)
-    { x: 440, y: m * 440 + (b0 - offset) }  // approx (440, 46)
+    { x: 250, y: m * 250 + (b0 - offset) },
+    { x: 420, y: m * 420 + (b0 - offset) }
   ];
 
   // Red Points (Class -1)
   const redPoints = [
-    { x: 120, y: 490 }, { x: 180, y: 440 }, { x: 90, y: 390 },
-    { x: 240, y: 470 }, { x: 310, y: 430 }, { x: 150, y: 340 },
-    { x: 380, y: 480 }
+    { x: 110, y: 440 }, { x: 170, y: 410 }, { x: 80, y: 360 },
+    { x: 230, y: 440 }, { x: 290, y: 400 }, { x: 140, y: 320 },
+    { x: 360, y: 440 }
   ];
-  // Red Support Vectors (Touching -1 Margin: y = m*x + b0 + offset)
+  // Red Support Vectors (Touching -1 Margin)
   const redSVs = [
-    { x: 190, y: m * 190 + (b0 + offset) }, // approx (190, 404)
-    { x: 350, y: m * 350 + (b0 + offset) }  // approx (350, 300)
+    { x: 180, y: m * 180 + (b0 + offset) },
+    { x: 330, y: m * 330 + (b0 + offset) }
   ];
 
   // Draw Regular Points
@@ -1052,7 +1109,7 @@ function drawMarginCanvas() {
 function drawPoint(ctx, x, y, fill, stroke) {
   ctx.save();
   ctx.beginPath();
-  ctx.arc(x, y, 9, 0, Math.PI * 2);
+  ctx.arc(x, y, 8, 0, Math.PI * 2);
   ctx.fillStyle = fill;
   ctx.fill();
   ctx.lineWidth = 2.5;
@@ -1063,9 +1120,9 @@ function drawPoint(ctx, x, y, fill, stroke) {
 
 function drawSupportVector(ctx, x, y, color, label) {
   ctx.save();
-  // Outer pulsating/radiant halo
+  // Outer radiant halo
   ctx.beginPath();
-  ctx.arc(x, y, 19, 0, Math.PI * 2);
+  ctx.arc(x, y, 17, 0, Math.PI * 2);
   ctx.fillStyle = 'rgba(0, 243, 255, 0.22)';
   ctx.fill();
   ctx.strokeStyle = '#00f3ff';
@@ -1076,7 +1133,7 @@ function drawSupportVector(ctx, x, y, color, label) {
 
   // Inner core point
   ctx.beginPath();
-  ctx.arc(x, y, 10, 0, Math.PI * 2);
+  ctx.arc(x, y, 9, 0, Math.PI * 2);
   ctx.fillStyle = color;
   ctx.shadowBlur = 0;
   ctx.fill();
@@ -1086,20 +1143,20 @@ function drawSupportVector(ctx, x, y, color, label) {
 
   // Small Callout Badge
   ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
-  ctx.fillRect(x + 14, y - 24, 74, 22);
+  ctx.fillRect(x + 12, y - 22, 68, 20);
   ctx.strokeStyle = '#00f3ff';
   ctx.lineWidth = 1;
-  ctx.strokeRect(x + 14, y - 24, 74, 22);
+  ctx.strokeRect(x + 12, y - 22, 68, 20);
   ctx.fillStyle = '#00f3ff';
-  ctx.font = 'bold 12px sans-serif';
-  ctx.fillText(label, x + 20, y - 9);
+  ctx.font = 'bold 11px sans-serif';
+  ctx.fillText(label, x + 16, y - 8);
 
   ctx.restore();
 }
 
 
 // ==========================================
-// 3. Slide 7: Interactive 'C' Simulation
+// 3. Slide 9: Interactive 'C' Simulation
 // ==========================================
 const cSlider = document.getElementById('c-slider');
 if (cSlider) {
@@ -1114,24 +1171,26 @@ function setPreset(val) {
   updateSimulation();
 }
 
-// Hardcoded 2D Dataset with Intentional Overlapping Noise Points
+// Hardcoded 2D Dataset for 880x510 canvas
 const SIM_BLUE_POINTS = [
-  { x: 450, y: 130 }, { x: 510, y: 90 },  { x: 560, y: 140 },
-  { x: 610, y: 110 }, { x: 490, y: 190 }, { x: 570, y: 210 },
-  { x: 420, y: 170 }, { x: 530, y: 250 }, { x: 630, y: 190 }
+  { x: 570, y: 110 }, { x: 640, y: 80 },  { x: 710, y: 130 },
+  { x: 780, y: 90 },  { x: 610, y: 180 }, { x: 690, y: 200 },
+  { x: 770, y: 170 }, { x: 530, y: 160 }, { x: 650, y: 240 },
+  { x: 820, y: 140 }
 ];
 
 const SIM_RED_POINTS = [
-  { x: 130, y: 440 }, { x: 190, y: 470 }, { x: 230, y: 410 },
-  { x: 110, y: 370 }, { x: 270, y: 480 }, { x: 180, y: 360 },
-  { x: 310, y: 430 }, { x: 250, y: 340 }, { x: 160, y: 490 }
+  { x: 130, y: 440 }, { x: 190, y: 470 }, { x: 250, y: 430 },
+  { x: 110, y: 370 }, { x: 170, y: 380 }, { x: 290, y: 460 },
+  { x: 330, y: 410 }, { x: 230, y: 340 }, { x: 80,  y: 460 },
+  { x: 370, y: 450 }
 ];
 
-// Noisy Overlapping Points near center boundary
+// Noisy Overlapping Points near center
 const NOISE_POINTS = [
-  { x: 315, y: 320, cls: 'blue', id: 'N1' }, // Blue encroaching into red zone
-  { x: 405, y: 245, cls: 'red',  id: 'N2' }, // Red encroaching into blue zone
-  { x: 360, y: 285, cls: 'red',  id: 'N3' }  // Red right on the boundary
+  { x: 370, y: 330, cls: 'blue', id: 'N1' }, // Blue encroaching into red zone
+  { x: 510, y: 210, cls: 'red',  id: 'N2' }, // Red encroaching into blue zone
+  { x: 440, y: 275, cls: 'red',  id: 'N3' }  // Red right on the boundary
 ];
 
 function updateSimulation() {
@@ -1165,8 +1224,8 @@ function updateSimulation() {
   const statRisk = document.getElementById('stat-risk');
 
   // Interpolated Margin Width (Wide at t=0 -> Narrow at t=1)
-  const maxMargin = 85; // 170px total
-  const minMargin = 16; // 32px total
+  const maxMargin = 80; // 160px total
+  const minMargin = 15; // 30px total
   const curMargin = maxMargin - t * (maxMargin - minMargin);
 
   if (t < 0.35) {
@@ -1178,7 +1237,7 @@ function updateSimulation() {
     statWidth.textContent = `Wide (${Math.round(curMargin * 2)} px)`;
     statWidth.className = 'metric-value green';
 
-    statSV.textContent = '10 Active Points';
+    statSV.textContent = '11 Active Points';
     statSV.className = 'metric-value amber';
 
     statNoise.textContent = 'High Tolerance (Ignores noise)';
@@ -1212,7 +1271,7 @@ function updateSimulation() {
     statWidth.textContent = `Balanced (${Math.round(curMargin * 2)} px)`;
     statWidth.className = 'metric-value blue';
 
-    statSV.textContent = '6 Active Points';
+    statSV.textContent = '7 Active Points';
     statSV.className = 'metric-value blue';
 
     statNoise.textContent = 'Moderate Trade-off';
@@ -1243,28 +1302,21 @@ function drawSimulationCanvas(canvas, t, marginDist) {
     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
   }
 
-  // Linear Base Line: y = -0.72x + 475
-  const m = -0.72;
-  const b = 475;
-  const normFactor = Math.sqrt(m * m + 1); // 1.232
+  // Linear Base Line: y = -0.58x + 500
+  const m = -0.58;
+  const b = 500;
+  const normFactor = Math.sqrt(m * m + 1); // 1.156
   const offset = marginDist * normFactor;
 
-  // Decision boundary geometry:
-  // At low C (t=0), boundary is perfectly straight.
-  // At high C (t=1), boundary twists sharply through control points to segregate outliers!
-  
-  // High-C warped spline control points
-  // Outliers: N1(315, 320) [blue], N2(405, 245) [red], N3(360, 285) [red]
-  // In High C, the boundary must detour around N1 (pushing N1 to Blue side) and N2/N3 (pushing them to Red side)
   const pStart = { x: 0, y: b };
   const pEnd   = { x: w, y: m * w + b };
 
-  // Control points that bend as t increases
-  const cp1_straight = { x: 220, y: m * 220 + b };
-  const cp1_curved   = { x: 260, y: 395 }; // bends below N1 so N1 is on blue side
+  // Control points that bend as t increases to segregate N1 and N2
+  const cp1_straight = { x: 280, y: m * 280 + b };
+  const cp1_curved   = { x: 330, y: 415 }; // bends below N1 so N1 is on blue side
 
-  const cp2_straight = { x: 440, y: m * 440 + b };
-  const cp2_curved   = { x: 380, y: 195 }; // bends above N2 so N2 is on red side
+  const cp2_straight = { x: 580, y: m * 580 + b };
+  const cp2_curved   = { x: 480, y: 145 }; // bends above N2 so N2 is on red side
 
   const cp1 = {
     x: cp1_straight.x + (cp1_curved.x - cp1_straight.x) * t,
@@ -1317,16 +1369,15 @@ function drawSimulationCanvas(canvas, t, marginDist) {
   ctx.stroke();
   ctx.restore();
 
-  // Helper function to check if a point is within margin street
+  // Helper distance check
   function distanceToBoundary(px, py) {
-    // Approximate distance to the separating line
     return Math.abs(m * px + py - b) / normFactor;
   }
 
   // Draw Regular Blue Points
   SIM_BLUE_POINTS.forEach(p => {
     const dist = distanceToBoundary(p.x, p.y);
-    const isSV = (dist <= marginDist + 8);
+    const isSV = (dist <= marginDist + 6);
     if (isSV) {
       drawSupportVector(ctx, p.x, p.y, '#38bdf8', 'SV');
     } else {
@@ -1337,7 +1388,7 @@ function drawSimulationCanvas(canvas, t, marginDist) {
   // Draw Regular Red Points
   SIM_RED_POINTS.forEach(p => {
     const dist = distanceToBoundary(p.x, p.y);
-    const isSV = (dist <= marginDist + 8);
+    const isSV = (dist <= marginDist + 6);
     if (isSV) {
       drawSupportVector(ctx, p.x, p.y, '#f87171', 'SV');
     } else {
@@ -1348,13 +1399,11 @@ function drawSimulationCanvas(canvas, t, marginDist) {
   // Draw Noisy Overlapping Points
   NOISE_POINTS.forEach(p => {
     const dist = distanceToBoundary(p.x, p.y);
-    // At Low C, all noise points fall inside the wide margin and are SVs with slack
-    // At High C, the boundary hugs tight, and only 1 or 2 become critical SVs
     let isSV = false;
     if (t < 0.4) {
-      isSV = true; // All noise points are SVs inside the wide street
+      isSV = true;
     } else if (t > 0.7) {
-      isSV = (p.id === 'N1' || p.id === 'N2'); // Only key touching points
+      isSV = (p.id === 'N1' || p.id === 'N2');
     } else {
       isSV = true;
     }
@@ -1388,14 +1437,14 @@ function drawSimulationCanvas(canvas, t, marginDist) {
   // Canvas HUD Overlay
   ctx.save();
   ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-  ctx.fillRect(15, 15, 340, 48);
+  ctx.fillRect(15, 15, 340, 42);
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
   ctx.lineWidth = 1;
-  ctx.strokeRect(15, 15, 340, 48);
+  ctx.strokeRect(15, 15, 340, 42);
 
-  ctx.font = 'bold 16px sans-serif';
+  ctx.font = 'bold 15px sans-serif';
   ctx.fillStyle = t > 0.65 ? '#f43f5e' : (t < 0.35 ? '#34d399' : '#38bdf8');
-  ctx.fillText(t > 0.65 ? 'Boundary Mode: Non-Linear / Overfitting' : (t < 0.35 ? 'Boundary Mode: Wide Margin / Linear' : 'Boundary Mode: Balanced Soft Margin'), 25, 44);
+  ctx.fillText(t > 0.65 ? 'Boundary Mode: Non-Linear / Overfitting' : (t < 0.35 ? 'Boundary Mode: Wide Margin / Linear' : 'Boundary Mode: Balanced Soft Margin'), 25, 41);
   ctx.restore();
 }
 
