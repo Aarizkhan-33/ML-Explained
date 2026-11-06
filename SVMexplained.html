@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CS463: Support Vector Machines (SVM)</title>
+<title>SVM: Conceptual Lecture & Visual Study Guide</title>
 <style>
 /* ==========================================
-   CSS Variables & Dark Theme Setup
+   CSS Variables & Dark Theme Palette
    ========================================== */
 :root {
   --paper: #0f172a;
@@ -14,15 +14,15 @@
   --muted: #94a3b8;
   --rule: #334155;
   --blue: #38bdf8;
-  --bluewash: rgba(56, 189, 248, 0.14);
+  --bluewash: rgba(56, 189, 248, 0.15);
   --amber: #fbbf24;
-  --amberwash: rgba(251, 191, 36, 0.14);
+  --amberwash: rgba(251, 191, 36, 0.15);
   --green: #34d399;
-  --greenwash: rgba(52, 211, 153, 0.14);
+  --greenwash: rgba(52, 211, 153, 0.15);
   --red: #f87171;
-  --redwash: rgba(248, 113, 113, 0.14);
+  --redwash: rgba(248, 113, 113, 0.15);
   --purple: #c084fc;
-  --purplewash: rgba(192, 132, 252, 0.14);
+  --purplewash: rgba(192, 132, 252, 0.15);
   --soft: #1e293b;
   --neon: #00f3ff;
   --pink: #f43f5e;
@@ -65,13 +65,13 @@ html, body {
 section.slide {
   position: absolute;
   inset: 0;
-  padding: 55px 76px 95px;
+  padding: 44px 70px 84px;
   overflow: hidden; /* STRICTLY NO SCROLLBARS */
   background: var(--paper); /* Critical: prevents slide bleeding */
   display: none;
 }
-section.slide.active { display: block; animation: arrive 0.22s ease; }
-@keyframes arrive { from { opacity: 0.35; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+section.slide.active { display: block; animation: arrive 0.2s ease; }
+@keyframes arrive { from { opacity: 0.35; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
 
 /* Dedicated Cover Slide Flex Layout (No inline display:flex) */
 section.slide.cover-slide.active {
@@ -84,268 +84,179 @@ section.slide.cover-slide.active {
 }
 
 /* ==========================================
-   Typography & Utilities
+   Typography & Concise Card Architecture
    ========================================== */
 h1, h2, h3, h4, p, ul, li { margin: 0; }
-h1 { font-size: 76px; line-height: 1.05; letter-spacing: -2px; font-weight: 700; margin-bottom: 18px; }
-h2 { font-size: 40px; line-height: 1.15; letter-spacing: -1.2px; font-weight: 700; margin-bottom: 10px; color: var(--blue); }
-h3 { font-size: 26px; line-height: 1.25; font-weight: 650; margin-bottom: 10px; }
-h4 { font-size: 21px; line-height: 1.3; font-weight: 650; margin-bottom: 6px; }
-p, li { font-size: 20px; line-height: 1.45; color: var(--ink); }
-ul { padding-left: 26px; margin-bottom: 12px; }
-li { margin-bottom: 6px; }
+h1 { font-size: 72px; line-height: 1.05; letter-spacing: -2px; font-weight: 700; margin-bottom: 16px; }
+h2 { font-size: 38px; line-height: 1.15; letter-spacing: -1px; font-weight: 700; margin-bottom: 12px; color: var(--blue); }
+h3 { font-size: 24px; line-height: 1.25; font-weight: 650; margin-bottom: 8px; }
+h4 { font-size: 20px; line-height: 1.3; font-weight: 650; margin-bottom: 6px; }
+p, li { font-size: 19px; line-height: 1.45; color: var(--ink); }
 
-.lead { font-size: 22px; color: var(--muted); margin-bottom: 18px; max-width: 1440px; line-height: 1.4; }
-.label { font-size: 17px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; color: var(--muted); margin-bottom: 12px; }
-
-.blue { color: var(--blue); }
-.amber { color: var(--amber); }
-.green { color: var(--green); }
-.red { color: var(--red); }
-.pink { color: var(--pink); }
-.neon { color: var(--neon); }
-.purple { color: var(--purple); }
-
-/* ==========================================
-   Layout Grids
-   ========================================== */
-.columns { display: grid; grid-template-columns: 1fr 1fr; gap: 35px; margin-top: 15px; }
-.columns-wide-left { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 35px; margin-top: 15px; }
-.columns-wide-right { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 35px; margin-top: 15px; }
-.columns-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 15px; }
-.columns-sim { display: grid; grid-template-columns: 500px 1fr; gap: 30px; margin-top: 15px; }
-
-/* ==========================================
-   Cards & Callouts
-   ========================================== */
-.card {
-  background: var(--soft);
-  padding: 20px 24px;
-  border-radius: 12px;
-  border: 1px solid var(--rule);
-  border-top: 4px solid var(--blue);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+.slide-header {
   margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
 }
-.card.amber { border-top-color: var(--amber); }
-.card.green { border-top-color: var(--green); }
-.card.red { border-top-color: var(--red); }
-.card.purple { border-top-color: var(--purple); }
-.card.pink { border-top-color: var(--pink); }
-
-.info-box {
-  background: var(--soft);
-  padding: 16px 20px;
-  border-radius: 10px;
-  border-left: 5px solid var(--neon);
-  margin-bottom: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-.info-box.amber { border-left-color: var(--amber); }
-.info-box.green { border-left-color: var(--green); }
-.info-box.blue { border-left-color: var(--blue); }
-.info-box.red { border-left-color: var(--red); }
-.info-box.purple { border-left-color: var(--purple); }
-
-.badge {
-  display: inline-block;
-  background: rgba(0, 243, 255, 0.15);
-  color: var(--neon);
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 700;
+.slide-category {
+  font-size: 16px;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 8px;
-  border: 1px solid rgba(0, 243, 255, 0.25);
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 6px;
 }
-.badge.amber { background: var(--amberwash); color: var(--amber); border-color: rgba(251, 191, 36, 0.3); }
-.badge.green { background: var(--greenwash); color: var(--green); border-color: rgba(52, 211, 153, 0.3); }
-.badge.blue { background: var(--bluewash); color: var(--blue); border-color: rgba(56, 189, 248, 0.3); }
-.badge.red { background: var(--redwash); color: var(--red); border-color: rgba(248, 113, 113, 0.3); }
-.badge.purple { background: var(--purplewash); color: var(--purple); border-color: rgba(192, 132, 252, 0.3); }
-
-/* Math Board */
-.math-board {
+.slide-num-pill {
   background: #111827;
   border: 1px solid var(--rule);
-  border-radius: 8px;
-  padding: 14px 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: "Cambria Math", "Georgia", serif;
-  font-size: 22px;
-  color: var(--blue);
-  margin: 10px 0;
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
 }
 
-/* ==========================================
-   Canvas Panels
-   ========================================== */
-.canvas-panel {
-  background: #111827;
-  border: 1px solid var(--rule);
-  border-radius: 12px;
+/* Layout Grid: Cards Left (580px), Visual Right (1fr) */
+.slide-grid {
+  display: grid;
+  grid-template-columns: 580px 1fr;
+  gap: 32px;
+  height: 670px;
+  align-items: stretch;
+}
+.cards-col {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 12px;
-  position: relative;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-canvas {
-  max-width: 100%;
-  height: auto;
-  border-radius: 8px;
+  gap: 14px;
+  justify-content: flex-start;
 }
 
-/* ==========================================
-   Interactive Controls (Simulation Slide)
-   ========================================== */
-.controls-card {
+/* Card Types */
+.concise-card {
   background: var(--soft);
   border: 1px solid var(--rule);
   border-radius: 12px;
-  padding: 18px 22px;
-  margin-bottom: 14px;
+  padding: 16px 20px;
+  position: relative;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
-.slider-container {
+.concise-card .card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.concise-card .card-text {
+  font-size: 19px;
+  line-height: 1.45;
+  color: #e2e8f0;
+}
+.concise-card .card-subtext {
+  font-size: 17px;
+  line-height: 1.4;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+/* Badges for WHAT, WHY, HOW, TRAP, HOOK, EXAM Q */
+.tag {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 5px;
+  border: 1px solid;
+}
+.tag-what   { background: var(--bluewash);   color: var(--blue);   border-color: rgba(56, 189, 248, 0.4); }
+.tag-why    { background: var(--greenwash);  color: var(--green);  border-color: rgba(52, 211, 153, 0.4); }
+.tag-how    { background: var(--purplewash); color: var(--purple); border-color: rgba(192, 132, 252, 0.4); }
+.tag-trap   { background: var(--redwash);    color: var(--red);    border-color: rgba(248, 113, 113, 0.4); }
+.tag-hook   { background: var(--amberwash);  color: var(--amber);  border-color: rgba(251, 191, 36, 0.4); }
+.tag-exam   { background: rgba(0, 243, 255, 0.15); color: var(--neon); border-color: rgba(0, 243, 255, 0.4); }
+
+.card-what { border-left: 4px solid var(--blue); }
+.card-why  { border-left: 4px solid var(--green); }
+.card-how  { border-left: 4px solid var(--purple); }
+.card-trap { border-left: 4px solid var(--red); }
+.card-hook { border-left: 4px solid var(--amber); }
+.card-exam { border-left: 4px solid var(--neon); }
+
+/* ==========================================
+   Visual Canvas Panel
+   ========================================== */
+.visual-col {
+  background: #111827;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  justify-content: space-between;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
 }
-.slider-label-row {
+.visual-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 8px;
 }
-.slider-title {
-  font-size: 19px;
-  font-weight: 700;
-  color: var(--ink);
-}
-.slider-value-pill {
-  background: #111827;
-  border: 1px solid var(--neon);
-  color: var(--neon);
-  padding: 3px 12px;
-  border-radius: 16px;
+.visual-title {
   font-size: 17px;
   font-weight: 700;
-}
-
-input[type=range] {
-  -webkit-appearance: none;
-  width: 100%;
-  height: 10px;
-  border-radius: 5px;
-  background: #111827;
-  outline: none;
-  border: 1px solid var(--rule);
-  cursor: pointer;
-  margin: 8px 0;
-}
-input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: var(--neon);
-  box-shadow: 0 0 12px var(--neon);
-  cursor: pointer;
-  border: 2px solid #ffffff;
-  transition: transform 0.1s;
-}
-input[type=range]::-webkit-slider-thumb:hover {
-  transform: scale(1.15);
-}
-
-.preset-group {
+  color: var(--ink);
   display: flex;
+  align-items: center;
   gap: 8px;
-  margin-top: 6px;
 }
-.preset-btn {
-  flex: 1;
-  background: #111827;
-  color: var(--muted);
+.tip-badge {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--amber);
+  font-size: 13px;
+  padding: 3px 10px;
+  border-radius: 14px;
+  font-weight: 600;
+}
+canvas {
+  width: 100%;
+  height: 540px;
+  border-radius: 8px;
+}
+
+/* ==========================================
+   Interactive Controls on Specific Slides
+   ========================================== */
+.canvas-action-bar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.action-btn {
+  background: var(--soft);
+  color: var(--ink);
   border: 1px solid var(--rule);
-  padding: 6px 10px;
+  padding: 6px 14px;
   border-radius: 6px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  text-align: center;
 }
-.preset-btn:hover {
-  border-color: var(--blue);
-  color: var(--ink);
-  background: rgba(56, 189, 248, 0.1);
-}
-.preset-btn.active {
-  border-color: var(--neon);
-  color: var(--neon);
-  background: rgba(0, 243, 255, 0.15);
-}
-
-.status-callout {
-  padding: 14px 18px;
-  border-radius: 10px;
-  font-size: 19px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 14px;
-  border: 1px solid;
-  transition: all 0.25s ease;
-}
-.status-callout.low-c {
-  background: var(--greenwash);
-  color: var(--green);
-  border-color: rgba(52, 211, 153, 0.4);
-}
-.status-callout.mid-c {
-  background: var(--bluewash);
+.action-btn:hover {
+  background: var(--rule);
   color: var(--blue);
-  border-color: rgba(56, 189, 248, 0.4);
+  border-color: var(--blue);
 }
-.status-callout.high-c {
-  background: var(--redwash);
-  color: var(--red);
-  border-color: rgba(248, 113, 113, 0.4);
-}
-
-.metrics-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-.metric-box {
-  background: #111827;
-  border: 1px solid var(--rule);
-  border-radius: 8px;
-  padding: 10px 14px;
-}
-.metric-box .metric-label {
-  font-size: 13px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-.metric-box .metric-value {
-  font-size: 19px;
-  font-weight: 700;
-  color: var(--ink);
+.action-btn.active {
+  background: var(--bluewash);
+  color: var(--neon);
+  border-color: var(--neon);
 }
 
 /* ==========================================
@@ -367,9 +278,9 @@ input[type=range]::-webkit-slider-thumb:hover {
   background: var(--soft);
   color: var(--ink);
   border: 1px solid var(--rule);
-  padding: 8px 20px;
+  padding: 8px 18px;
   border-radius: 6px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -386,484 +297,876 @@ input[type=range]::-webkit-slider-thumb:hover {
   opacity: 0.35;
   cursor: not-allowed;
 }
+.nav-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
 .slide-number {
-  font-size: 18px;
-  color: var(--muted);
+  font-size: 17px;
+  color: var(--ink);
   font-variant-numeric: tabular-nums;
-  text-align: center;
-  font-weight: 600;
+  font-weight: 700;
 }
 .nav-hint {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--muted);
 }
+.jump-btn {
+  background: #111827;
+  color: var(--neon);
+  border: 1px solid rgba(0, 243, 255, 0.4);
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.jump-btn:hover {
+  background: rgba(0, 243, 255, 0.15);
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+}
+
+/* ==========================================
+   Tables & Lists for Resource Slides
+   ========================================== */
+.res-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 16px;
+  text-align: left;
+}
+.res-table th {
+  background: #111827;
+  color: var(--blue);
+  padding: 10px 14px;
+  border-bottom: 2px solid var(--rule);
+  font-size: 16px;
+  font-weight: 700;
+}
+.res-table td {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--rule);
+  color: #e2e8f0;
+}
+.res-table tr:hover { background: rgba(255, 255, 255, 0.02); }
+
+.drill-item {
+  background: var(--soft);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  font-size: 17px;
+}
+.drill-item strong { color: var(--amber); }
+
+.self-test-card {
+  background: var(--soft);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.self-test-card:hover { border-color: var(--blue); }
+.self-test-q { font-weight: 600; font-size: 17px; color: var(--ink); }
+.self-test-a {
+  margin-top: 6px;
+  font-size: 16px;
+  color: var(--neon);
+  display: none;
+  font-weight: 700;
+}
+.self-test-card.revealed .self-test-a { display: block; }
+.self-test-card.revealed { border-color: var(--neon); background: rgba(0, 243, 255, 0.05); }
 </style>
 </head>
 <body>
 
-<main id="stage" aria-label="CS463 SVM Presentation">
+<main id="stage" aria-label="Support Vector Machines (SVM) Presentation">
 
   <!-- ==========================================
-       Slide 1: Cover Slide
+       SLIDE 1
+       Cleaner and Stronger for Complex Non-Linear Patterns
        ========================================== -->
-  <section class="slide active cover-slide">
-    <p class="label blue">Machine Learning & Expert Systems (CS463)</p>
-    <h1 style="background: linear-gradient(135deg, #38bdf8 0%, #00f3ff 50%, #c084fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-      Support Vector Machines (SVM)
-    </h1>
-    <p class="lead" style="font-size: 26px; max-width: 1100px; margin-top: 15px;">
-      Course Instructor: Dr. Shafaq Mussadiq | Institute of Computing (IOC), KUST
-    </p>
-
-    <div style="display: flex; gap: 16px; margin-top: 35px;">
-      <span class="badge blue">Large Margin Classification</span>
-      <span class="badge green">Support Vectors</span>
-      <span class="badge amber">The Kernel Trick</span>
-      <span class="badge purple">Soft Margin (C)</span>
-      <span class="badge red">Multi-Class & SVR</span>
-    </div>
-
-    <p style="color: var(--muted); font-size: 18px; margin-top: 50px;">
-      Use Left/Right Arrow Keys, Spacebar, or the bottom controls to navigate.
-    </p>
-  </section>
-
-  <!-- ==========================================
-       Slide 2: Introduction to SVM
-       ========================================== -->
-  <section class="slide">
-    <p class="label">Foundations</p>
-    <h2>Topic 1: Introduction to SVM</h2>
-    <p class="lead">A gold-standard algorithm delivering robust, principled learning for both linear and non-linear spaces.</p>
-
-    <div class="info-box blue" style="margin-bottom: 20px;">
-      <span class="badge blue">Core Philosophy</span>
-      <p style="font-size: 22px; line-height: 1.45; margin-bottom: 8px;">
-        <strong>SVM is a very powerful algorithm widely used in both industry and academia.</strong>
-      </p>
-      <p style="font-size: 21px; line-height: 1.45; color: var(--muted);">
-        <strong>Compared to logistic regression and neural networks, the Support Vector Machine sometimes gives a cleaner, and sometimes more powerful way of learning complex non-linear functions.</strong>
-      </p>
-    </div>
-
-    <div class="columns">
-      <div class="card amber">
-        <span class="badge amber">Linear Models & Deep Networks</span>
-        <h3 class="amber">Standard Approaches</h3>
-        <ul>
-          <li><strong>Boundary placement:</strong> Often draws any line that separates data (e.g. Perceptron) without maximizing the buffer. It may pass dangerously close to training points.</li>
-          <li><strong>Optimization challenge:</strong> Neural networks optimize complex, non-convex loss functions subject to local minima, saddle points, and vanishing gradients.</li>
-          <li><strong>Non-linear boundaries:</strong> Require manual polynomial feature engineering or stacking multiple deep layers with massive amounts of training data.</li>
-        </ul>
-      </div>
-
-      <div class="card green">
-        <span class="badge green">Support Vector Machines</span>
-        <h3 class="green">The SVM Advantage</h3>
-        <ul>
-          <li><strong>Maximal Margin:</strong> Explicitly optimizes for the widest possible safety cushion ("street") between classes, providing strong mathematical guarantees.</li>
-          <li><strong>Global Convex Optimum:</strong> Formulated as a Quadratic Programming (QP) problem. Has a <em>single unique global minimum</em>—zero risk of getting trapped in local minima!</li>
-          <li><strong>The Kernel Trick:</strong> Projects data into infinite-dimensional spaces implicitly with zero high-dimensional coordinate computation.</li>
-          <li><strong>Extreme Sparsity:</strong> The final decision boundary depends strictly on a tiny subset of points (Support Vectors); all other training examples can be safely removed.</li>
-        </ul>
-      </div>
-    </div>
-  </section>
-
-  <!-- ==========================================
-       Slide 3: The Decision Boundary & Margin
-       ========================================== -->
-  <section class="slide">
-    <p class="label">Geometry & Optimization</p>
-    <h2>Topic 2: The Decision Boundary & Margin</h2>
-    <p class="lead">How SVM identifies the uniquely optimal separating hyperplane among infinitely many candidates.</p>
-
-    <div class="columns-wide-left">
+  <section class="slide active">
+    <div class="slide-header">
       <div>
-        <div class="info-box blue">
-          <span class="badge blue">The Margin</span>
-          <p><strong>SVM looks for the decision boundary (the black line) that has the larger minimum distance from any of the training examples.</strong></p>
-          <p style="margin-top: 6px; color: var(--muted); font-size: 19px;">
-            <strong>Other algorithms might draw lines that come too close to training examples. SVM separates data with as large a margin as possible, providing robustness. Therefore, it is often called a large margin classifier.</strong>
-          </p>
+        <p class="slide-category">Introduction & Foundations</p>
+        <h2>Cleaner and Stronger for Complex Non-Linear Patterns</h2>
+      </div>
+      <span class="slide-num-pill">Slide 1 / 14</span>
+    </div>
+
+    <div class="slide-grid">
+      <!-- Cards Column -->
+      <div class="cards-col">
+        <div class="concise-card card-what">
+          <div class="card-head">
+            <span class="tag tag-what">WHAT</span>
+            <h4>Core Algorithm</h4>
+          </div>
+          <p class="card-text">A powerful algorithm used widely in academia and industry. [SLIDE]</p>
         </div>
 
-        <div class="info-box green">
-          <span class="badge green">Support Vectors</span>
-          <p><strong>Support Vectors: These are the critical data points that lie directly on the margins. If you remove all other data points from the dataset, the decision boundary stays exactly the same. They completely define the model.</strong></p>
+        <div class="concise-card card-why">
+          <div class="card-head">
+            <span class="tag tag-why">WHY</span>
+            <h4>The SVM Advantage</h4>
+          </div>
+          <p class="card-text">It often learns complex non-linear functions better than logistic regression or neural nets. [SLIDE]</p>
         </div>
 
-        <div class="card amber" style="margin-bottom: 0;">
-          <h4 class="amber">Why Maximize Margin?</h4>
-          <p><strong>It provides the best generalization. A wider street means the model is less sensitive to slight noise or variations in future test data.</strong></p>
-          <p style="color: var(--muted); font-size: 18px; margin-top: 6px;">
-            The margin width equals <span style="font-family: Georgia, serif; color: var(--amber);">2 / ||w||</span>. Maximizing the margin is mathematically equivalent to minimizing <span style="font-family: Georgia, serif; color: var(--amber);">½ ||w||²</span>.
-          </p>
+        <div class="concise-card card-exam">
+          <div class="card-head">
+            <span class="tag tag-exam">EXAM Q</span>
+            <h4>Why pick SVM over Logistic Regression?</h4>
+          </div>
+          <p class="card-text">SVM handles complex non-linear boundaries much cleaner.</p>
         </div>
       </div>
 
-      <div class="canvas-panel">
-        <canvas id="margin-canvas" width="620" height="470"></canvas>
-        <div style="display: flex; justify-content: space-around; width: 100%; margin-top: 8px; font-size: 14px; color: var(--muted);">
-          <span><strong style="color: var(--blue);">●</strong> Class +1</span>
-          <span><strong style="color: var(--red);">●</strong> Class -1</span>
-          <span><strong style="color: var(--amber); border-bottom: 1px dashed var(--amber);">--</strong> Margins</span>
-          <span><strong style="color: var(--neon); text-shadow: 0 0 6px var(--neon);">◎</strong> Support Vectors</span>
+      <!-- Visual Column -->
+      <div class="visual-col">
+        <div class="visual-header">
+          <span class="visual-title"><span>📊</span> Logistic Regression vs. Support Vector Machine</span>
+          <span class="tip-badge">TIP: Glowing curve vs jagged flat line</span>
         </div>
+        <canvas id="canvas-s1" width="850" height="540"></canvas>
       </div>
     </div>
   </section>
 
   <!-- ==========================================
-       Slide 4: The Kernel Trick & Non-Linear SVM
+       SLIDE 2
+       The Widest Street Between Two Classes Wins
        ========================================== -->
   <section class="slide">
-    <p class="label">High-Dimensional Transformation</p>
-    <h2>Topic 3: The Kernel Trick & Non-Linear SVM</h2>
-    <p class="lead">Overcoming non-linearly separable data without suffering from the curse of dimensionality.</p>
-
-    <div class="columns">
-      <!-- Left Column: The 4-Stage Concept -->
+    <div class="slide-header">
       <div>
-        <div class="info-box red" style="padding: 12px 18px; margin-bottom: 10px;">
-          <span class="badge red">1. The Problem</span>
-          <p style="font-size: 19px;"><strong>When data cannot be split by a straight line in its current dimension.</strong></p>
+        <p class="slide-category">The Margin Objective</p>
+        <h2>The Widest Street Between Two Classes Wins</h2>
+      </div>
+      <span class="slide-num-pill">Slide 2 / 14</span>
+    </div>
+
+    <div class="slide-grid">
+      <div class="cards-col">
+        <div class="concise-card card-what">
+          <div class="card-head">
+            <span class="tag tag-what">WHAT</span>
+            <h4>The Margin</h4>
+          </div>
+          <p class="card-text">The distance from the boundary to the nearest examples is the margin. [SLIDE]</p>
         </div>
 
-        <div class="info-box blue" style="padding: 12px 18px; margin-bottom: 10px;">
-          <span class="badge blue">2. The Solution</span>
-          <p style="font-size: 19px;"><strong>We transform the features into a higher-dimensional space where they become linearly separable (e.g., if 2D is inseparable, adding a 3rd dimension might reveal a gap between classes where a separating hyperplane can be drawn).</strong></p>
+        <div class="concise-card card-why">
+          <div class="card-head">
+            <span class="tag tag-why">WHY</span>
+            <h4>Farthest Boundary Wins</h4>
+          </div>
+          <p class="card-text">Farthest boundary (black line) beats close ones (magenta/green) for robust separation. [SLIDE]</p>
         </div>
 
-        <div class="info-box amber" style="padding: 12px 18px; margin-bottom: 10px;">
-          <span class="badge amber">3. The Computational Barrier</span>
-          <p style="font-size: 19px;"><strong>The Computational Barrier: Mapping thousands of points into a high-dimensional (or infinite) space makes calculating distances computationally impossible.</strong></p>
-        </div>
-
-        <div class="info-box green" style="padding: 12px 18px; margin-bottom: 0;">
-          <span class="badge green">4. The Kernel</span>
-          <p style="font-size: 19px;"><strong>The Kernel: A mathematical function that solves this computing problem.</strong> It computes dot products in the target space directly from original inputs: <span style="font-family: Georgia, serif; color: var(--green);">K(x, z) = &lang;&phi;(x), &phi;(z)&rang;</span>.</p>
+        <div class="concise-card card-hook">
+          <div class="card-head">
+            <span class="tag tag-hook">HOOK</span>
+            <h4>Traffic Safety Analogy</h4>
+          </div>
+          <p class="card-text">Build the widest safety barrier between two opposing traffic lanes.</p>
         </div>
       </div>
 
-      <!-- Right Column: Popular Kernels Reference -->
-      <div class="card purple" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
-        <div>
-          <span class="badge purple">Standard Reference</span>
-          <h3 class="purple" style="margin-bottom: 8px;">Popular Kernels</h3>
-          <p style="font-size: 19px; margin-bottom: 14px;">
-            <strong>Popular kernels include: Linear Kernel, Polynomial Kernel, Gaussian Kernel, Radial Basis Function (RBF), Laplace RBF Kernel, and Sigmoid Kernel.</strong>
-          </p>
+      <div class="visual-col">
+        <div class="visual-header">
+          <span class="visual-title"><span>🛣️</span> Maximal Margin Street vs. Fragile Lines</span>
+          <span class="tip-badge">TIP: Bright yellow span highlights street width</span>
         </div>
-
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-          <div style="background: #111827; padding: 10px 14px; border-radius: 6px; border: 1px solid var(--rule); display: flex; justify-content: space-between; align-items: center;">
-            <strong style="color: var(--blue); font-size: 18px;">Linear Kernel</strong>
-            <span style="font-family: Georgia, serif; font-size: 18px; color: var(--muted);">K(x, z) = xᵀz + c</span>
-          </div>
-          <div style="background: #111827; padding: 10px 14px; border-radius: 6px; border: 1px solid var(--rule); display: flex; justify-content: space-between; align-items: center;">
-            <strong style="color: var(--green); font-size: 18px;">Polynomial Kernel</strong>
-            <span style="font-family: Georgia, serif; font-size: 18px; color: var(--muted);">K(x, z) = (xᵀz + c)ᵈ</span>
-          </div>
-          <div style="background: #111827; padding: 10px 14px; border-radius: 6px; border: 1px solid var(--rule); display: flex; justify-content: space-between; align-items: center;">
-            <strong style="color: var(--amber); font-size: 18px;">Gaussian Kernel</strong>
-            <span style="font-family: Georgia, serif; font-size: 18px; color: var(--muted);">K(x, z) = exp(-&gamma; ||x - z||²)</span>
-          </div>
-          <div style="background: #111827; padding: 10px 14px; border-radius: 6px; border: 1px solid var(--rule); display: flex; justify-content: space-between; align-items: center;">
-            <strong style="color: var(--neon); font-size: 18px;">Radial Basis Function (RBF)</strong>
-            <span style="font-size: 16px; color: var(--muted);">Infinite-dimensional Hilbert projection</span>
-          </div>
-          <div style="background: #111827; padding: 10px 14px; border-radius: 6px; border: 1px solid var(--rule); display: flex; justify-content: space-between; align-items: center;">
-            <strong style="color: var(--pink); font-size: 18px;">Laplace RBF Kernel</strong>
-            <span style="font-family: Georgia, serif; font-size: 18px; color: var(--muted);">K(x, z) = exp(-&gamma; ||x - z||)</span>
-          </div>
-          <div style="background: #111827; padding: 10px 14px; border-radius: 6px; border: 1px solid var(--rule); display: flex; justify-content: space-between; align-items: center;">
-            <strong style="color: var(--purple); font-size: 18px;">Sigmoid Kernel</strong>
-            <span style="font-family: Georgia, serif; font-size: 18px; color: var(--muted);">K(x, z) = tanh(&alpha; xᵀz + c)</span>
-          </div>
-        </div>
+        <canvas id="canvas-s2" width="850" height="540"></canvas>
       </div>
     </div>
   </section>
 
   <!-- ==========================================
-       Slide 5: Multi-Class SVM
+       SLIDE 3
+       The Few Points That Build the Road
        ========================================== -->
   <section class="slide">
-    <p class="label">Extensions (Part 1)</p>
-    <h2>Topic 4: Multi-Class SVM</h2>
-    <p class="lead">Extending the binary margin classifier to handle datasets with 3 or more target classes.</p>
-
-    <div class="info-box blue" style="margin-bottom: 20px;">
-      <span class="badge blue">Core Architecture</span>
-      <p style="font-size: 22px;">
-        <strong>SVM is natively a binary (two-class) classifier. To handle multi-class problems, two strategies are used:</strong>
-      </p>
-    </div>
-
-    <div class="columns">
-      <!-- Strategy 1: OvR -->
-      <div class="card blue" style="margin-bottom: 0;">
-        <span class="badge blue">Strategy 1</span>
-        <h3 class="blue">One-vs-Rest (OvR)</h3>
-        <p style="font-size: 21px; margin-bottom: 14px;">
-          <strong>One-vs-Rest (OvR): Trains one classifier per class against all other classes combined. The class with the highest confidence score wins.</strong>
-        </p>
-
-        <div style="background: #111827; border: 1px solid var(--rule); border-radius: 8px; padding: 16px; margin-top: 15px;">
-          <h4 style="color: var(--ink); font-size: 18px; margin-bottom: 6px;">Key Characteristics:</h4>
-          <ul>
-            <li><strong>Model Count:</strong> Exactly <strong>N</strong> binary models for N classes.</li>
-            <li><strong>Decision Rule:</strong> Evaluates decision function fᵢ(x) = wᵢᵀx + bᵢ; argmax wins.</li>
-            <li><strong>Speed:</strong> Highly scalable and fast to train. Standard in <code style="color:var(--blue)">LinearSVC</code>.</li>
-            <li><strong>Potential Issue:</strong> Asymmetry and class imbalance (1 class vs N-1 classes).</li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- Strategy 2: OvO -->
-      <div class="card green" style="margin-bottom: 0;">
-        <span class="badge green">Strategy 2</span>
-        <h3 class="green">One-vs-One (OvO)</h3>
-        <p style="font-size: 21px; margin-bottom: 14px;">
-          <strong>One-vs-One (OvO): Trains a classifier for every possible pair of classes (N(N-1)/2 models). A voting system determines the winner.</strong>
-        </p>
-
-        <div style="background: #111827; border: 1px solid var(--rule); border-radius: 8px; padding: 16px; margin-top: 15px;">
-          <h4 style="color: var(--ink); font-size: 18px; margin-bottom: 6px;">Key Characteristics:</h4>
-          <ul>
-            <li><strong>Model Count:</strong> <strong>N(N-1) / 2</strong> pairwise binary models.</li>
-            <li><strong>Decision Rule:</strong> Each pair votes; the class accumulating the most votes wins.</li>
-            <li><strong>Imbalance Robustness:</strong> Balanced training since each model only sees two classes.</li>
-            <li><strong>Implementation:</strong> Default behavior in Scikit-Learn's kernel <code style="color:var(--green)">SVC</code>.</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ==========================================
-       Slide 6: Support Vector Regression (SVR)
-       ========================================== -->
-  <section class="slide">
-    <p class="label">Extensions (Part 2)</p>
-    <h2>Topic 5: Support Vector Regression (SVR)</h2>
-    <p class="lead">Reversing the classification principle to fit continuous target functions with sparse support vectors.</p>
-
-    <div class="columns">
-      <!-- Left Column: The SVR Concept -->
+    <div class="slide-header">
       <div>
-        <div class="card purple" style="margin-bottom: 16px;">
-          <span class="badge purple">Reversing The Objective</span>
-          <h3 class="purple">Fitting Instead of Separating</h3>
-          <p style="font-size: 21px; margin-bottom: 12px;">
-            <strong>Instead of finding a line that separates classes, SVR finds a line that fits the data.</strong>
-          </p>
-          <p style="font-size: 20px; color: var(--muted);">
-            <strong>It reverses the objective: it maximizes the margin while ensuring that as many data points as possible fall inside a tube around the line (defined by a tolerance threshold ε).</strong>
-          </p>
+        <p class="slide-category">Support Vectors</p>
+        <h2>The Few Points That Build the Road</h2>
+      </div>
+      <span class="slide-num-pill">Slide 3 / 14</span>
+    </div>
+
+    <div class="slide-grid">
+      <div class="cards-col">
+        <div class="concise-card card-what">
+          <div class="card-head">
+            <span class="tag tag-what">WHAT</span>
+            <h4>Support Vectors</h4>
+          </div>
+          <p class="card-text">Critical data points lying directly on the margin lines. [SLIDE]</p>
         </div>
 
-        <div class="math-board">
-          min ½||w||² + C &sum;(&xi;ᵢ + &xi;ᵢ*) &nbsp; s.t. |yᵢ - (wᵀxᵢ + b)| &le; &epsilon; + &xi;ᵢ
+        <div class="concise-card card-why">
+          <div class="card-head">
+            <span class="tag tag-why">WHY</span>
+            <h4>Extreme Sparsity</h4>
+          </div>
+          <p class="card-text">Removing all other points leaves the boundary completely unchanged. [SLIDE]</p>
+        </div>
+
+        <div class="concise-card card-trap">
+          <div class="card-head">
+            <span class="tag tag-trap">TRAP</span>
+            <h4>Common Misconception</h4>
+          </div>
+          <p class="card-text">"All data shapes the line." No, only the support vectors completely define the model.</p>
         </div>
       </div>
 
-      <!-- Right Column: The epsilon-Tube & Sparsity -->
-      <div class="card green" style="margin-bottom: 0;">
-        <span class="badge green">Mechanism</span>
-        <h3 class="green">The &epsilon;-Insensitive Loss Function</h3>
-        <ul>
-          <li><strong>Zero Loss Inside Tube:</strong> Any prediction error smaller than &epsilon; has a cost of exactly 0! Points inside the tube are completely ignored.</li>
-          <li><strong>Slack Penalty Outside Tube:</strong> Points deviating beyond the &epsilon;-band incur a linear penalty (&xi;ᵢ above the tube, &xi;ᵢ* below the tube).</li>
-          <li><strong>Sparse Representation:</strong> Just like in classification, only data points falling <em>on or outside</em> the &epsilon;-tube boundary become Support Vectors!</li>
-          <li><strong>Outlier Robustness:</strong> Because the loss penalty is linear (L1) rather than squared (L2), SVR is immune to being pulled drastically off course by distant outliers.</li>
-        </ul>
+      <div class="visual-col">
+        <div class="visual-header">
+          <div class="canvas-action-bar">
+            <button id="btn-erase" class="action-btn" onclick="toggleEraseDots()">🧹 Erase Non-Support Vectors</button>
+            <span id="erase-label" style="font-size: 14px; color: var(--muted);">Click to test if boundary shifts</span>
+          </div>
+          <span class="tip-badge">TIP: Glowing halos strictly on margin points</span>
+        </div>
+        <canvas id="canvas-s3" width="850" height="540"></canvas>
       </div>
     </div>
   </section>
 
   <!-- ==========================================
-       Slide 7: Hard Margin vs Soft Margin
+       SLIDE 4
+       Wider Roads Survive Unseen Potholes Better
        ========================================== -->
   <section class="slide">
-    <p class="label">Handling Noise & Outliers</p>
-    <h2>Topic 6: Hard Margin vs Soft Margin</h2>
-    <p class="lead">Balancing mathematical perfection against the noisy, overlapping realities of empirical datasets.</p>
+    <div class="slide-header">
+      <div>
+        <p class="slide-category">Generalization & Math</p>
+        <h2>Wider Roads Survive Unseen Potholes Better</h2>
+      </div>
+      <span class="slide-num-pill">Slide 4 / 14</span>
+    </div>
 
-    <div class="columns">
-      <!-- Box 1: Hard Margin -->
-      <div class="card red" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
-        <div>
-          <span class="badge red">Strict Formulation</span>
-          <h3 class="red">Hard Margin ("Zero Tolerance")</h3>
-          <div class="info-box red" style="margin-top: 12px; margin-bottom: 12px;">
-            <p><strong>Assumes data is perfectly linearly separable (a clean, straight line can completely separate classes without a single error).</strong></p>
+    <div class="slide-grid">
+      <div class="cards-col">
+        <div class="concise-card card-why">
+          <div class="card-head">
+            <span class="tag tag-why">WHY</span>
+            <h4>Optimal Generalization</h4>
+          </div>
+          <p class="card-text">Provides the best generalisation; less sensitive to noise in future test data. [SLIDE]</p>
+        </div>
+
+        <div class="concise-card card-how">
+          <div class="card-head">
+            <span class="tag tag-how">HOW</span>
+            <h4>Optimization Formulation</h4>
+          </div>
+          <p class="card-text">wᵀx+b=0. Max width 2/‖w‖ means minimising ½‖w‖² while keeping points outside. [+]</p>
+          <p class="card-subtext"><strong>Reading:</strong> Shrink the weight vector to widen the margin street.</p>
+        </div>
+
+        <div class="concise-card card-exam">
+          <div class="card-head">
+            <span class="tag tag-exam">EXAM Q</span>
+            <h4>Why maximise margin?</h4>
+          </div>
+          <p class="card-text">To ensure future noisy data won't easily cross the decision line.</p>
+        </div>
+      </div>
+
+      <div class="visual-col">
+        <div class="visual-header">
+          <span class="visual-title"><span>📐</span> Shrinking ‖w‖ Widens the Margin Street</span>
+          <span class="tip-badge">TIP: Down arrow on w, outward arrows on street</span>
+        </div>
+        <canvas id="canvas-s4" width="850" height="540"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       SLIDE 5
+       Fold the Paper to Draw a Straight Line
+       ========================================== -->
+  <section class="slide">
+    <div class="slide-header">
+      <div>
+        <p class="slide-category">Feature Mapping</p>
+        <h2>Fold the Paper to Draw a Straight Line</h2>
+      </div>
+      <span class="slide-num-pill">Slide 5 / 14</span>
+    </div>
+
+    <div class="slide-grid">
+      <div class="cards-col">
+        <div class="concise-card card-why">
+          <div class="card-head">
+            <span class="tag tag-why">WHY</span>
+            <h4>The Curse of Dimensionality</h4>
+          </div>
+          <p class="card-text">Explicitly computing 100 or infinite dimensions is too computationally expensive. [SLIDE]</p>
+        </div>
+
+        <div class="concise-card card-how">
+          <div class="card-head">
+            <span class="tag tag-how">HOW</span>
+            <h4>The Kernel Trick</h4>
+          </div>
+          <p class="card-text">Returns high-dimensional dot product without building high-dimensional coordinates. [+]</p>
+        </div>
+
+        <div class="concise-card card-hook">
+          <div class="card-head">
+            <span class="tag tag-hook">HOOK</span>
+            <h4>Folding the Paper Analogy</h4>
+          </div>
+          <p class="card-text">2D dots on paper; fold the paper (3D) to slice them straight. [SLIDE]</p>
+        </div>
+      </div>
+
+      <div class="visual-col">
+        <div class="visual-header">
+          <span class="visual-title"><span>📄</span> 2D Inseparable &rarr; 3D Hyperplane Slice</span>
+          <span class="tip-badge">TIP: Flat 2D circle to 3D glowing slice</span>
+        </div>
+        <canvas id="canvas-s5" width="850" height="540"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       SLIDE 6
+       Measure Similarity to Warp the Space
+       ========================================== -->
+  <section class="slide">
+    <div class="slide-header">
+      <div>
+        <p class="slide-category">Kernel Functions & Gamma</p>
+        <h2>Measure Similarity to Warp the Space</h2>
+      </div>
+      <span class="slide-num-pill">Slide 6 / 14</span>
+    </div>
+
+    <div class="slide-grid">
+      <div class="cards-col">
+        <div class="concise-card card-what">
+          <div class="card-head">
+            <span class="tag tag-what">WHAT</span>
+            <h4>Common Kernels</h4>
+          </div>
+          <p class="card-text">Common kernels: Linear, Polynomial, Gaussian, RBF, Laplace RBF, Sigmoid. [SLIDE]</p>
+        </div>
+
+        <div class="concise-card card-how">
+          <div class="card-head">
+            <span class="tag tag-how">HOW</span>
+            <h4>RBF Kernel Formula</h4>
+          </div>
+          <p class="card-text">K(x,z)=exp(−γ‖x−z‖²). [+]</p>
+          <p class="card-subtext"><strong>Reading:</strong> Points are highly similar only if they are close together.</p>
+        </div>
+
+        <div class="concise-card card-exam">
+          <div class="card-head">
+            <span class="tag tag-exam">EXAM Q</span>
+            <h4>What does a large γ do?</h4>
+          </div>
+          <p class="card-text">Makes similarity drop fast, creating a tight, wiggly boundary. [+]</p>
+        </div>
+      </div>
+
+      <div class="visual-col">
+        <div class="visual-header">
+          <div class="canvas-action-bar">
+            <button id="btn-gamma-low" class="action-btn active" onclick="setGamma(false)">Low &gamma; (Smooth Hills)</button>
+            <button id="btn-gamma-high" class="action-btn" onclick="setGamma(true)">High &gamma; (Sharp Spikes)</button>
+          </div>
+          <span class="tip-badge">TIP: High &gamma; = spikes, Low &gamma; = smooth hills</span>
+        </div>
+        <canvas id="canvas-s6" width="850" height="540"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       SLIDE 7
+       Breaking Multiple Classes into Binary Duels
+       ========================================== -->
+  <section class="slide">
+    <div class="slide-header">
+      <div>
+        <p class="slide-category">Multi-Class Extension</p>
+        <h2>Breaking Multiple Classes into Binary Duels</h2>
+      </div>
+      <span class="slide-num-pill">Slide 7 / 14</span>
+    </div>
+
+    <div class="slide-grid">
+      <div class="cards-col">
+        <div class="concise-card card-what">
+          <div class="card-head">
+            <span class="tag tag-what">WHAT</span>
+            <h4>Native Binary Nature</h4>
+          </div>
+          <p class="card-text">SVM is natively binary; handle multi-class via One-vs-Rest or One-vs-One. [SLIDE]</p>
+        </div>
+
+        <div class="concise-card card-how">
+          <div class="card-head">
+            <span class="tag tag-how">HOW</span>
+            <h4>OvR vs OvO Formulations</h4>
+          </div>
+          <p class="card-text">OvR trains N models; OvO trains N(N−1)/2 pair models. [+]</p>
+        </div>
+
+        <div class="concise-card card-exam">
+          <div class="card-head">
+            <span class="tag tag-exam">EXAM Q</span>
+            <h4>For 4 classes, how many models in OvO?</h4>
+          </div>
+          <p class="card-text">Six, because it tests every unique pair exactly once. [+]</p>
+        </div>
+      </div>
+
+      <div class="visual-col">
+        <div class="visual-header">
+          <span class="visual-title"><span>🥊</span> 4 Teams: OvR (1 vs All) vs OvO (Pairwise Duels)</span>
+          <span class="tip-badge">TIP: Boxing gloves icon for 1v1 pairs</span>
+        </div>
+        <canvas id="canvas-s7" width="850" height="540"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       SLIDE 8
+       Fit the Line Inside a Tolerance Tube
+       ========================================== -->
+  <section class="slide">
+    <div class="slide-header">
+      <div>
+        <p class="slide-category">Support Vector Regression (SVR)</p>
+        <h2>Fit the Line Inside a Tolerance Tube</h2>
+      </div>
+      <span class="slide-num-pill">Slide 8 / 14</span>
+    </div>
+
+    <div class="slide-grid">
+      <div class="cards-col">
+        <div class="concise-card card-what">
+          <div class="card-head">
+            <span class="tag tag-what">WHAT</span>
+            <h4>Support Vector Regression</h4>
+          </div>
+          <p class="card-text">Reverses the goal: maximize margin while fitting data inside a tube. [SLIDE]</p>
+        </div>
+
+        <div class="concise-card card-why">
+          <div class="card-head">
+            <span class="tag tag-why">WHY</span>
+            <h4>The &epsilon;-Tolerance Advantage</h4>
+          </div>
+          <p class="card-text">Small errors inside the ε-tube are ignored, making the model smoother. [+]</p>
+        </div>
+
+        <div class="concise-card card-hook">
+          <div class="card-head">
+            <span class="tag tag-hook">HOOK</span>
+            <h4>Garden Hose Analogy</h4>
+          </div>
+          <p class="card-text">Laying a thick garden hose over a scattered trail of ants.</p>
+        </div>
+      </div>
+
+      <div class="visual-col">
+        <div class="visual-header">
+          <span class="visual-title"><span>📏</span> Straight Fit Line Inside Shaded &epsilon;-Tube</span>
+          <span class="tip-badge">TIP: Shaded grey tube ignores minor outside bumps</span>
+        </div>
+        <canvas id="canvas-s8" width="850" height="540"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       SLIDE 9
+       A Strict Boss vs A Pragmatic Boss
+       ========================================== -->
+  <section class="slide">
+    <div class="slide-header">
+      <div>
+        <p class="slide-category">Hard Margin vs Soft Margin</p>
+        <h2>A Strict Boss vs A Pragmatic Boss</h2>
+      </div>
+      <span class="slide-num-pill">Slide 9 / 14</span>
+    </div>
+
+    <div class="slide-grid">
+      <div class="cards-col">
+        <div class="concise-card card-why">
+          <div class="card-head">
+            <span class="tag tag-why">WHY</span>
+            <h4>Slack Variables (&xi;)</h4>
+          </div>
+          <p class="card-text">Hard margin breaks with one outlier; Soft margin uses slack variables (ξ). [SLIDE]</p>
+        </div>
+
+        <div class="concise-card card-how">
+          <div class="card-head">
+            <span class="tag tag-how">HOW</span>
+            <h4>Soft Margin Equation</h4>
+          </div>
+          <p class="card-text">Minimise ½‖w‖² + C·Σξ. [+]</p>
+          <p class="card-subtext"><strong>Reading:</strong> Balance wide street against the penalty for classification errors.</p>
+        </div>
+
+        <div class="concise-card card-trap">
+          <div class="card-head">
+            <span class="tag tag-trap">TRAP</span>
+            <h4>Low C Misconception</h4>
+          </div>
+          <p class="card-text">"Low C means fewer errors." No, low C tolerates more errors to widen the road.</p>
+        </div>
+      </div>
+
+      <div class="visual-col">
+        <div class="visual-header">
+          <div class="canvas-action-bar">
+            <button id="btn-boss-strict" class="action-btn" onclick="setBossMode(true)">🔴 Strict Boss (High C)</button>
+            <button id="btn-boss-pragmatic" class="action-btn active" onclick="setBossMode(false)">🟢 Pragmatic Boss (Low C)</button>
+          </div>
+          <span class="tip-badge">TIP: C-knob from Strict (Red) to Tolerant (Green)</span>
+        </div>
+        <canvas id="canvas-s9" width="850" height="540"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       SLIDE 10
+       Code the Street, Scale the Map
+       ========================================== -->
+  <section class="slide">
+    <div class="slide-header">
+      <div>
+        <p class="slide-category">Implementation & Practical Nuances</p>
+        <h2>Code the Street, Scale the Map</h2>
+      </div>
+      <span class="slide-num-pill">Slide 10 / 14</span>
+    </div>
+
+    <div class="slide-grid">
+      <div class="cards-col">
+        <div class="concise-card card-what">
+          <div class="card-head">
+            <span class="tag tag-what">WHAT</span>
+            <h4>Contour Decision Functions</h4>
+          </div>
+          <p class="card-text">SVC(C=C). decision_function contours at -1, 0, +1 draw the boundary. [SLIDE]</p>
+        </div>
+
+        <div class="concise-card card-how">
+          <div class="card-head">
+            <span class="tag tag-how">HOW</span>
+            <h4>Feature Scaling Mandate</h4>
+          </div>
+          <p class="card-text">Scale data because SVM is distance-based; unscaled data distorts the margin heavily. [+]</p>
+        </div>
+
+        <div class="concise-card card-exam">
+          <div class="card-head">
+            <span class="tag tag-exam">EXAM Q</span>
+            <h4>Why use a log slider for C?</h4>
+          </div>
+          <p class="card-text">Because C affects the penalty in exponential orders of magnitude. [+]</p>
+        </div>
+      </div>
+
+      <div class="visual-col">
+        <div class="visual-header">
+          <div style="display: flex; align-items: center; gap: 14px; width: 65%;">
+            <span style="font-size: 15px; font-weight: 700; white-space: nowrap;">Log Slider:</span>
+            <input type="range" id="log-c-slider" min="0" max="4" step="1" value="0" style="flex:1;" oninput="updateLogSlider(this.value)">
+            <span id="log-c-readout" style="color:var(--neon); font-weight:700; font-size:16px; min-width:85px;">C = 0.01</span>
+          </div>
+          <span class="tip-badge">TIP: Slider snaps to powers of 10</span>
+        </div>
+        <canvas id="canvas-s10" width="850" height="540"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       SLIDE 11: POST-SLIDE RESOURCES (Part 1)
+       1. Master Cheat-Sheet & 2. The "C Story"
+       ========================================== -->
+  <section class="slide">
+    <div class="slide-header">
+      <div>
+        <p class="slide-category">Post-Slide Resources</p>
+        <h2>1. Master Cheat-Sheet & 2. The "C Story"</h2>
+      </div>
+      <span class="slide-num-pill">Slide 11 / 14</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 30px; height: 670px;">
+      <!-- Master Cheat Sheet Table -->
+      <div style="background: var(--soft); border: 1px solid var(--rule); border-radius: 12px; padding: 18px 22px; overflow: hidden; display: flex; flex-direction: column;">
+        <h3 style="color: var(--blue); margin-bottom: 12px;">1. Master Cheat-Sheet</h3>
+        <table class="res-table">
+          <thead>
+            <tr>
+              <th>Concept</th>
+              <th>One-line why</th>
+              <th>Memory hook</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>SVM</strong></td><td>Learns complex non-linear functions cleanly.</td><td><span style="color:var(--neon);">A smart road builder.</span></td></tr>
+            <tr><td><strong>Margin</strong></td><td>Maximising it resists future noise.</td><td><span style="color:var(--amber);">The widest safe street.</span></td></tr>
+            <tr><td><strong>Support Vectors</strong></td><td>They solely dictate the boundary's location.</td><td><span style="color:var(--blue);">The roadside guardrails.</span></td></tr>
+            <tr><td><strong>Kernel Trick</strong></td><td>Math shortcut avoiding infinite dimension calculations.</td><td><span style="color:var(--purple);">Folding the paper.</span></td></tr>
+            <tr><td><strong>RBF Kernel</strong></td><td>Warps space based on point similarity.</td><td><span style="color:var(--pink);">Radiating heat map.</span></td></tr>
+            <tr><td><strong>&gamma; (Gamma)</strong></td><td>Controls how far a single point's influence reaches.</td><td><span style="color:var(--green);">Wiggly vs Smooth.</span></td></tr>
+            <tr><td><strong>OvO Multi-class</strong></td><td>Solves binary limitation via pairwise duels.</td><td><span style="color:var(--amber);">Round-robin tournament.</span></td></tr>
+            <tr><td><strong>SVR (Regression)</strong></td><td>Fits data inside a tolerance tube instead of separating.</td><td><span style="color:var(--neon);">Thick garden hose.</span></td></tr>
+            <tr><td><strong>Slack (&xi;)</strong></td><td>Hall pass for messy real-world data overlaps.</td><td><span style="color:var(--green);">Pragmatic rule-bending.</span></td></tr>
+            <tr><td><strong>C Parameter</strong></td><td>Trades margin width against error penalties.</td><td><span style="color:var(--red);">Strict vs Tolerant boss.</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- The "C Story" Card -->
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <div style="background: var(--soft); border: 1px solid var(--rule); border-radius: 12px; padding: 24px; border-left: 5px solid var(--amber);">
+          <span class="tag tag-hook" style="margin-bottom: 12px;">EXPLANATION</span>
+          <h3 style="color: var(--amber); margin-bottom: 14px;">2. The "C Story"</h3>
+          <p style="font-size: 21px; line-height: 1.6; color: #f1f5f9;">
+            A <strong>High C boss</strong> hates mistakes, squeezing the margin street narrow to perfectly separate teams.
+          </p>
+          <p style="font-size: 21px; line-height: 1.6; color: #f1f5f9; margin-top: 14px;">
+            A <strong>Low C boss</strong> wants a robust, wide street, shrugging if a few players stand on the wrong side.
+          </p>
+          <p style="font-size: 21px; line-height: 1.6; color: var(--green); margin-top: 14px; font-weight: 600;">
+            Because the Low C street is wider, more players touch it, creating more Support Vectors.
+          </p>
+        </div>
+
+        <div style="background: #111827; border: 1px solid var(--rule); border-radius: 12px; padding: 22px; flex: 1; display: flex; flex-direction: column; justify-content: center;">
+          <h4 style="color: var(--blue); margin-bottom: 12px;">Quick Synthesis:</h4>
+          <p style="font-size: 19px; line-height: 1.5; color: var(--muted);">
+            • <strong>High C</strong> &rarr; Strict &rarr; Narrow street &rarr; Fewer Support Vectors &rarr; Overfit risk.<br><br>
+            • <strong>Low C</strong> &rarr; Tolerant &rarr; Wide street &rarr; More Support Vectors &rarr; Robust generalisation.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       SLIDE 12: POST-SLIDE RESOURCES (Part 2)
+       3. "What changes if…" Drills & 4. Compare Pairs
+       ========================================== -->
+  <section class="slide">
+    <div class="slide-header">
+      <div>
+        <p class="slide-category">Post-Slide Resources</p>
+        <h2>3. "What changes if…" Drills & 4. Compare Pairs</h2>
+      </div>
+      <span class="slide-num-pill">Slide 12 / 14</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; height: 670px;">
+      <!-- Drills Column -->
+      <div style="background: var(--soft); border: 1px solid var(--rule); border-radius: 12px; padding: 18px 22px; overflow: hidden; display: flex; flex-direction: column;">
+        <h3 style="color: var(--amber); margin-bottom: 12px;">3. "What changes if…" Drills</h3>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div class="drill-item"><strong>C goes up:</strong> Margin becomes narrower; fewer support vectors; higher overfitting risk.</div>
+          <div class="drill-item"><strong>C goes down:</strong> Margin becomes wider; more support vectors; better generalisation.</div>
+          <div class="drill-item"><strong>One outlier added (Hard Margin):</strong> The math completely breaks or severely overfits.</div>
+          <div class="drill-item"><strong>One outlier added (Soft Margin):</strong> The slack variable absorbs it; boundary barely shifts.</div>
+          <div class="drill-item"><strong>A non-support-vector is deleted:</strong> Absolutely nothing happens to the model.</div>
+          <div class="drill-item"><strong>A support vector is deleted:</strong> The margin expands and the boundary shifts.</div>
+          <div class="drill-item"><strong>Features are unscaled:</strong> Large-numbered features dominate the distance, warping the boundary.</div>
+          <div class="drill-item"><strong>&gamma; is huge:</strong> Influence shrinks to local islands; boundary becomes highly wiggly.</div>
+          <div class="drill-item"><strong>Kernel switches linear &rarr; RBF:</strong> Boundary goes from a straight flat plane to a warped curve.</div>
+        </div>
+      </div>
+
+      <!-- Compare Pairs Column -->
+      <div style="background: var(--soft); border: 1px solid var(--rule); border-radius: 12px; padding: 18px 22px; overflow: hidden; display: flex; flex-direction: column;">
+        <h3 style="color: var(--neon); margin-bottom: 12px;">4. Compare Pairs</h3>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="background: #111827; border: 1px solid var(--rule); border-radius: 8px; padding: 14px;">
+            <strong style="color: var(--blue); font-size: 18px;">Hard vs Soft margin:</strong>
+            <p style="margin-top: 4px; font-size: 18px; color: #e2e8f0;">Zero tolerance for crossing lines vs allowing penalized slack.</p>
           </div>
           <div style="background: #111827; border: 1px solid var(--rule); border-radius: 8px; padding: 14px;">
-            <strong style="color: var(--red); font-size: 19px;">The Rule:</strong>
-            <p style="margin-top: 4px;"><strong>The Rule: No data points are allowed to cross margin boundaries.</strong></p>
-            <p style="font-family: Georgia, serif; color: var(--muted); font-size: 18px; margin-top: 6px;">
-              yᵢ(wᵀxᵢ + b) &ge; 1, &forall; i
-            </p>
-          </div>
-        </div>
-
-        <div style="background: rgba(248, 113, 113, 0.1); border: 1px solid var(--red); border-radius: 8px; padding: 14px; margin-top: 16px;">
-          <strong style="color: var(--red); font-size: 19px;">The Fatal Vulnerability:</strong>
-          <p style="font-size: 18px; margin-top: 4px;">
-            <strong>The Problem: If there is even a single outlier or a tiny bit of noise, it will fail completely or severely overfit.</strong>
-          </p>
-        </div>
-      </div>
-
-      <!-- Box 2: Soft Margin -->
-      <div class="card green" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
-        <div>
-          <span class="badge green">Real-World Pragmatism</span>
-          <h3 class="green">Soft Margin ("Real-World Pragmatism")</h3>
-          <div class="info-box green" style="margin-top: 12px; margin-bottom: 12px;">
-            <p><strong>Real-world data is messy and overlapping. Introduces Slack Variables (&xi;), acting as a "hall pass" allowing some data points to violate the margin.</strong></p>
+            <strong style="color: var(--green); font-size: 18px;">OvR vs OvO:</strong>
+            <p style="margin-top: 4px; font-size: 18px; color: #e2e8f0;">N models tested against the rest vs N(N-1)/2 pairwise duels.</p>
           </div>
           <div style="background: #111827; border: 1px solid var(--rule); border-radius: 8px; padding: 14px;">
-            <strong style="color: var(--green); font-size: 19px;">The Optimization Goal:</strong>
-            <p style="margin-top: 4px;"><strong>The Rule: Maximizes the width of the street while keeping total classification errors to a minimum.</strong></p>
-            <p style="font-family: Georgia, serif; color: var(--muted); font-size: 18px; margin-top: 6px;">
-              min ½||w||² + C &sum; &xi;ᵢ &nbsp; s.t. &nbsp; yᵢ(wᵀxᵢ + b) &ge; 1 - &xi;ᵢ, &xi;ᵢ &ge; 0
-            </p>
+            <strong style="color: var(--purple); font-size: 18px;">SVM vs SVR:</strong>
+            <p style="margin-top: 4px; font-size: 18px; color: #e2e8f0;">Separates classes to maximize margin vs fits data inside a tolerance tube.</p>
+          </div>
+          <div style="background: #111827; border: 1px solid var(--rule); border-radius: 8px; padding: 14px;">
+            <strong style="color: var(--amber); font-size: 18px;">Linear vs RBF kernel:</strong>
+            <p style="margin-top: 4px; font-size: 18px; color: #e2e8f0;">Draws straight lines in current space vs bends space using distance similarity.</p>
+          </div>
+          <div style="background: #111827; border: 1px solid var(--rule); border-radius: 8px; padding: 14px;">
+            <strong style="color: var(--pink); font-size: 18px;">Kernel trick vs Explicit mapping:</strong>
+            <p style="margin-top: 4px; font-size: 18px; color: #e2e8f0;">Calculating dot products mathematically vs actually building massive coordinates.</p>
           </div>
         </div>
-
-        <div style="background: rgba(52, 211, 153, 0.1); border: 1px solid var(--green); border-radius: 8px; padding: 14px; margin-top: 16px;">
-          <strong style="color: var(--green); font-size: 19px;">Slack Variable (&xi;ᵢ) Meaning:</strong>
-          <p style="font-size: 17px; margin-top: 4px; color: var(--muted);">
-            • &xi;ᵢ = 0: Point outside the street (strictly correct).<br>
-            • 0 &lt; &xi;ᵢ &le; 1: Inside margin street, but on correct side.<br>
-            • &xi;ᵢ &gt; 1: Crosses boundary (misclassified error).
-          </p>
-        </div>
       </div>
     </div>
   </section>
 
   <!-- ==========================================
-       Slide 8: The 'C' Parameter (Theory)
+       SLIDE 13: POST-SLIDE RESOURCES (Part 3)
+       5. 12 Exam-Style Questions
        ========================================== -->
   <section class="slide">
-    <p class="label">Hyperparameter Optimization</p>
-    <h2>Topic 7: The 'C' Parameter (Theory)</h2>
-    <p class="lead"><strong>The hyperparameter C dictates exactly how strict the model should be.</strong></p>
-
-    <div class="columns">
-      <!-- Card 1: Low C -->
-      <div class="card green" style="margin-bottom: 0;">
-        <span class="badge green">Tolerant Mode</span>
-        <h3 class="green">Low C (Tolerant & Generalizing)</h3>
-        <div class="info-box green" style="margin-top: 12px; margin-bottom: 14px;">
-          <p style="font-size: 21px;">
-            <strong>Low C (Tolerant): Prioritizes a wide, safe margin street even if a few points sit on the wrong side, improving generalization.</strong>
-          </p>
-        </div>
-
-        <div style="background: #111827; border: 1px solid var(--rule); border-radius: 8px; padding: 16px;">
-          <h4 style="color: var(--green); font-size: 18px; margin-bottom: 6px;">Behavioral Details:</h4>
-          <ul>
-            <li><strong>Margin Width:</strong> Prioritizes a very wide margin street ("wide corridor").</li>
-            <li><strong>Slack Weight:</strong> Small penalty on slack variables (&xi;ᵢ). Allows points to violate the margin.</li>
-            <li><strong>Support Vectors:</strong> Many points fall inside or on the margin, generating higher support vector density.</li>
-            <li><strong>Trade-off:</strong> Highly resilient to noise; slight risk of underfitting if set excessively low.</li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- Card 2: High C -->
-      <div class="card red" style="margin-bottom: 0;">
-        <span class="badge red">Strict Mode</span>
-        <h3 class="red">High C (Closer to Hard Margin)</h3>
-        <div class="info-box red" style="margin-top: 12px; margin-bottom: 14px;">
-          <p style="font-size: 21px;">
-            <strong>High C (Closer to Hard Margin): Heavily penalizes mistakes. Forces a narrow margin street to avoid errors, risking overfitting.</strong>
-          </p>
-        </div>
-
-        <div style="background: #111827; border: 1px solid var(--rule); border-radius: 8px; padding: 16px;">
-          <h4 style="color: var(--red); font-size: 18px; margin-bottom: 6px;">Behavioral Details:</h4>
-          <ul>
-            <li><strong>Margin Width:</strong> Forces a narrow margin street to wrap tightly around the data.</li>
-            <li><strong>Slack Weight:</strong> Massive penalty factor on mistakes; forces &xi;ᵢ &rarr; 0 wherever possible.</li>
-            <li><strong>Support Vectors:</strong> Very sparse; only 2 or 3 critical points hug the boundary.</li>
-            <li><strong>Trade-off:</strong> Highly sensitive to individual noisy outliers; severe risk of overfitting.</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <!-- Summary Math Banner -->
-    <div class="math-board" style="margin-top: 20px;">
-      Objective: min ½||w||² + C &sum; &xi;ᵢ &nbsp; | &nbsp; Small C &rarr; Margin Maximization &nbsp;&bull;&nbsp; Large C &rarr; Error Minimization
-    </div>
-  </section>
-
-  <!-- ==========================================
-       Slide 9: Interactive Simulation (Live Tool)
-       ========================================== -->
-  <section class="slide">
-    <p class="label">Live Interactive Simulation</p>
-    <h2>Topic 8: Interactive Tool — The 'C' Parameter</h2>
-
-    <div class="columns-sim">
-      <!-- Left Column: Slider & Live Stats (Width 500px) -->
+    <div class="slide-header">
       <div>
-        <div class="controls-card">
-          <div class="slider-container">
-            <div class="slider-label-row">
-              <span class="slider-title">Strictness (C) - Drag to adjust</span>
-              <span id="c-pill" class="slider-value-pill">C = 1.0</span>
-            </div>
-            <input type="range" id="c-slider" min="1" max="100" value="28">
-            <div class="preset-group">
-              <button class="preset-btn" id="btn-low-c" onclick="setPreset(8)">Low C (0.01)</button>
-              <button class="preset-btn" id="btn-mid-c" onclick="setPreset(50)">Medium C (1.0)</button>
-              <button class="preset-btn" id="btn-high-c" onclick="setPreset(95)">High C (100)</button>
-            </div>
-          </div>
-        </div>
+        <p class="slide-category">Post-Slide Resources</p>
+        <h2>5. 12 Exam-Style Questions</h2>
+      </div>
+      <span class="slide-num-pill">Slide 13 / 14</span>
+    </div>
 
-        <!-- Dynamic Status Callout -->
-        <div id="status-banner" class="status-callout low-c">
-          <span id="status-icon" style="font-size: 26px;">🛡️</span>
-          <span id="status-text">Low C: Wide Margin, High Tolerance</span>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; height: 670px;">
+      <!-- Column A (Q1 - Q6) -->
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div class="concise-card card-exam" style="padding: 10px 14px;">
+          <h4 style="color:var(--neon); font-size: 17px;">1. Why does SVM maximize the margin?</h4>
+          <p style="font-size: 17px; color: #e2e8f0;">It provides the best generalisation against future noise.</p>
         </div>
-
-        <!-- Live KPI Telemetry -->
-        <div class="metrics-grid">
-          <div class="metric-box">
-            <div class="metric-label">Margin Street Width</div>
-            <div id="stat-margin-width" class="metric-value blue">Wide (160 px)</div>
-          </div>
-          <div class="metric-box">
-            <div class="metric-label">Support Vectors</div>
-            <div id="stat-sv-count" class="metric-value amber">11 Active Points</div>
-          </div>
-          <div class="metric-box">
-            <div class="metric-label">Noise Sensitivity</div>
-            <div id="stat-noise-sense" class="metric-value green">Low (Ignores Outliers)</div>
-          </div>
-          <div class="metric-box">
-            <div class="metric-label">Generalization Risk</div>
-            <div id="stat-risk" class="metric-value">Robust / Underfitting</div>
-          </div>
+        <div class="concise-card card-exam" style="padding: 10px 14px;">
+          <h4 style="color:var(--neon); font-size: 17px;">2. Why are they called support vectors?</h4>
+          <p style="font-size: 17px; color: #e2e8f0;">Because they "support" the margin; deleting others changes nothing.</p>
+        </div>
+        <div class="concise-card card-exam" style="padding: 10px 14px;">
+          <h4 style="color:var(--neon); font-size: 17px;">3. Why do we use the kernel trick?</h4>
+          <p style="font-size: 17px; color: #e2e8f0;">Mapping to infinite dimensions explicitly is computationally impossible.</p>
+        </div>
+        <div class="concise-card card-exam" style="padding: 10px 14px;">
+          <h4 style="color:var(--neon); font-size: 17px;">4. Why does unscaled data ruin SVM?</h4>
+          <p style="font-size: 17px; color: #e2e8f0;">SVM uses geometric distance; larger numbers overpower the math.</p>
+        </div>
+        <div class="concise-card card-exam" style="padding: 10px 14px;">
+          <h4 style="color:var(--neon); font-size: 17px;">5. Why use SVR instead of standard linear regression?</h4>
+          <p style="font-size: 17px; color: #e2e8f0;">SVR ignores minor errors inside the ε-tube, creating smoother fits.</p>
+        </div>
+        <div class="concise-card card-exam" style="padding: 10px 14px;">
+          <h4 style="color:var(--neon); font-size: 17px;">6. Why might a Soft Margin model perform better than Hard Margin?</h4>
+          <p style="font-size: 17px; color: #e2e8f0;">Real data has noise; Hard Margin overfits it.</p>
         </div>
       </div>
 
-      <!-- Right Column: Massive Interactive Canvas (Width 1fr) -->
-      <div class="canvas-panel">
-        <canvas id="sim-canvas" width="880" height="510"></canvas>
-        <div style="display: flex; justify-content: space-between; width: 100%; margin-top: 8px; font-size: 14px; color: var(--muted); padding: 0 10px;">
-          <span><strong style="color: var(--blue);">●</strong> Class A (Blue)</span>
-          <span><strong style="color: var(--red);">●</strong> Class B (Red)</span>
-          <span><strong style="color: var(--pink);">★</strong> Noisy Outliers</span>
-          <span><strong style="color: var(--neon); text-shadow:0 0 8px var(--neon);">◎</strong> Active Support Vectors</span>
+      <!-- Column B (Q7 - Q12) -->
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div class="concise-card card-exam" style="padding: 10px 14px;">
+          <h4 style="color:var(--neon); font-size: 17px;">7. How does C control overfitting?</h4>
+          <p style="font-size: 17px; color: #e2e8f0;">High C strictly penalizes errors, forcing a tight, overfitted boundary.</p>
+        </div>
+        <div class="concise-card card-exam" style="padding: 10px 14px;">
+          <h4 style="color:var(--neon); font-size: 17px;">8. How does OvO handle multi-class predictions?</h4>
+          <p style="font-size: 17px; color: #e2e8f0;">It pits every class against every other class in a voting tournament.</p>
+        </div>
+        <div class="concise-card card-exam" style="padding: 10px 14px;">
+          <h4 style="color:var(--neon); font-size: 17px;">9. How do you widen the margin mathematically?</h4>
+          <p style="font-size: 17px; color: #e2e8f0;">By minimising the magnitude of the weight vector w.</p>
+        </div>
+        <div class="concise-card card-exam" style="padding: 10px 14px;">
+          <h4 style="color:var(--neon); font-size: 17px;">10. How does the RBF kernel define similarity?</h4>
+          <p style="font-size: 17px; color: #e2e8f0;">Similarity drops exponentially as geometric distance between points increases.</p>
+        </div>
+        <div class="concise-card card-exam" style="padding: 10px 14px;">
+          <h4 style="color:var(--neon); font-size: 17px;">11. What happens if you lower C?</h4>
+          <p style="font-size: 17px; color: #e2e8f0;">The margin widens, increasing the number of support vectors.</p>
+        </div>
+        <div class="concise-card card-exam" style="padding: 10px 14px;">
+          <h4 style="color:var(--neon); font-size: 17px;">12. What happens if you increase Gamma (γ)?</h4>
+          <p style="font-size: 17px; color: #e2e8f0;">The decision boundary becomes tighter and highly wiggly.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       SLIDE 14: POST-SLIDE RESOURCES (Part 4)
+       6. Self-Test (Click to reveal answers)
+       ========================================== -->
+  <section class="slide">
+    <div class="slide-header">
+      <div>
+        <p class="slide-category">Post-Slide Resources</p>
+        <h2>6. Self-Test (Click to reveal answers)</h2>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <button class="action-btn" onclick="toggleAllAnswers()">👁️ Toggle All Answers</button>
+        <span class="slide-num-pill">Slide 14 / 14</span>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; height: 670px;">
+      <!-- Group A (1 - 5) -->
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div class="self-test-card" onclick="this.classList.toggle('revealed')">
+          <div class="self-test-q">1. What defines the width of the margin?</div>
+          <div class="self-test-a">&rarr; Answer: 2/‖w‖</div>
+        </div>
+        <div class="self-test-card" onclick="this.classList.toggle('revealed')">
+          <div class="self-test-q">2. What allows points to cross the boundary in Soft Margin?</div>
+          <div class="self-test-a">&rarr; Answer: Slack variables, ξ</div>
+        </div>
+        <div class="self-test-card" onclick="this.classList.toggle('revealed')">
+          <div class="self-test-q">3. Which parameter dictates the strictness of the Slack penalty?</div>
+          <div class="self-test-a">&rarr; Answer: C</div>
+        </div>
+        <div class="self-test-card" onclick="this.classList.toggle('revealed')">
+          <div class="self-test-q">4. If C is very large, is the margin narrow or wide?</div>
+          <div class="self-test-a">&rarr; Answer: Narrow</div>
+        </div>
+        <div class="self-test-card" onclick="this.classList.toggle('revealed')">
+          <div class="self-test-q">5. Does deleting a point inside the correct class zone change the SVM?</div>
+          <div class="self-test-a">&rarr; Answer: No, it's not a support vector</div>
+        </div>
+      </div>
+
+      <!-- Group B (6 - 10) -->
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div class="self-test-card" onclick="this.classList.toggle('revealed')">
+          <div class="self-test-q">6. What is the equivalent of a 2D line in 3D SVM space?</div>
+          <div class="self-test-a">&rarr; Answer: A plane/hyperplane</div>
+        </div>
+        <div class="self-test-card" onclick="this.classList.toggle('revealed')">
+          <div class="self-test-q">7. In SVR, what is the ε (epsilon) tube?</div>
+          <div class="self-test-a">&rarr; Answer: The tolerance zone where errors are ignored</div>
+        </div>
+        <div class="self-test-card" onclick="this.classList.toggle('revealed')">
+          <div class="self-test-q">8. How many models does One-vs-Rest train for 5 classes?</div>
+          <div class="self-test-a">&rarr; Answer: 5</div>
+        </div>
+        <div class="self-test-card" onclick="this.classList.toggle('revealed')">
+          <div class="self-test-q">9. What happens to the SVM formula if data is linearly separable?</div>
+          <div class="self-test-a">&rarr; Answer: Slack variables equal zero</div>
+        </div>
+        <div class="self-test-card" onclick="this.classList.toggle('revealed')">
+          <div class="self-test-q">10. Why is SVM called a "large margin classifier"?</div>
+          <div class="self-test-a">&rarr; Answer: It explicitly seeks the farthest boundary from nearest data</div>
         </div>
       </div>
     </div>
@@ -875,24 +1178,32 @@ input[type=range]::-webkit-slider-thumb:hover {
      Bottom Navigation Bar
      ========================================== -->
 <footer id="nav">
-  <button id="btn-prev" class="nav-btn" onclick="previous()">
-    <span>&larr;</span> Previous
-  </button>
-  <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
-    <span id="counter" class="slide-number">1 / 9</span>
-    <span class="nav-hint">Arrows &bull; Spacebar</span>
+  <div style="display: flex; gap: 10px; align-items: center;">
+    <button id="btn-prev" class="nav-btn" onclick="previous()">
+      <span>&larr;</span> Previous
+    </button>
+    <button class="jump-btn" onclick="showSlide(0)">Slides 1-10 (Lecture)</button>
   </div>
-  <button id="btn-next" class="nav-btn" onclick="next()">
-    Next <span>&rarr;</span>
-  </button>
+
+  <div class="nav-center">
+    <span id="counter" class="slide-number">Slide 1 / 14</span>
+    <span class="nav-hint">Arrows &bull; Spacebar to Navigate</span>
+  </div>
+
+  <div style="display: flex; gap: 10px; align-items: center;">
+    <button class="jump-btn" onclick="showSlide(10)">Post-Slide Resources &rarr;</button>
+    <button id="btn-next" class="nav-btn" onclick="next()">
+      Next <span>&rarr;</span>
+    </button>
+  </div>
 </footer>
 
 <!-- ==========================================
-     JavaScript Engine: Navigation & Canvases
+     JavaScript Engine & Canvas Renderers
      ========================================== -->
 <script>
 // ==========================================
-// 1. Navigation Controller
+// 1. Navigation Engine
 // ==========================================
 const slides = Array.from(document.querySelectorAll('section.slide'));
 let currentIndex = 0;
@@ -903,49 +1214,36 @@ function showSlide(index) {
     slide.classList.toggle('active', i === currentIndex);
   });
   
-  // Update counter & button states
-  document.getElementById('counter').textContent = `${currentIndex + 1} / ${slides.length}`;
+  document.getElementById('counter').textContent = `Slide ${currentIndex + 1} / ${slides.length}`;
   document.getElementById('btn-prev').disabled = (currentIndex === 0);
   document.getElementById('btn-next').disabled = (currentIndex === slides.length - 1);
 
-  // Trigger relevant canvas renderings
-  if (currentIndex === 2) {
-    drawMarginCanvas();
-  } else if (currentIndex === 8) {
-    updateSimulation();
-  }
+  // Trigger Slide Specific Canvases
+  renderSlideVisual(currentIndex);
 }
 
 function next() {
-  if (currentIndex < slides.length - 1) {
-    showSlide(currentIndex + 1);
-  }
+  if (currentIndex < slides.length - 1) showSlide(currentIndex + 1);
 }
 
 function previous() {
-  if (currentIndex > 0) {
-    showSlide(currentIndex - 1);
-  }
+  if (currentIndex > 0) showSlide(currentIndex - 1);
 }
 
-// Window Scaling Fit
 function fit() {
   const scale = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
   document.documentElement.style.setProperty('--scale', scale);
 }
 
-// Keyboard shortcuts
+window.addEventListener('resize', fit);
+
 window.addEventListener('keydown', (e) => {
   if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(e.key)) {
-    if (document.activeElement && document.activeElement.id === 'c-slider' && ['ArrowRight','ArrowLeft'].includes(e.key)) {
-      return;
-    }
+    if (document.activeElement && document.activeElement.id === 'log-c-slider' && ['ArrowRight','ArrowLeft'].includes(e.key)) return;
     e.preventDefault();
     next();
   } else if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) {
-    if (document.activeElement && document.activeElement.id === 'c-slider' && ['ArrowRight','ArrowLeft'].includes(e.key)) {
-      return;
-    }
+    if (document.activeElement && document.activeElement.id === 'log-c-slider' && ['ArrowRight','ArrowLeft'].includes(e.key)) return;
     e.preventDefault();
     previous();
   } else if (e.key === 'Home') {
@@ -957,40 +1255,256 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-window.addEventListener('resize', fit);
-
+function renderSlideVisual(idx) {
+  switch(idx) {
+    case 0: drawSlide1(); break;
+    case 1: drawSlide2(); break;
+    case 2: drawSlide3(); break;
+    case 3: drawSlide4(); break;
+    case 4: drawSlide5(); break;
+    case 5: drawSlide6(); break;
+    case 6: drawSlide7(); break;
+    case 7: drawSlide8(); break;
+    case 8: drawSlide9(); break;
+    case 9: drawSlide10(); break;
+  }
+}
 
 // ==========================================
-// 2. Slide 3: Static Decision Boundary & Margin Canvas
+// 2. Visual Renderers for Slides 1 - 10
 // ==========================================
-function drawMarginCanvas() {
-  const canvas = document.getElementById('margin-canvas');
+
+// --- SLIDE 1: LR vs SVM ---
+function drawSlide1() {
+  const canvas = document.getElementById('canvas-s1');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  const w = canvas.width;
-  const h = canvas.height;
-
+  const w = canvas.width, h = canvas.height;
   ctx.clearRect(0, 0, w, h);
 
-  // Background subtle grid
-  ctx.strokeStyle = 'rgba(51, 65, 85, 0.35)';
-  ctx.lineWidth = 1;
-  const gridSize = 32;
-  for (let x = 0; x < w; x += gridSize) {
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
-  }
-  for (let y = 0; y < h; y += gridSize) {
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
-  }
+  const halfW = w / 2;
 
-  // Geometry: Line equation 0.65x + y - 390 = 0
-  const m = -0.65;
-  const b0 = 390;
-  const d = 75;
-  const normLen = Math.sqrt(m * m + 1); // 1.192
-  const offset = d * normLen; // 89.4
+  // Background Panels
+  ctx.fillStyle = '#0b1120';
+  ctx.fillRect(10, 10, halfW - 20, h - 20);
+  ctx.fillRect(halfW + 10, 10, halfW - 20, h - 20);
 
-  // Margin Street Shading
+  ctx.strokeStyle = '#334155';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(10, 10, halfW - 20, h - 20);
+  ctx.strokeRect(halfW + 10, 10, halfW - 20, h - 20);
+
+  // Panel 1: Logistic Regression (Left)
+  ctx.font = 'bold 20px sans-serif';
+  ctx.fillStyle = '#f87171';
+  ctx.fillText('Logistic Regression (Linear Cut)', 30, 45);
+  ctx.font = '15px sans-serif';
+  ctx.fillStyle = '#94a3b8';
+  ctx.fillText('Struggles with non-linear patterns; high error rate', 30, 70);
+
+  // Panel 2: SVM (Right)
+  ctx.font = 'bold 20px sans-serif';
+  ctx.fillStyle = '#38bdf8';
+  ctx.fillText('Support Vector Machine (Kernel)', halfW + 30, 45);
+  ctx.font = '15px sans-serif';
+  ctx.fillStyle = '#94a3b8';
+  ctx.fillText('Draws a clean, glowing non-linear separation boundary', halfW + 30, 70);
+
+  // Data Points (Concentric Rings in both panels)
+  const redPoints = [
+    {x: 0, y: 0}, {x: -25, y: 20}, {x: 20, y: -25}, {x: 30, y: 15},
+    {x: -15, y: -30}, {x: 5, y: 35}, {x: -35, y: -10}, {x: 25, y: 30}
+  ];
+  const bluePoints = [
+    {x: -110, y: 0}, {x: 110, y: 20}, {x: 0, y: -115}, {x: -20, y: 110},
+    {x: 80, y: 80}, {x: -80, y: -80}, {x: 95, y: -70}, {x: -85, y: 75},
+    {x: 120, y: -20}, {x: -115, y: 40}, {x: 30, y: 120}, {x: -40, y: -110}
+  ];
+
+  // Draw LR Panel (Left)
+  const c1 = { x: halfW / 2, y: h / 2 + 25 };
+  redPoints.forEach(p => drawDot(ctx, c1.x + p.x, c1.y + p.y, '#f87171'));
+  bluePoints.forEach(p => drawDot(ctx, c1.x + p.x, c1.y + p.y, '#38bdf8'));
+
+  // Jagged flat line for LR
+  ctx.save();
+  ctx.strokeStyle = '#ef4444';
+  ctx.lineWidth = 3.5;
+  ctx.setLineDash([10, 5]);
+  ctx.beginPath();
+  ctx.moveTo(30, c1.y + 130);
+  ctx.lineTo(halfW - 30, c1.y - 120);
+  ctx.stroke();
+
+  // Error badges
+  ctx.fillStyle = '#ef4444';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText('❌ Misclassified', c1.x - 60, c1.y + 90);
+  ctx.fillText('❌ Flat Jagged Cut', c1.x - 70, c1.y - 80);
+  ctx.restore();
+
+  // Draw SVM Panel (Right)
+  const c2 = { x: halfW + halfW / 2, y: h / 2 + 25 };
+  redPoints.forEach(p => drawDot(ctx, c2.x + p.x, c2.y + p.y, '#f87171'));
+  bluePoints.forEach(p => drawDot(ctx, c2.x + p.x, c2.y + p.y, '#38bdf8'));
+
+  // Glowing curved boundary for SVM
+  ctx.save();
+  ctx.strokeStyle = '#00f3ff';
+  ctx.lineWidth = 4;
+  ctx.shadowColor = '#00f3ff';
+  ctx.shadowBlur = 18;
+  ctx.beginPath();
+  ctx.arc(c2.x, c2.y, 75, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Success badge
+  ctx.fillStyle = '#34d399';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.shadowBlur = 0;
+  ctx.fillText('✓ Perfect Clean Separation (0 Errors)', c2.x - 130, c2.y + 160);
+  ctx.restore();
+}
+
+// --- SLIDE 2: Widest Street ---
+function drawSlide2() {
+  const canvas = document.getElementById('canvas-s2');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  // Background Grid
+  drawGrid(ctx, w, h);
+
+  const m = -0.65, b0 = 400, offset = 95;
+
+  // Wide Street Corridor Shading
+  ctx.fillStyle = 'rgba(251, 191, 36, 0.12)';
+  ctx.beginPath();
+  ctx.moveTo(0, b0 - offset);
+  ctx.lineTo(w, m * w + (b0 - offset));
+  ctx.lineTo(w, m * w + (b0 + offset));
+  ctx.lineTo(0, b0 + offset);
+  ctx.closePath();
+  ctx.fill();
+
+  // Dashed Margins (Bright Yellow)
+  ctx.save();
+  ctx.setLineDash([10, 6]);
+  ctx.strokeStyle = '#fbbf24';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(0, b0 - offset);
+  ctx.lineTo(w, m * w + (b0 - offset));
+  ctx.moveTo(0, b0 + offset);
+  ctx.lineTo(w, m * w + (b0 + offset));
+  ctx.stroke();
+  ctx.restore();
+
+  // Solid Optimal Boundary (Black/White Center Line)
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(0, b0);
+  ctx.lineTo(w, m * w + b0);
+  ctx.stroke();
+
+  // Fragile Tight Green Line (Rejected)
+  ctx.save();
+  ctx.setLineDash([5, 5]);
+  ctx.strokeStyle = '#22c55e';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(100, 520);
+  ctx.lineTo(750, 160);
+  ctx.stroke();
+  ctx.fillStyle = '#22c55e';
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillText('✕ Tight Green Line (Fragile)', 460, 275);
+  ctx.restore();
+
+  // Fragile Tight Magenta Line (Rejected)
+  ctx.save();
+  ctx.setLineDash([5, 5]);
+  ctx.strokeStyle = '#e11d48';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(50, 280);
+  ctx.lineTo(700, 30);
+  ctx.stroke();
+  ctx.fillStyle = '#e11d48';
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillText('✕ Tight Magenta Line (Too close)', 180, 200);
+  ctx.restore();
+
+  // Bright Yellow Span Indicator
+  const spanX = 540;
+  const spanYCenter = m * spanX + b0;
+  ctx.save();
+  ctx.strokeStyle = '#fbbf24';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(spanX, spanYCenter - offset);
+  ctx.lineTo(spanX, spanYCenter + offset);
+  ctx.stroke();
+
+  // Arrow heads
+  ctx.fillStyle = '#fbbf24';
+  drawArrowHead(ctx, spanX, spanYCenter - offset, 'up');
+  drawArrowHead(ctx, spanX, spanYCenter + offset, 'down');
+
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(spanX + 16, spanYCenter - 18, 175, 36);
+  ctx.strokeStyle = '#fbbf24';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(spanX + 16, spanYCenter - 18, 175, 36);
+  ctx.fillStyle = '#fbbf24';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText('Street Width (Margin)', spanX + 22, spanYCenter + 6);
+  ctx.restore();
+
+  // Data Points
+  const blueDots = [{x:360, y:120}, {x:450, y:70}, {x:530, y:130}, {x:620, y:70}, {x:480, y:180}, {x:680, y:140}];
+  const redDots  = [{x:120, y:460}, {x:180, y:490}, {x:90, y:390}, {x:240, y:470}, {x:320, y:430}, {x:160, y:340}];
+  blueDots.forEach(p => drawDot(ctx, p.x, p.y, '#38bdf8'));
+  redDots.forEach(p => drawDot(ctx, p.x, p.y, '#f87171'));
+
+  // Points on margin lines
+  drawDot(ctx, 280, m * 280 + (b0 - offset), '#38bdf8');
+  drawDot(ctx, 420, m * 420 + (b0 - offset), '#38bdf8');
+  drawDot(ctx, 220, m * 220 + (b0 + offset), '#f87171');
+  drawDot(ctx, 360, m * 360 + (b0 + offset), '#f87171');
+
+  // Label
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText('Optimal Boundary (Farthest from all examples)', 30, 48);
+}
+
+// --- SLIDE 3: Support Vectors & Eraser ---
+let eraseNonSVs = false;
+function toggleEraseDots() {
+  eraseNonSVs = !eraseNonSVs;
+  const btn = document.getElementById('btn-erase');
+  const lbl = document.getElementById('erase-label');
+  if (btn) btn.classList.toggle('active', eraseNonSVs);
+  if (lbl) lbl.textContent = eraseNonSVs ? 'Background dots removed! Road is 100% intact.' : 'Click to test if boundary shifts';
+  drawSlide3();
+}
+
+function drawSlide3() {
+  const canvas = document.getElementById('canvas-s3');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  drawGrid(ctx, w, h);
+
+  const m = -0.65, b0 = 400, offset = 95;
+
+  // Street & Boundary (Always Fixed!)
   ctx.fillStyle = 'rgba(56, 189, 248, 0.08)';
   ctx.beginPath();
   ctx.moveTo(0, b0 - offset);
@@ -1000,299 +1514,688 @@ function drawMarginCanvas() {
   ctx.closePath();
   ctx.fill();
 
-  // Dashed Margins (Positive and Negative)
   ctx.save();
   ctx.setLineDash([8, 6]);
   ctx.strokeStyle = '#fbbf24';
   ctx.lineWidth = 2.5;
-
-  // Positive Margin: wᵀx + b = +1
   ctx.beginPath();
   ctx.moveTo(0, b0 - offset);
   ctx.lineTo(w, m * w + (b0 - offset));
-  ctx.stroke();
-
-  // Negative Margin: wᵀx + b = -1
-  ctx.beginPath();
   ctx.moveTo(0, b0 + offset);
   ctx.lineTo(w, m * w + (b0 + offset));
   ctx.stroke();
   ctx.restore();
 
-  // Solid Decision Boundary: wᵀx + b = 0
-  ctx.strokeStyle = '#38bdf8';
+  ctx.strokeStyle = '#ffffff';
   ctx.lineWidth = 3.5;
   ctx.beginPath();
   ctx.moveTo(0, b0);
   ctx.lineTo(w, m * w + b0);
   ctx.stroke();
 
-  // Dimension Arrow: Margin = 2 / ||w||
-  const arrowX = 470;
-  const yCenter = m * arrowX + b0;
-  const yTop = yCenter - offset;
-  const yBottom = yCenter + offset;
-
-  ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(arrowX, yTop + 4);
-  ctx.lineTo(arrowX, yBottom - 4);
-  ctx.stroke();
-
-  // Arrow heads
-  ctx.fillStyle = '#ffffff';
-  ctx.beginPath();
-  ctx.moveTo(arrowX, yTop);
-  ctx.lineTo(arrowX - 5, yTop + 10);
-  ctx.lineTo(arrowX + 5, yTop + 10);
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.moveTo(arrowX, yBottom);
-  ctx.lineTo(arrowX - 5, yBottom - 10);
-  ctx.lineTo(arrowX + 5, yBottom - 10);
-  ctx.fill();
-
-  // Margin Label Tag
-  ctx.fillStyle = '#0f172a';
-  ctx.strokeStyle = '#fbbf24';
-  ctx.lineWidth = 1.5;
-  ctx.fillRect(arrowX + 12, yCenter - 18, 120, 36);
-  ctx.strokeRect(arrowX + 12, yCenter - 18, 120, 36);
-  ctx.fillStyle = '#fbbf24';
-  ctx.font = 'bold 14px sans-serif';
-  ctx.fillText('Margin = 2/||w||', arrowX + 16, yCenter + 5);
-
-  // Line Labels
-  ctx.font = 'bold 13px monospace';
-  ctx.fillStyle = '#38bdf8';
-  ctx.fillText('Decision Boundary: wᵀx + b = 0', 20, b0 - 10);
-  ctx.fillStyle = '#fbbf24';
-  ctx.fillText('Margin (+1): wᵀx + b = +1', 20, (b0 - offset) - 8);
-  ctx.fillText('Margin (-1): wᵀx + b = -1', 20, (b0 + offset) + 20);
-
-  // Data Points Data
-  // Blue Points (Class +1)
-  const bluePoints = [
-    { x: 360, y: 110 }, { x: 420, y: 60 }, { x: 500, y: 110 },
-    { x: 550, y: 50 },  { x: 460, y: 150 }, { x: 570, y: 140 },
-    { x: 320, y: 60 }
-  ];
-  // Blue Support Vectors (Touching +1 Margin)
-  const blueSVs = [
-    { x: 250, y: m * 250 + (b0 - offset) },
-    { x: 420, y: m * 420 + (b0 - offset) }
+  // Support Vectors (Strictly Touching the Margins with Glowing Halos)
+  const svs = [
+    { x: 260, y: m * 260 + (b0 - offset), col: '#38bdf8', label: 'Support Vector' },
+    { x: 440, y: m * 440 + (b0 - offset), col: '#38bdf8', label: 'Support Vector' },
+    { x: 220, y: m * 220 + (b0 + offset), col: '#f87171', label: 'Support Vector' },
+    { x: 380, y: m * 380 + (b0 + offset), col: '#f87171', label: 'Support Vector' }
   ];
 
-  // Red Points (Class -1)
-  const redPoints = [
-    { x: 110, y: 440 }, { x: 170, y: 410 }, { x: 80, y: 360 },
-    { x: 230, y: 440 }, { x: 290, y: 400 }, { x: 140, y: 320 },
-    { x: 360, y: 440 }
-  ];
-  // Red Support Vectors (Touching -1 Margin)
-  const redSVs = [
-    { x: 180, y: m * 180 + (b0 + offset) },
-    { x: 330, y: m * 330 + (b0 + offset) }
-  ];
+  svs.forEach(sv => {
+    drawGlowingHalo(ctx, sv.x, sv.y, '#00f3ff');
+    drawDot(ctx, sv.x, sv.y, sv.col, 11);
+    ctx.fillStyle = '#00f3ff';
+    ctx.font = 'bold 13px sans-serif';
+    ctx.fillText(sv.label, sv.x + 16, sv.y + 4);
+  });
 
-  // Draw Regular Points
-  bluePoints.forEach(p => drawPoint(ctx, p.x, p.y, '#38bdf8', '#0284c7'));
-  redPoints.forEach(p => drawPoint(ctx, p.x, p.y, '#f87171', '#dc2626'));
+  // Background non-SV dots (Eraseable!)
+  const bgBlue = [{x:350, y:100}, {x:480, y:60}, {x:560, y:120}, {x:640, y:70}, {x:510, y:170}, {x:690, y:140}];
+  const bgRed  = [{x:100, y:450}, {x:170, y:480}, {x:80, y:380}, {x:240, y:470}, {x:320, y:450}, {x:140, y:330}];
 
-  // Draw Support Vectors with Glowing Halos
-  blueSVs.forEach(p => drawSupportVector(ctx, p.x, p.y, '#38bdf8', 'SV (+1)'));
-  redSVs.forEach(p => drawSupportVector(ctx, p.x, p.y, '#f87171', 'SV (-1)'));
-}
+  if (!eraseNonSVs) {
+    bgBlue.forEach(p => drawDot(ctx, p.x, p.y, 'rgba(56, 189, 248, 0.7)', 8));
+    bgRed.forEach(p => drawDot(ctx, p.x, p.y, 'rgba(248, 113, 113, 0.7)', 8));
+  } else {
+    // Show faint ghost outlines
+    ctx.save();
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.3)';
+    bgBlue.concat(bgRed).forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
+      ctx.stroke();
+    });
+    ctx.restore();
+  }
 
-function drawPoint(ctx, x, y, fill, stroke) {
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(x, y, 8, 0, Math.PI * 2);
-  ctx.fillStyle = fill;
-  ctx.fill();
-  ctx.lineWidth = 2.5;
-  ctx.strokeStyle = stroke;
-  ctx.stroke();
-  ctx.restore();
-}
-
-function drawSupportVector(ctx, x, y, color, label) {
-  ctx.save();
-  // Outer radiant halo
-  ctx.beginPath();
-  ctx.arc(x, y, 17, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(0, 243, 255, 0.22)';
-  ctx.fill();
-  ctx.strokeStyle = '#00f3ff';
-  ctx.lineWidth = 2;
-  ctx.shadowColor = '#00f3ff';
-  ctx.shadowBlur = 12;
-  ctx.stroke();
-
-  // Inner core point
-  ctx.beginPath();
-  ctx.arc(x, y, 9, 0, Math.PI * 2);
-  ctx.fillStyle = color;
-  ctx.shadowBlur = 0;
-  ctx.fill();
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = '#ffffff';
-  ctx.stroke();
-
-  // Small Callout Badge
+  // HUD
   ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
-  ctx.fillRect(x + 12, y - 22, 68, 20);
-  ctx.strokeStyle = '#00f3ff';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(x + 12, y - 22, 68, 20);
-  ctx.fillStyle = '#00f3ff';
-  ctx.font = 'bold 11px sans-serif';
-  ctx.fillText(label, x + 16, y - 8);
+  ctx.fillRect(20, 20, 480, 44);
+  ctx.strokeStyle = '#334155';
+  ctx.strokeRect(20, 20, 480, 44);
+  ctx.fillStyle = eraseNonSVs ? '#34d399' : '#38bdf8';
+  ctx.font = 'bold 15px sans-serif';
+  ctx.fillText(eraseNonSVs ? '✓ Background erased — Notice: Road is 100% UNCHANGED!' : 'Only the 4 Support Vectors hold up the boundary!', 32, 48);
+}
 
+// --- SLIDE 4: Wider Roads & Potholes ---
+function drawSlide4() {
+  const canvas = document.getElementById('canvas-s4');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  drawGrid(ctx, w, h);
+
+  // Left Formula Box
+  ctx.fillStyle = '#0b1120';
+  ctx.fillRect(30, 40, 310, 260);
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(30, 40, 310, 260);
+
+  ctx.font = 'bold 18px sans-serif';
+  ctx.fillStyle = '#38bdf8';
+  ctx.fillText('Mathematical Relation:', 50, 75);
+
+  ctx.font = 'bold 26px Georgia, serif';
+  ctx.fillStyle = '#fbbf24';
+  ctx.fillText('Margin = 2 / ‖w‖', 50, 125);
+
+  ctx.font = 'bold 20px sans-serif';
+  ctx.fillStyle = '#34d399';
+  ctx.fillText('Minimise ½‖w‖²', 50, 175);
+
+  ctx.font = '16px sans-serif';
+  ctx.fillStyle = '#f87171';
+  ctx.fillText('↓ Down arrow on w (Shrink)', 50, 220);
+  ctx.fillStyle = '#34d399';
+  ctx.fillText('↔ Outward arrows on street (Widen)', 50, 255);
+
+  // Right: Street widening graphic
+  const streetCenterY = 270;
+  const marginWidth = 120;
+
+  // Wide Street corridor
+  ctx.fillStyle = 'rgba(56, 189, 248, 0.12)';
+  ctx.fillRect(380, streetCenterY - marginWidth, 430, marginWidth * 2);
+
+  ctx.save();
+  ctx.setLineDash([8, 6]);
+  ctx.strokeStyle = '#fbbf24';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(380, streetCenterY - marginWidth); ctx.lineTo(810, streetCenterY - marginWidth);
+  ctx.moveTo(380, streetCenterY + marginWidth); ctx.lineTo(810, streetCenterY + marginWidth);
+  ctx.stroke();
+  ctx.restore();
+
+  // Decision line
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(380, streetCenterY); ctx.lineTo(810, streetCenterY);
+  ctx.stroke();
+
+  // Outward arrows
+  ctx.strokeStyle = '#34d399';
+  ctx.lineWidth = 3;
+  drawOutwardArrow(ctx, 600, streetCenterY - 10, 'up');
+  drawOutwardArrow(ctx, 600, streetCenterY + 10, 'down');
+
+  ctx.fillStyle = '#34d399';
+  ctx.font = 'bold 15px sans-serif';
+  ctx.fillText('Widening Margin Buffer', 625, streetCenterY - 60);
+
+  // "Unseen Potholes" (Future test noise safely within the buffer)
+  const potholes = [
+    {x: 440, y: streetCenterY - 65}, {x: 520, y: streetCenterY + 70},
+    {x: 680, y: streetCenterY - 50}, {x: 740, y: streetCenterY + 80}
+  ];
+  potholes.forEach((p, i) => {
+    ctx.save();
+    ctx.fillStyle = '#fbbf24';
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 9, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.stroke();
+
+    ctx.fillStyle = '#fbbf24';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillText(`Pothole #${i+1}`, p.x + 12, p.y + 4);
+    ctx.restore();
+  });
+
+  // Callout banner at bottom
+  ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+  ctx.fillRect(30, 420, 780, 80);
+  ctx.strokeStyle = '#334155';
+  ctx.strokeRect(30, 420, 780, 80);
+  ctx.fillStyle = '#34d399';
+  ctx.font = 'bold 18px sans-serif';
+  ctx.fillText('✓ Unseen future noisy test data stays safely inside the wide street buffer!', 50, 465);
+}
+
+// --- SLIDE 5: Fold the Paper ---
+function drawSlide5() {
+  const canvas = document.getElementById('canvas-s5');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  const halfW = w / 2;
+
+  // Left: Flat 2D Paper (Inseparable)
+  ctx.fillStyle = '#0b1120';
+  ctx.fillRect(15, 20, halfW - 30, h - 40);
+  ctx.strokeStyle = '#334155';
+  ctx.strokeRect(15, 20, halfW - 30, h - 40);
+
+  ctx.font = 'bold 19px sans-serif';
+  ctx.fillStyle = '#fbbf24';
+  ctx.fillText('2D Flat Paper: Inseparable by Straight Line', 35, 55);
+
+  const c1 = { x: halfW / 2, y: h / 2 + 10 };
+  for (let a = 0; a < Math.PI * 2; a += 0.6) {
+    drawDot(ctx, c1.x + Math.cos(a) * 28, c1.y + Math.sin(a) * 28, '#f87171');
+    drawDot(ctx, c1.x + Math.cos(a) * 95, c1.y + Math.sin(a) * 95, '#38bdf8');
+  }
+
+  // Right: 3D Lifted Surface & Flat Slicing Hyperplane
+  ctx.fillStyle = '#0b1120';
+  ctx.fillRect(halfW + 15, 20, halfW - 30, h - 40);
+  ctx.strokeStyle = '#00f3ff';
+  ctx.strokeRect(halfW + 15, 20, halfW - 30, h - 40);
+
+  ctx.font = 'bold 19px sans-serif';
+  ctx.fillStyle = '#00f3ff';
+  ctx.fillText('Fold the Paper: 3D Flat Plane Slices Cleanly', halfW + 35, 55);
+
+  const c2 = { x: halfW + halfW / 2, y: h / 2 + 30 };
+
+  // Parabolic bowl outline
+  ctx.save();
+  ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.ellipse(c2.x, c2.y + 60, 140, 50, 0, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Red points at the bottom of the bowl
+  for (let a = 0; a < Math.PI * 2; a += 0.7) {
+    drawDot(ctx, c2.x + Math.cos(a) * 35, c2.y + 60 + Math.sin(a) * 15, '#f87171');
+  }
+
+  // Glowing 3D Slicing Hyperplane (Flat Slice)
+  ctx.fillStyle = 'rgba(0, 243, 255, 0.2)';
+  ctx.beginPath();
+  ctx.moveTo(c2.x - 160, c2.y);
+  ctx.lineTo(c2.x + 100, c2.y - 30);
+  ctx.lineTo(c2.x + 160, c2.y + 10);
+  ctx.lineTo(c2.x - 100, c2.y + 40);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = '#00f3ff';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  // Blue points lifted high up
+  for (let a = 0; a < Math.PI * 2; a += 0.7) {
+    drawDot(ctx, c2.x + Math.cos(a) * 110, c2.y - 60 + Math.sin(a) * 25, '#38bdf8');
+  }
+
+  ctx.fillStyle = '#00f3ff';
+  ctx.font = 'bold 15px sans-serif';
+  ctx.fillText('Flat Hyperplane Slice z = x₁² + x₂²', c2.x - 120, c2.y + 120);
   ctx.restore();
 }
 
+// --- SLIDE 6: Heat Map & Gamma ---
+let highGamma = false;
+function setGamma(isHigh) {
+  highGamma = isHigh;
+  document.getElementById('btn-gamma-low').classList.toggle('active', !highGamma);
+  document.getElementById('btn-gamma-high').classList.toggle('active', highGamma);
+  drawSlide6();
+}
 
-// ==========================================
-// 3. Slide 9: Interactive 'C' Simulation
-// ==========================================
-const cSlider = document.getElementById('c-slider');
-if (cSlider) {
-  cSlider.addEventListener('input', () => {
-    updateSimulation();
+function drawSlide6() {
+  const canvas = document.getElementById('canvas-s6');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  drawGrid(ctx, w, h);
+
+  const cx = w / 2, cy = h / 2 + 10;
+
+  // Heat map concentric rings based on Gamma
+  ctx.save();
+  const maxR = highGamma ? 100 : 230;
+  const step = highGamma ? 12 : 22;
+
+  for (let r = maxR; r > 0; r -= step) {
+    const alpha = (1 - r / maxR) * 0.7;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = highGamma ? `rgba(244, 63, 94, ${alpha})` : `rgba(56, 189, 248, ${alpha})`;
+    ctx.fill();
+  }
+
+  // Radiating contour line
+  ctx.strokeStyle = highGamma ? '#f43f5e' : '#38bdf8';
+  ctx.lineWidth = 3;
+  ctx.setLineDash([6, 4]);
+  ctx.beginPath();
+  ctx.arc(cx, cy, maxR * 0.65, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Center Landmark point
+  drawGlowingHalo(ctx, cx, cy, highGamma ? '#f43f5e' : '#38bdf8');
+  drawDot(ctx, cx, cy, '#ffffff', 11);
+  ctx.restore();
+
+  // Surrounding test points
+  const testPts = [
+    {x: cx - 180, y: cy - 70}, {x: cx + 190, y: cy + 60},
+    {x: cx - 80, y: cy + 140}, {x: cx + 100, y: cy - 140}
+  ];
+  testPts.forEach(p => {
+    drawDot(ctx, p.x, p.y, '#94a3b8', 7);
+  });
+
+  // Callout banner
+  ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+  ctx.fillRect(40, 25, 760, 48);
+  ctx.strokeStyle = highGamma ? '#f43f5e' : '#38bdf8';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(40, 25, 760, 48);
+
+  ctx.fillStyle = highGamma ? '#f87171' : '#38bdf8';
+  ctx.font = 'bold 17px sans-serif';
+  ctx.fillText(highGamma ? 'High γ = Sharp Spikes & Local Islands (High Wiggly Overfitting Risk!)' : 'Low γ = Wide Smooth Hills (Broad Similarity & Smooth Boundary)', 55, 55);
+}
+
+// --- SLIDE 7: OvR vs OvO ---
+function drawSlide7() {
+  const canvas = document.getElementById('canvas-s7');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  const halfW = w / 2;
+
+  // Left: OvR (1 vs Rest)
+  ctx.fillStyle = '#0b1120';
+  ctx.fillRect(15, 20, halfW - 25, h - 40);
+  ctx.strokeStyle = '#38bdf8';
+  ctx.strokeRect(15, 20, halfW - 25, h - 40);
+
+  ctx.font = 'bold 20px sans-serif';
+  ctx.fillStyle = '#38bdf8';
+  ctx.fillText('One-vs-Rest (OvR) — N = 4 Models', 35, 55);
+
+  const ovrY = 160;
+  // Team A
+  drawTeamCircle(ctx, 110, ovrY, 'A', '#38bdf8');
+  ctx.font = 'bold 22px sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('VS', 185, ovrY + 8);
+  // Rest
+  drawTeamCircle(ctx, 270, ovrY - 45, 'B', '#64748b');
+  drawTeamCircle(ctx, 270, ovrY + 15, 'C', '#64748b');
+  drawTeamCircle(ctx, 270, ovrY + 75, 'D', '#64748b');
+
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '15px sans-serif';
+  ctx.fillText('Trains 4 total models: [A vs BCD], [B vs ACD], etc.', 35, 340);
+  ctx.fillText('Highest confidence score wins the classification.', 35, 370);
+
+  // Right: OvO (Pairwise Duels with Boxing Gloves)
+  ctx.fillStyle = '#0b1120';
+  ctx.fillRect(halfW + 10, 20, halfW - 25, h - 40);
+  ctx.strokeStyle = '#c084fc';
+  ctx.strokeRect(halfW + 10, 20, halfW - 25, h - 40);
+
+  ctx.font = 'bold 20px sans-serif';
+  ctx.fillStyle = '#c084fc';
+  ctx.fillText('One-vs-One (OvO) — N(N−1)/2 = 6 Pair Duels', halfW + 30, 55);
+
+  const pairs = [
+    {t1: 'A', c1: '#38bdf8', t2: 'B', c2: '#34d399', y: 110},
+    {t1: 'A', c1: '#38bdf8', t2: 'C', c2: '#fbbf24', y: 175},
+    {t1: 'A', c1: '#38bdf8', t2: 'D', c2: '#f87171', y: 240},
+    {t1: 'B', c1: '#34d399', t2: 'C', c2: '#fbbf24', y: 305},
+    {t1: 'B', c1: '#34d399', t2: 'D', c2: '#f87171', y: 370},
+    {t1: 'C', c1: '#fbbf24', t2: 'D', c2: '#f87171', y: 435}
+  ];
+
+  pairs.forEach(p => {
+    drawTeamCircle(ctx, halfW + 120, p.y, p.t1, p.c1, 18);
+    ctx.font = '20px sans-serif';
+    ctx.fillText('🥊', halfW + 185, p.y + 7);
+    drawTeamCircle(ctx, halfW + 280, p.y, p.t2, p.c2, 18);
   });
 }
 
-function setPreset(val) {
-  if (!cSlider) return;
-  cSlider.value = val;
-  updateSimulation();
+function drawTeamCircle(ctx, x, y, label, col, r = 24) {
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = col;
+  ctx.fill();
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = `bold ${r * 0.75}px sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, x, y);
+  ctx.textAlign = 'start';
+  ctx.textBaseline = 'alphabetic';
 }
 
-// Hardcoded 2D Dataset for 880x510 canvas
-const SIM_BLUE_POINTS = [
-  { x: 570, y: 110 }, { x: 640, y: 80 },  { x: 710, y: 130 },
-  { x: 780, y: 90 },  { x: 610, y: 180 }, { x: 690, y: 200 },
-  { x: 770, y: 170 }, { x: 530, y: 160 }, { x: 650, y: 240 },
-  { x: 820, y: 140 }
-];
-
-const SIM_RED_POINTS = [
-  { x: 130, y: 440 }, { x: 190, y: 470 }, { x: 250, y: 430 },
-  { x: 110, y: 370 }, { x: 170, y: 380 }, { x: 290, y: 460 },
-  { x: 330, y: 410 }, { x: 230, y: 340 }, { x: 80,  y: 460 },
-  { x: 370, y: 450 }
-];
-
-// Noisy Overlapping Points near center
-const NOISE_POINTS = [
-  { x: 370, y: 330, cls: 'blue', id: 'N1' }, // Blue encroaching into red zone
-  { x: 510, y: 210, cls: 'red',  id: 'N2' }, // Red encroaching into blue zone
-  { x: 440, y: 275, cls: 'red',  id: 'N3' }  // Red right on the boundary
-];
-
-function updateSimulation() {
-  const slider = document.getElementById('c-slider');
-  const canvas = document.getElementById('sim-canvas');
-  if (!slider || !canvas) return;
-
-  const rawVal = Number(slider.value); // 1 to 100
-  const t = (rawVal - 1) / 99; // 0.0 to 1.0
-
-  // Logarithmic C display value
-  const cLog = Math.pow(10, -2 + t * 4); // 0.01 to 100
-  let cText = cLog < 0.1 ? cLog.toFixed(3) : (cLog < 10 ? cLog.toFixed(2) : cLog.toFixed(0));
-
-  // Update UI Elements
-  const pill = document.getElementById('c-pill');
-  if (pill) pill.textContent = `C = ${cText}`;
-
-  // Presets Active Highlight
-  document.getElementById('btn-low-c').classList.toggle('active', rawVal <= 25);
-  document.getElementById('btn-mid-c').classList.toggle('active', rawVal > 25 && rawVal < 75);
-  document.getElementById('btn-high-c').classList.toggle('active', rawVal >= 75);
-
-  const banner = document.getElementById('status-banner');
-  const statusIcon = document.getElementById('status-icon');
-  const statusText = document.getElementById('status-text');
-
-  const statWidth = document.getElementById('stat-margin-width');
-  const statSV = document.getElementById('stat-sv-count');
-  const statNoise = document.getElementById('stat-noise-sense');
-  const statRisk = document.getElementById('stat-risk');
-
-  // Interpolated Margin Width (Wide at t=0 -> Narrow at t=1)
-  const maxMargin = 80; // 160px total
-  const minMargin = 15; // 30px total
-  const curMargin = maxMargin - t * (maxMargin - minMargin);
-
-  if (t < 0.35) {
-    // Low C
-    banner.className = 'status-callout low-c';
-    statusIcon.textContent = '🛡️';
-    statusText.textContent = 'Low C: Wide Margin, High Tolerance';
-
-    statWidth.textContent = `Wide (${Math.round(curMargin * 2)} px)`;
-    statWidth.className = 'metric-value green';
-
-    statSV.textContent = '11 Active Points';
-    statSV.className = 'metric-value amber';
-
-    statNoise.textContent = 'High Tolerance (Ignores noise)';
-    statNoise.className = 'metric-value green';
-
-    statRisk.textContent = 'High Generalization';
-    statRisk.className = 'metric-value green';
-  } else if (t > 0.65) {
-    // High C
-    banner.className = 'status-callout high-c';
-    statusIcon.textContent = '⚠️';
-    statusText.textContent = 'High C: Narrow Margin, Risk of Overfitting';
-
-    statWidth.textContent = `Narrow (${Math.round(curMargin * 2)} px)`;
-    statWidth.className = 'metric-value red';
-
-    statSV.textContent = '3 Critical Points';
-    statSV.className = 'metric-value red';
-
-    statNoise.textContent = 'Zero Tolerance (Twists to fit)';
-    statNoise.className = 'metric-value red';
-
-    statRisk.textContent = 'Severe Overfitting Risk';
-    statRisk.className = 'metric-value red';
-  } else {
-    // Medium C
-    banner.className = 'status-callout mid-c';
-    statusIcon.textContent = '⚖️';
-    statusText.textContent = 'Medium C: Balanced Margin & Regularization';
-
-    statWidth.textContent = `Balanced (${Math.round(curMargin * 2)} px)`;
-    statWidth.className = 'metric-value blue';
-
-    statSV.textContent = '7 Active Points';
-    statSV.className = 'metric-value blue';
-
-    statNoise.textContent = 'Moderate Trade-off';
-    statNoise.className = 'metric-value blue';
-
-    statRisk.textContent = 'Optimal Trade-off';
-    statRisk.className = 'metric-value blue';
-  }
-
-  // Draw Simulation Canvas
-  drawSimulationCanvas(canvas, t, curMargin);
-}
-
-function drawSimulationCanvas(canvas, t, marginDist) {
+// --- SLIDE 8: SVR Tolerance Tube ---
+function drawSlide8() {
+  const canvas = document.getElementById('canvas-s8');
+  if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  const w = canvas.width;
-  const h = canvas.height;
-
+  const w = canvas.width, h = canvas.height;
   ctx.clearRect(0, 0, w, h);
 
-  // Background Grid
+  drawGrid(ctx, w, h);
+
+  // Linear Regression Fit line
+  const m = -0.48, b = 380, eps = 55;
+
+  // Shaded Grey Tolerance Tube ("Garden Hose")
+  ctx.fillStyle = 'rgba(148, 163, 184, 0.2)';
+  ctx.beginPath();
+  ctx.moveTo(0, b - eps);
+  ctx.lineTo(w, m * w + (b - eps));
+  ctx.lineTo(w, m * w + (b + eps));
+  ctx.lineTo(0, b + eps);
+  ctx.closePath();
+  ctx.fill();
+
+  // Tube boundaries (Dashed grey)
+  ctx.save();
+  ctx.setLineDash([8, 6]);
+  ctx.strokeStyle = '#94a3b8';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(0, b - eps);
+  ctx.lineTo(w, m * w + (b - eps));
+  ctx.moveTo(0, b + eps);
+  ctx.lineTo(w, m * w + (b + eps));
+  ctx.stroke();
+  ctx.restore();
+
+  // Center fit line
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(0, b);
+  ctx.lineTo(w, m * w + b);
+  ctx.stroke();
+
+  // Trail of points inside tube (Zero loss!)
+  const insideAnts = [
+    {x: 80, y: m * 80 + b + 15}, {x: 160, y: m * 160 + b - 20},
+    {x: 240, y: m * 240 + b + 10}, {x: 320, y: m * 320 + b - 15},
+    {x: 400, y: m * 400 + b + 25}, {x: 480, y: m * 480 + b - 30},
+    {x: 560, y: m * 560 + b + 5},  {x: 640, y: m * 640 + b - 10},
+    {x: 720, y: m * 720 + b + 20}
+  ];
+  insideAnts.forEach(p => drawDot(ctx, p.x, p.y, '#34d399', 7));
+
+  // Outside Outliers with Slack Penalties (ξ)
+  const outsideAnts = [
+    {x: 280, y: m * 280 + b - 120, slack: 'ξ₁ (penalty)'},
+    {x: 520, y: m * 520 + b + 115, slack: 'ξ₂ (penalty)'}
+  ];
+  outsideAnts.forEach(p => {
+    drawGlowingHalo(ctx, p.x, p.y, '#f87171');
+    drawDot(ctx, p.x, p.y, '#f87171', 9);
+
+    // Slack line to tube
+    ctx.save();
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = '#fbbf24';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+    const targetY = (p.y < m * p.x + b) ? (m * p.x + b - eps) : (m * p.x + b + eps);
+    ctx.lineTo(p.x, targetY);
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.fillStyle = '#fbbf24';
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillText(p.slack, p.x + 14, (p.y + targetY) / 2);
+  });
+
+  // Callout HUD
+  ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+  ctx.fillRect(40, 30, 480, 50);
+  ctx.strokeStyle = '#334155';
+  ctx.strokeRect(40, 30, 480, 50);
+  ctx.fillStyle = '#34d399';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText('✓ Points inside the garden hose have Loss = 0!', 55, 62);
+}
+
+// --- SLIDE 9: Strict vs Pragmatic Boss ---
+let strictBossMode = false;
+function setBossMode(isStrict) {
+  strictBossMode = isStrict;
+  document.getElementById('btn-boss-strict').classList.toggle('active', strictBossMode);
+  document.getElementById('btn-boss-pragmatic').classList.toggle('active', !strictBossMode);
+  drawSlide9();
+}
+
+function drawSlide9() {
+  const canvas = document.getElementById('canvas-s9');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  drawGrid(ctx, w, h);
+
+  const m = -0.65, b = 400;
+  const marginDist = strictBossMode ? 22 : 95;
+
+  // The Outlier Red Dot
+  const outlier = { x: 370, y: 310 };
+
+  if (strictBossMode) {
+    // Narrow street contorting to avoid error
+    ctx.strokeStyle = '#f87171';
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.moveTo(0, b);
+    ctx.bezierCurveTo(250, 440, 340, 240, w, m * w + b);
+    ctx.stroke();
+
+    // Narrow corridor
+    ctx.save();
+    ctx.setLineDash([6, 6]);
+    ctx.strokeStyle = 'rgba(248, 113, 113, 0.6)';
+    ctx.strokeRect(340, 240, 60, 40);
+    ctx.restore();
+
+    ctx.fillStyle = '#f87171';
+    ctx.font = 'bold 18px sans-serif';
+    ctx.fillText('🔴 Strict Boss: Forces 0 errors, road is narrow & bent (Overfitting!)', 40, 50);
+  } else {
+    // Wide road with Pragmatic Boss
+    ctx.fillStyle = 'rgba(52, 211, 153, 0.12)';
+    ctx.beginPath();
+    ctx.moveTo(0, b - marginDist);
+    ctx.lineTo(w, m * w + (b - marginDist));
+    ctx.lineTo(w, m * w + (b + marginDist));
+    ctx.lineTo(0, b + marginDist);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.save();
+    ctx.setLineDash([8, 6]);
+    ctx.strokeStyle = '#34d399';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(0, b - marginDist); ctx.lineTo(w, m * w + (b - marginDist));
+    ctx.moveTo(0, b + marginDist); ctx.lineTo(w, m * w + (b + marginDist));
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(0, b); ctx.lineTo(w, m * w + b);
+    ctx.stroke();
+
+    // Slack hall pass for outlier
+    ctx.save();
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = '#fbbf24';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(outlier.x, outlier.y);
+    ctx.lineTo(outlier.x, m * outlier.x + b);
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.fillStyle = '#fbbf24';
+    ctx.font = 'bold 15px sans-serif';
+    ctx.fillText('Slack Hall Pass (ξ)', outlier.x + 16, outlier.y);
+
+    ctx.fillStyle = '#34d399';
+    ctx.font = 'bold 18px sans-serif';
+    ctx.fillText('🟢 Pragmatic Boss: Wide, robust street intentionally tolerates 1 outlier!', 40, 50);
+  }
+
+  // Draw Outlier dot
+  drawGlowingHalo(ctx, outlier.x, outlier.y, '#f87171');
+  drawDot(ctx, outlier.x, outlier.y, '#f87171', 11);
+
+  // Normal Dots
+  const blueDots = [{x:500, y:120}, {x:580, y:80}, {x:660, y:140}, {x:540, y:190}, {x:710, y:170}];
+  const redDots  = [{x:140, y:450}, {x:200, y:480}, {x:110, y:380}, {x:260, y:460}, {x:170, y:340}];
+  blueDots.forEach(p => drawDot(ctx, p.x, p.y, '#38bdf8'));
+  redDots.forEach(p => drawDot(ctx, p.x, p.y, '#f87171'));
+}
+
+// --- SLIDE 10: Log Slider & Dynamic Contours ---
+let logStep = 0; // 0 to 4 (powers 10^-2 to 10^2)
+function updateLogSlider(val) {
+  logStep = Number(val);
+  const cValues = [0.01, 0.1, 1.0, 10.0, 100.0];
+  const cVal = cValues[logStep];
+  const readout = document.getElementById('log-c-readout');
+  if (readout) readout.textContent = `C = ${cVal}`;
+  drawSlide10();
+}
+
+function drawSlide10() {
+  const canvas = document.getElementById('canvas-s10');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  drawGrid(ctx, w, h);
+
+  const m = -0.62, b = 400;
+  // Log slider moving left (step 0 = 0.01) makes street wide (130px)
+  // Log slider moving right (step 4 = 100) makes street narrow (24px)
+  const maxD = 130, minD = 24;
+  const t = logStep / 4;
+  const d = maxD - t * (maxD - minD);
+
+  // Shaded street corridor
+  ctx.fillStyle = logStep > 2 ? 'rgba(244, 63, 94, 0.1)' : 'rgba(56, 189, 248, 0.12)';
+  ctx.beginPath();
+  ctx.moveTo(0, b - d);
+  ctx.lineTo(w, m * w + (b - d));
+  ctx.lineTo(w, m * w + (b + d));
+  ctx.lineTo(0, b + d);
+  ctx.closePath();
+  ctx.fill();
+
+  // Contours at -1 and +1
+  ctx.save();
+  ctx.setLineDash([8, 6]);
+  ctx.strokeStyle = logStep > 2 ? '#f43f5e' : '#fbbf24';
+  ctx.lineWidth = 2.5;
+
+  ctx.beginPath();
+  ctx.moveTo(0, b - d); ctx.lineTo(w, m * w + (b - d));
+  ctx.moveTo(0, b + d); ctx.lineTo(w, m * w + (b + d));
+  ctx.stroke();
+  ctx.restore();
+
+  // Contour at 0 (Decision Line)
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 3.5;
+  ctx.beginPath();
+  ctx.moveTo(0, b); ctx.lineTo(w, m * w + b);
+  ctx.stroke();
+
+  // Contour Labels
+  ctx.font = 'bold 14px monospace';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('decision_function = 0', 30, b - 8);
+  ctx.fillStyle = '#fbbf24';
+  ctx.fillText('decision_function = +1', 30, (b - d) - 8);
+  ctx.fillText('decision_function = -1', 30, (b + d) + 20);
+
+  // Scattered points
+  const pts = [
+    {x: 480, y: 120, c: '#38bdf8'}, {x: 560, y: 80, c: '#38bdf8'},
+    {x: 640, y: 140, c: '#38bdf8'}, {x: 520, y: 190, c: '#38bdf8'},
+    {x: 420, y: 220, c: '#38bdf8'}, {x: 460, y: 260, c: '#38bdf8'},
+    {x: 140, y: 450, c: '#f87171'}, {x: 220, y: 480, c: '#f87171'},
+    {x: 100, y: 390, c: '#f87171'}, {x: 280, y: 460, c: '#f87171'},
+    {x: 240, y: 360, c: '#f87171'}, {x: 310, y: 330, c: '#f87171'}
+  ];
+
+  let svCount = 0;
+  pts.forEach(p => {
+    const distToLine = Math.abs(m * p.x + p.y - b) / Math.sqrt(m*m + 1);
+    const isSV = (distToLine <= d + 10);
+    if (isSV) {
+      svCount++;
+      drawGlowingHalo(ctx, p.x, p.y, '#00f3ff');
+      drawDot(ctx, p.x, p.y, p.c, 9);
+    } else {
+      drawDot(ctx, p.x, p.y, p.c, 7);
+    }
+  });
+
+  // Telemetry HUD
+  ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+  ctx.fillRect(480, 30, 340, 52);
+  ctx.strokeStyle = '#334155';
+  ctx.strokeRect(480, 30, 340, 52);
+
+  ctx.font = 'bold 15px sans-serif';
+  ctx.fillStyle = '#00f3ff';
+  ctx.fillText(`Street Width: ${Math.round(d * 2)}px`, 500, 52);
+  ctx.fillText(`Active Support Vectors: ${svCount} Points`, 500, 72);
+}
+
+// ==========================================
+// 3. Canvas Utilities
+// ==========================================
+function drawGrid(ctx, w, h) {
   ctx.strokeStyle = 'rgba(51, 65, 85, 0.3)';
   ctx.lineWidth = 1;
   for (let x = 0; x < w; x += 32) {
@@ -1301,156 +2204,69 @@ function drawSimulationCanvas(canvas, t, marginDist) {
   for (let y = 0; y < h; y += 32) {
     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
   }
+}
 
-  // Linear Base Line: y = -0.58x + 500
-  const m = -0.58;
-  const b = 500;
-  const normFactor = Math.sqrt(m * m + 1); // 1.156
-  const offset = marginDist * normFactor;
-
-  const pStart = { x: 0, y: b };
-  const pEnd   = { x: w, y: m * w + b };
-
-  // Control points that bend as t increases to segregate N1 and N2
-  const cp1_straight = { x: 280, y: m * 280 + b };
-  const cp1_curved   = { x: 330, y: 415 }; // bends below N1 so N1 is on blue side
-
-  const cp2_straight = { x: 580, y: m * 580 + b };
-  const cp2_curved   = { x: 480, y: 145 }; // bends above N2 so N2 is on red side
-
-  const cp1 = {
-    x: cp1_straight.x + (cp1_curved.x - cp1_straight.x) * t,
-    y: cp1_straight.y + (cp1_curved.y - cp1_straight.y) * t
-  };
-  const cp2 = {
-    x: cp2_straight.x + (cp2_curved.x - cp2_straight.x) * t,
-    y: cp2_straight.y + (cp2_curved.y - cp2_straight.y) * t
-  };
-
-  // Draw Shaded Street Corridor
-  ctx.save();
-  ctx.fillStyle = t > 0.65 ? 'rgba(244, 63, 94, 0.09)' : (t < 0.35 ? 'rgba(52, 211, 153, 0.09)' : 'rgba(56, 189, 248, 0.09)');
-  
-  // Upper margin path
+function drawDot(ctx, x, y, color, r = 8) {
   ctx.beginPath();
-  ctx.moveTo(pStart.x, pStart.y - offset);
-  ctx.bezierCurveTo(cp1.x, cp1.y - offset, cp2.x, cp2.y - offset, pEnd.x, pEnd.y - offset);
-  // Down to lower margin
-  ctx.lineTo(pEnd.x, pEnd.y + offset);
-  ctx.bezierCurveTo(cp2.x, cp2.y + offset, cp1.x, cp1.y + offset, pStart.x, pStart.y + offset);
-  ctx.closePath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = color;
   ctx.fill();
-
-  // Draw Dashed Margins
-  ctx.setLineDash([8, 6]);
-  ctx.strokeStyle = t > 0.65 ? '#f43f5e' : (t < 0.35 ? '#34d399' : '#38bdf8');
   ctx.lineWidth = 2;
-
-  // Upper Margin
-  ctx.beginPath();
-  ctx.moveTo(pStart.x, pStart.y - offset);
-  ctx.bezierCurveTo(cp1.x, cp1.y - offset, cp2.x, cp2.y - offset, pEnd.x, pEnd.y - offset);
-  ctx.stroke();
-
-  // Lower Margin
-  ctx.beginPath();
-  ctx.moveTo(pStart.x, pStart.y + offset);
-  ctx.bezierCurveTo(cp1.x, cp1.y + offset, cp2.x, cp2.y + offset, pEnd.x, pEnd.y + offset);
-  ctx.stroke();
-  ctx.restore();
-
-  // Draw Solid Decision Boundary Line
-  ctx.save();
   ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth = 3.5;
-  ctx.beginPath();
-  ctx.moveTo(pStart.x, pStart.y);
-  ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, pEnd.x, pEnd.y);
   ctx.stroke();
-  ctx.restore();
+}
 
-  // Helper distance check
-  function distanceToBoundary(px, py) {
-    return Math.abs(m * px + py - b) / normFactor;
-  }
-
-  // Draw Regular Blue Points
-  SIM_BLUE_POINTS.forEach(p => {
-    const dist = distanceToBoundary(p.x, p.y);
-    const isSV = (dist <= marginDist + 6);
-    if (isSV) {
-      drawSupportVector(ctx, p.x, p.y, '#38bdf8', 'SV');
-    } else {
-      drawPoint(ctx, p.x, p.y, '#38bdf8', '#0284c7');
-    }
-  });
-
-  // Draw Regular Red Points
-  SIM_RED_POINTS.forEach(p => {
-    const dist = distanceToBoundary(p.x, p.y);
-    const isSV = (dist <= marginDist + 6);
-    if (isSV) {
-      drawSupportVector(ctx, p.x, p.y, '#f87171', 'SV');
-    } else {
-      drawPoint(ctx, p.x, p.y, '#f87171', '#dc2626');
-    }
-  });
-
-  // Draw Noisy Overlapping Points
-  NOISE_POINTS.forEach(p => {
-    const dist = distanceToBoundary(p.x, p.y);
-    let isSV = false;
-    if (t < 0.4) {
-      isSV = true;
-    } else if (t > 0.7) {
-      isSV = (p.id === 'N1' || p.id === 'N2');
-    } else {
-      isSV = true;
-    }
-
-    const color = (p.cls === 'blue') ? '#38bdf8' : '#f87171';
-    if (isSV) {
-      drawSupportVector(ctx, p.x, p.y, color, `SV (${p.id})`);
-      
-      // Draw Slack indicator line when Low C
-      if (t < 0.5) {
-        ctx.save();
-        ctx.setLineDash([4, 4]);
-        ctx.strokeStyle = '#fbbf24';
-        ctx.lineWidth = 2;
-        const targetY = m * p.x + b;
-        ctx.beginPath();
-        ctx.moveTo(p.x, p.y);
-        ctx.lineTo(p.x, targetY);
-        ctx.stroke();
-        
-        ctx.fillStyle = '#fbbf24';
-        ctx.font = 'bold 12px sans-serif';
-        ctx.fillText('Slack ξ', p.x + 8, (p.y + targetY) / 2);
-        ctx.restore();
-      }
-    } else {
-      drawPoint(ctx, p.x, p.y, color, '#ffffff');
-    }
-  });
-
-  // Canvas HUD Overlay
+function drawGlowingHalo(ctx, x, y, color) {
   ctx.save();
-  ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-  ctx.fillRect(15, 15, 340, 42);
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(15, 15, 340, 42);
-
-  ctx.font = 'bold 15px sans-serif';
-  ctx.fillStyle = t > 0.65 ? '#f43f5e' : (t < 0.35 ? '#34d399' : '#38bdf8');
-  ctx.fillText(t > 0.65 ? 'Boundary Mode: Non-Linear / Overfitting' : (t < 0.35 ? 'Boundary Mode: Wide Margin / Linear' : 'Boundary Mode: Balanced Soft Margin'), 25, 41);
+  ctx.beginPath();
+  ctx.arc(x, y, 16, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(0, 243, 255, 0.2)';
+  ctx.fill();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 12;
+  ctx.stroke();
   ctx.restore();
 }
 
-// ==========================================
+function drawArrowHead(ctx, x, y, dir) {
+  ctx.beginPath();
+  if (dir === 'up') {
+    ctx.moveTo(x, y); ctx.lineTo(x - 5, y + 10); ctx.lineTo(x + 5, y + 10);
+  } else {
+    ctx.moveTo(x, y); ctx.lineTo(x - 5, y - 10); ctx.lineTo(x + 5, y - 10);
+  }
+  ctx.fill();
+}
+
+function drawOutwardArrow(ctx, x, y, dir) {
+  ctx.save();
+  ctx.beginPath();
+  if (dir === 'up') {
+    ctx.moveTo(x, y); ctx.lineTo(x, y - 40);
+    ctx.stroke();
+    ctx.fillStyle = '#34d399';
+    drawArrowHead(ctx, x, y - 40, 'up');
+  } else {
+    ctx.moveTo(x, y); ctx.lineTo(x, y + 40);
+    ctx.stroke();
+    ctx.fillStyle = '#34d399';
+    drawArrowHead(ctx, x, y + 40, 'down');
+  }
+  ctx.restore();
+}
+
+// Self-Test Toggle All
+let allRevealed = false;
+function toggleAllAnswers() {
+  allRevealed = !allRevealed;
+  document.querySelectorAll('.self-test-card').forEach(card => {
+    card.classList.toggle('revealed', allRevealed);
+  });
+}
+
 // Initial Boot
-// ==========================================
 window.addEventListener('load', () => {
   fit();
   showSlide(0);
