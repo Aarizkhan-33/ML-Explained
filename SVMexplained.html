@@ -227,6 +227,28 @@ canvas {
   height: 540px;
   border-radius: 8px;
 }
+#canvas-s2 {
+  height: 470px;
+}
+.canvas-caption-box {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  border-left: 3px solid var(--amber);
+  border-radius: 8px;
+  padding: 8px 14px;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.canvas-caption-box .caption-text {
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--muted);
+  margin: 0;
+}
 
 /* ==========================================
    Interactive Controls on Specific Slides
@@ -486,7 +508,13 @@ canvas {
           <span class="visual-title"><span>🛣️</span> Maximal Margin Street vs. Fragile Lines</span>
           <span class="tip-badge">TIP: Bright yellow span highlights street width</span>
         </div>
-        <canvas id="canvas-s2" width="850" height="540"></canvas>
+        <canvas id="canvas-s2" width="850" height="470"></canvas>
+        <div class="canvas-caption-box">
+          <span style="font-size: 18px; color: var(--amber);">⚠️</span>
+          <p class="caption-text">
+            Notice the risk: A tiny shift in new, unseen data would easily cross the fragile green or magenta lines, causing a misclassification. The wide yellow street acts as a safe buffer against real-world noise.
+          </p>
+        </div>
       </div>
     </div>
   </section>
@@ -1377,7 +1405,7 @@ function drawSlide2() {
   // Background Grid
   drawGrid(ctx, w, h);
 
-  const m = -0.65, b0 = 400, offset = 95;
+  const m = -0.45, b0 = 426, offset = 77;
 
   // Wide Street Corridor Shading
   ctx.fillStyle = 'rgba(251, 191, 36, 0.12)';
@@ -1410,36 +1438,36 @@ function drawSlide2() {
   ctx.lineTo(w, m * w + b0);
   ctx.stroke();
 
-  // Fragile Tight Green Line (Rejected)
+  // Fragile Tight Green Line (Rejected - passes dangerously close to Red points)
   ctx.save();
   ctx.setLineDash([5, 5]);
   ctx.strokeStyle = '#22c55e';
   ctx.lineWidth = 2.5;
   ctx.beginPath();
-  ctx.moveTo(100, 520);
-  ctx.lineTo(750, 160);
+  ctx.moveTo(50, 430);
+  ctx.lineTo(760, 205);
   ctx.stroke();
   ctx.fillStyle = '#22c55e';
   ctx.font = 'bold 14px sans-serif';
-  ctx.fillText('✕ Tight Green Line (Fragile)', 460, 275);
+  ctx.fillText('✕ Tight Green Line (Fragile)', 470, 235);
   ctx.restore();
 
-  // Fragile Tight Magenta Line (Rejected)
+  // Fragile Tight Magenta Line (Rejected - passes dangerously close to Blue points)
   ctx.save();
   ctx.setLineDash([5, 5]);
   ctx.strokeStyle = '#e11d48';
   ctx.lineWidth = 2.5;
   ctx.beginPath();
-  ctx.moveTo(50, 280);
-  ctx.lineTo(700, 30);
+  ctx.moveTo(80, 310);
+  ctx.lineTo(720, 65);
   ctx.stroke();
   ctx.fillStyle = '#e11d48';
   ctx.font = 'bold 14px sans-serif';
-  ctx.fillText('✕ Tight Magenta Line (Too close)', 180, 200);
+  ctx.fillText('✕ Tight Magenta Line (Too close)', 150, 220);
   ctx.restore();
 
   // Bright Yellow Span Indicator
-  const spanX = 540;
+  const spanX = 380;
   const spanYCenter = m * spanX + b0;
   ctx.save();
   ctx.strokeStyle = '#fbbf24';
@@ -1464,22 +1492,35 @@ function drawSlide2() {
   ctx.fillText('Street Width (Margin)', spanX + 22, spanYCenter + 6);
   ctx.restore();
 
-  // Data Points
-  const blueDots = [{x:360, y:120}, {x:450, y:70}, {x:530, y:130}, {x:620, y:70}, {x:480, y:180}, {x:680, y:140}];
-  const redDots  = [{x:120, y:460}, {x:180, y:490}, {x:90, y:390}, {x:240, y:470}, {x:320, y:430}, {x:160, y:340}];
+  // DENSE BLUE CLUSTER in top-left area (Safely behind yellow margin line)
+  const blueDots = [
+    {x: 70, y: 120},  {x: 90, y: 190},  {x: 120, y: 70},  {x: 140, y: 140},
+    {x: 170, y: 90},  {x: 180, y: 180}, {x: 210, y: 50},  {x: 220, y: 120},
+    {x: 260, y: 80},  {x: 290, y: 140}, {x: 310, y: 50},  {x: 340, y: 100},
+    {x: 370, y: 40},  {x: 410, y: 80}
+  ];
+
+  // DENSE RED CLUSTER in bottom-right area (Safely behind yellow margin line)
+  const redDots = [
+    {x: 440, y: 410}, {x: 470, y: 350}, {x: 500, y: 430}, {x: 520, y: 320},
+    {x: 550, y: 400}, {x: 580, y: 340}, {x: 610, y: 420}, {x: 630, y: 280},
+    {x: 660, y: 360}, {x: 690, y: 240}, {x: 710, y: 390}, {x: 740, y: 290},
+    {x: 770, y: 220}, {x: 790, y: 320}, {x: 180, y: 440}
+  ];
+
   blueDots.forEach(p => drawDot(ctx, p.x, p.y, '#38bdf8'));
   redDots.forEach(p => drawDot(ctx, p.x, p.y, '#f87171'));
 
-  // Points on margin lines
-  drawDot(ctx, 280, m * 280 + (b0 - offset), '#38bdf8');
-  drawDot(ctx, 420, m * 420 + (b0 - offset), '#38bdf8');
-  drawDot(ctx, 220, m * 220 + (b0 + offset), '#f87171');
-  drawDot(ctx, 360, m * 360 + (b0 + offset), '#f87171');
+  // Points on margin lines (The Support Vectors defining the Street)
+  drawDot(ctx, 240, m * 240 + (b0 - offset), '#38bdf8');
+  drawDot(ctx, 450, m * 450 + (b0 - offset), '#38bdf8');
+  drawDot(ctx, 280, m * 280 + (b0 + offset), '#f87171');
+  drawDot(ctx, 520, m * 520 + (b0 + offset), '#f87171');
 
   // Label
   ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 16px sans-serif';
-  ctx.fillText('Optimal Boundary (Farthest from all examples)', 30, 48);
+  ctx.fillText('Optimal Boundary (Farthest from all examples)', 30, 42);
 }
 
 // --- SLIDE 3: Support Vectors & Eraser ---
