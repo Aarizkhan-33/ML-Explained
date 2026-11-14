@@ -1,0 +1,2619 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visualizing Data: Polygons & Pie Charts | CS463 Lecture Presentation</title>
+  
+  <!-- KaTeX for elegant mathematical formulas -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+          onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+
+  <style>
+    /* ==========================================================================
+       1. DESIGN SYSTEM: SLATE, NEON BLUE (#00d4ff) & PURPLE GLASSMORPHISM
+       ========================================================================== */
+    :root[data-theme="dark"] {
+      --bg-screen: #060913;
+      --paper: #0b1120;
+      --ink: #f8fafc;
+      --ink-muted: #94a3b8;
+      --ink-faint: #64748b;
+      --rule: rgba(51, 65, 85, 0.45);
+      
+      /* Neon Blue & Purple Accents */
+      --neon-blue: #00d4ff;
+      --neon-blue-glow: rgba(0, 212, 255, 0.35);
+      --neon-blue-wash: rgba(0, 212, 255, 0.12);
+      
+      --purple: #c084fc;
+      --purple-accent: #a855f7;
+      --purple-glow: rgba(168, 85, 247, 0.3);
+      --purple-wash: rgba(168, 85, 247, 0.14);
+      
+      --emerald: #34d399;
+      --emerald-wash: rgba(52, 211, 153, 0.12);
+      --rose: #fb7185;
+      --rose-wash: rgba(251, 113, 133, 0.12);
+      --amber: #fbbf24;
+      --amber-wash: rgba(251, 191, 36, 0.12);
+
+      /* Glassmorphism Variables */
+      --glass-bg: rgba(15, 23, 42, 0.72);
+      --glass-bg-hover: rgba(22, 34, 61, 0.88);
+      --glass-border: rgba(168, 85, 247, 0.24);
+      --glass-border-hover: rgba(0, 212, 255, 0.55);
+      --glass-shadow: 0 12px 36px 0 rgba(0, 0, 0, 0.55);
+      --glass-inner-glow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+
+      --canvas-bg: #070d19;
+      --hud-bg: rgba(11, 17, 32, 0.9);
+      --scale: 1;
+    }
+
+    :root[data-theme="light"] {
+      --bg-screen: #e2e8f0;
+      --paper: #ffffff;
+      --ink: #0f172a;
+      --ink-muted: #475569;
+      --ink-faint: #94a3b8;
+      --rule: rgba(203, 213, 225, 0.85);
+      
+      /* Vibrant Light Mode Palette */
+      --neon-blue: #0088cc;
+      --neon-blue-glow: rgba(0, 136, 204, 0.25);
+      --neon-blue-wash: rgba(0, 136, 204, 0.09);
+      
+      --purple: #8b5cf6;
+      --purple-accent: #7c3aed;
+      --purple-glow: rgba(124, 58, 237, 0.2);
+      --purple-wash: rgba(124, 58, 237, 0.09);
+      
+      --emerald: #059669;
+      --emerald-wash: rgba(5, 150, 105, 0.1);
+      --rose: #e11d48;
+      --rose-wash: rgba(225, 29, 72, 0.1);
+      --amber: #d97706;
+      --amber-wash: rgba(217, 119, 6, 0.1);
+
+      /* Glassmorphism in Light Mode */
+      --glass-bg: rgba(255, 255, 255, 0.85);
+      --glass-bg-hover: rgba(255, 255, 255, 0.98);
+      --glass-border: rgba(168, 85, 247, 0.25);
+      --glass-border-hover: rgba(0, 136, 204, 0.6);
+      --glass-shadow: 0 10px 30px rgba(15, 23, 42, 0.1);
+      --glass-inner-glow: inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
+
+      --canvas-bg: #f8fafc;
+      --hud-bg: rgba(255, 255, 255, 0.92);
+      --scale: 1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-screen);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.35s ease, color 0.35s ease;
+      user-select: none;
+    }
+
+    /* Ambient Decorative Gradients for Depth */
+    .ambient-glow-1 {
+      position: fixed;
+      top: 6%;
+      left: 8%;
+      width: 480px;
+      height: 480px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--neon-blue-glow) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(85px);
+      opacity: 0.65;
+    }
+
+    .ambient-glow-2 {
+      position: fixed;
+      bottom: 6%;
+      right: 8%;
+      width: 520px;
+      height: 520px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--purple-glow) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(95px);
+      opacity: 0.65;
+    }
+
+    /* ==========================================================================
+       2. PRESENTATION STAGE FRAME (1600x900 Scale Architecture)
+       ========================================================================== */
+    #stage {
+      width: 1600px;
+      height: 900px;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      margin: -450px 0 0 -800px;
+      transform: scale(var(--scale));
+      transform-origin: center center;
+      background: var(--paper);
+      overflow: hidden;
+      border-radius: 18px;
+      box-shadow: 0 25px 70px -15px rgba(0, 0, 0, 0.65), 0 0 0 1px var(--rule);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.35s ease;
+    }
+
+    /* Top Universal Header */
+    .presentation-header {
+      height: 64px;
+      padding: 0 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--rule);
+      background: var(--glass-bg);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      z-index: 20;
+    }
+
+    .brand-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand-badge {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 20px;
+      background: var(--neon-blue-wash);
+      color: var(--neon-blue);
+      border: 1px solid var(--neon-blue);
+      box-shadow: 0 0 10px var(--neon-blue-glow);
+    }
+
+    .brand-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink-muted);
+    }
+
+    .brand-title strong {
+      color: var(--ink);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-action {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      color: var(--ink);
+      height: 38px;
+      padding: 0 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: all 0.25s ease;
+      box-shadow: var(--glass-inner-glow);
+    }
+
+    .btn-action:hover {
+      background: var(--glass-bg-hover);
+      border-color: var(--glass-border-hover);
+      color: var(--neon-blue);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 15px var(--neon-blue-glow);
+    }
+
+    /* Slides Viewport */
+    .slides-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    section.slide {
+      position: absolute;
+      inset: 0;
+      padding: 34px 50px 24px;
+      display: none;
+      opacity: 0;
+      transform: scale(0.985) translateY(8px);
+      transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+
+    section.slide::-webkit-scrollbar {
+      width: 6px;
+    }
+    section.slide::-webkit-scrollbar-thumb {
+      background: var(--rule);
+      border-radius: 4px;
+    }
+
+    section.slide.active {
+      display: flex;
+      flex-direction: column;
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      z-index: 10;
+    }
+
+    /* Bottom Dock Bar */
+    .presentation-dock {
+      height: 60px;
+      padding: 0 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--rule);
+      background: var(--glass-bg);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      z-index: 20;
+    }
+
+    .dock-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .dock-slide-counter {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--ink-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .dock-dots {
+      display: flex;
+      gap: 8px;
+    }
+
+    .dot-item {
+      width: 10px;
+      height: 10px;
+      border-radius: 5px;
+      background: var(--rule);
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .dot-item.active {
+      width: 28px;
+      background: linear-gradient(90deg, var(--neon-blue), var(--purple));
+      box-shadow: 0 0 10px var(--neon-blue-glow);
+    }
+
+    .dock-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-nav {
+      height: 38px;
+      padding: 0 18px;
+      border-radius: 9px;
+      font-size: 14px;
+      font-weight: 700;
+      border: 1px solid var(--glass-border);
+      background: var(--glass-bg);
+      color: var(--ink);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(10px);
+      transition: all 0.2s ease;
+    }
+
+    .btn-nav:hover:not(:disabled) {
+      background: var(--neon-blue-wash);
+      border-color: var(--neon-blue);
+      color: var(--neon-blue);
+      transform: translateY(-1px);
+      box-shadow: 0 0 14px var(--neon-blue-glow);
+    }
+
+    .btn-nav:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      border-color: var(--rule);
+    }
+
+    /* Top Progress Bar */
+    .progress-bar-track {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.05);
+      z-index: 30;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 20%;
+      background: linear-gradient(90deg, var(--neon-blue), var(--purple));
+      box-shadow: 0 0 10px var(--neon-blue);
+      transition: width 0.35s ease;
+    }
+
+    /* ==========================================================================
+       3. TYPOGRAPHY & TEACHER CARDS ARCHITECTURE
+       ========================================================================== */
+    .slide-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--neon-blue);
+      margin-bottom: 8px;
+    }
+
+    .slide-badge::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--neon-blue);
+      box-shadow: 0 0 8px var(--neon-blue);
+    }
+
+    h1.hero-title {
+      font-size: 56px;
+      line-height: 1.1;
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      margin-bottom: 14px;
+      background: linear-gradient(135deg, var(--ink) 30%, var(--neon-blue) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    h2.slide-title {
+      font-size: 34px;
+      line-height: 1.15;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      color: var(--ink);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .title-highlight {
+      color: var(--neon-blue);
+      text-shadow: 0 0 20px var(--neon-blue-glow);
+    }
+
+    /* Two Column Split (Teaching Cards Left, Visual Simulator Right) */
+    .slide-split {
+      display: grid;
+      grid-template-columns: 690px 1fr;
+      gap: 32px;
+      flex: 1;
+      align-items: stretch;
+      min-height: 0;
+    }
+
+    .cards-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      justify-content: flex-start;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    .cards-stack::-webkit-scrollbar {
+      width: 4px;
+    }
+    .cards-stack::-webkit-scrollbar-thumb {
+      background: var(--rule);
+      border-radius: 4px;
+    }
+
+    /* Glassmorphic Teaching Cards */
+    .glass-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 16px 20px;
+      box-shadow: var(--glass-shadow);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      position: relative;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .glass-card:hover {
+      background: var(--glass-bg-hover);
+      border-color: var(--glass-border-hover);
+      transform: translateX(3px);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25), 0 0 16px var(--purple-wash);
+    }
+
+    .glass-card.accent-cyan { border-left: 4px solid var(--neon-blue); }
+    .glass-card.accent-purple { border-left: 4px solid var(--purple); }
+    .glass-card.accent-emerald { border-left: 4px solid var(--emerald); }
+    .glass-card.accent-amber { border-left: 4px solid var(--amber); }
+    .glass-card.accent-rose { border-left: 4px solid var(--rose); }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .card-label {
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .label-cyan { color: var(--neon-blue); }
+    .label-purple { color: var(--purple); }
+    .label-emerald { color: var(--emerald); }
+    .label-amber { color: var(--amber); }
+    .label-rose { color: var(--rose); }
+
+    .card-body {
+      font-size: 17px;
+      line-height: 1.5;
+      color: var(--ink);
+    }
+
+    .card-subtext {
+      font-size: 15px;
+      line-height: 1.45;
+      color: var(--ink-muted);
+      margin-top: 6px;
+    }
+
+    /* Math Formula Highlight Callouts */
+    .math-callout {
+      background: rgba(0, 212, 255, 0.06);
+      border: 1px solid rgba(0, 212, 255, 0.35);
+      border-radius: 10px;
+      padding: 10px 16px;
+      margin: 10px 0;
+      text-align: center;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--neon-blue);
+      box-shadow: inset 0 0 15px rgba(0, 212, 255, 0.08);
+    }
+
+    /* ==========================================================================
+       4. INTERACTIVE HOVER TERMS (GLOSSARY TOOLTIP SYSTEM)
+       ========================================================================== */
+    .k-term {
+      display: inline-block;
+      font-weight: 700;
+      color: var(--neon-blue);
+      border-bottom: 1.5px dashed var(--neon-blue);
+      cursor: help;
+      padding: 0 3px;
+      border-radius: 3px;
+      background: var(--neon-blue-wash);
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .k-term:hover {
+      background: var(--neon-blue);
+      color: #060913;
+      border-bottom-color: transparent;
+      box-shadow: 0 0 12px var(--neon-blue);
+      transform: translateY(-1px);
+    }
+
+    #glossary-tooltip {
+      position: fixed;
+      z-index: 1000;
+      max-width: 350px;
+      padding: 14px 18px;
+      background: var(--glass-bg);
+      border: 1px solid var(--neon-blue);
+      border-radius: 12px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 20px var(--neon-blue-glow);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    #glossary-tooltip.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .tt-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .tt-tag {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--neon-blue);
+      background: var(--neon-blue-wash);
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    .tt-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .tt-desc {
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--ink-muted);
+    }
+
+    /* ==========================================================================
+       5. VISUAL SIMULATOR PANEL (RIGHT COLUMN)
+       ========================================================================== */
+    .simulator-container {
+      background: var(--canvas-bg);
+      border: 1px solid var(--rule);
+      border-radius: 16px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .sim-top-bar {
+      padding: 10px 18px;
+      background: var(--glass-bg);
+      border-bottom: 1px solid var(--rule);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      backdrop-filter: blur(10px);
+    }
+
+    .sim-status {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--neon-blue);
+    }
+
+    .status-pulse {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--neon-blue);
+      box-shadow: 0 0 8px var(--neon-blue);
+      animation: pulseAnim 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseAnim {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .canvas-viewport {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    canvas.interactive-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .sim-toolbar {
+      padding: 12px 18px;
+      background: var(--glass-bg);
+      border-top: 1px solid var(--rule);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      backdrop-filter: blur(10px);
+    }
+
+    .sim-btn {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .sim-btn:hover {
+      background: var(--neon-blue-wash);
+      border-color: var(--neon-blue);
+      color: var(--neon-blue);
+      box-shadow: 0 0 10px var(--neon-blue-glow);
+    }
+
+    .sim-btn.active {
+      background: var(--neon-blue);
+      color: #060913;
+      border-color: var(--neon-blue);
+      box-shadow: 0 0 12px var(--neon-blue-glow);
+    }
+
+    /* ==========================================================================
+       6. STEP-BY-STEP MATH REVEAL ARCHITECTURE (SLIDE 4)
+       ========================================================================== */
+    .step-navigator {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      padding: 8px 14px;
+      background: var(--glass-bg);
+      border-radius: 10px;
+      border: 1px solid var(--rule);
+    }
+
+    .step-pill {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: var(--rule);
+      color: var(--ink-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .step-pill.active {
+      background: var(--neon-blue);
+      color: #060913;
+      box-shadow: 0 0 10px var(--neon-blue-glow);
+    }
+
+    .step-pill.completed {
+      background: var(--emerald-wash);
+      color: var(--emerald);
+      border: 1px solid var(--emerald);
+    }
+
+    .math-step-card {
+      display: none;
+      animation: fadeInStep 0.3s ease forwards;
+    }
+
+    .math-step-card.active {
+      display: block;
+    }
+
+    @keyframes fadeInStep {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ==========================================================================
+       7. COVER & EXAM SLIDES SPECIALIZED LAYOUTS
+       ========================================================================== */
+    .cover-wrapper {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      height: 100%;
+      align-items: center;
+    }
+
+    .student-badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 18px;
+      border-radius: 30px;
+      background: var(--purple-wash);
+      border: 1px solid var(--purple);
+      color: var(--purple);
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      box-shadow: 0 0 20px var(--purple-glow);
+      width: fit-content;
+    }
+
+    .cover-feature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .cover-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 16px;
+      backdrop-filter: blur(12px);
+    }
+
+    .cover-card h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--neon-blue);
+      margin-bottom: 6px;
+    }
+
+    .cover-card p {
+      font-size: 13px;
+      line-height: 1.4;
+      color: var(--ink-muted);
+    }
+
+    /* Exam Flashcard Grid */
+    .exam-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 4px 14px;
+    }
+
+    .exam-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 22px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: var(--glass-shadow);
+      backdrop-filter: blur(14px);
+      transition: all 0.25s ease;
+      cursor: pointer;
+    }
+
+    .exam-card:hover {
+      border-color: var(--purple);
+      box-shadow: 0 10px 30px var(--purple-wash);
+      transform: translateY(-2px);
+    }
+
+    .exam-card.active-reveal {
+      border-color: var(--neon-blue);
+      box-shadow: 0 0 25px var(--neon-blue-glow);
+      background: var(--glass-bg-hover);
+    }
+
+    .exam-q-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .q-badge {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--neon-blue);
+      background: var(--neon-blue-wash);
+      border: 1px solid var(--neon-blue);
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .q-toggle-hint {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--purple);
+    }
+
+    .exam-question {
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.45;
+      color: var(--ink);
+      margin-bottom: 16px;
+    }
+
+    .exam-answer {
+      font-size: 15px;
+      line-height: 1.5;
+      color: var(--ink-muted);
+      border-top: 1px solid var(--rule);
+      padding-top: 14px;
+      display: none;
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+
+    .exam-card.active-reveal .exam-answer {
+      display: block;
+      animation: fadeInAnswer 0.25s ease forwards;
+    }
+
+    @keyframes fadeInAnswer {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Table of Contents Modal */
+    #toc-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.85);
+      backdrop-filter: blur(16px);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #toc-modal.open {
+      display: flex;
+      animation: modalFadeIn 0.2s ease;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .toc-box {
+      width: 720px;
+      max-width: 90vw;
+      background: var(--paper);
+      border: 1px solid var(--purple);
+      border-radius: 18px;
+      padding: 30px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 30px var(--purple-glow);
+    }
+
+    .toc-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .toc-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      list-style: none;
+    }
+
+    .toc-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      border-radius: 10px;
+      background: var(--glass-bg);
+      border: 1px solid var(--rule);
+      color: var(--ink);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .toc-item:hover {
+      background: var(--neon-blue-wash);
+      border-color: var(--neon-blue);
+      color: var(--neon-blue);
+      transform: translateX(4px);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Glowing Blobs -->
+  <div class="ambient-glow-1"></div>
+  <div class="ambient-glow-2"></div>
+
+  <!-- Shared Hover Glossary Floating Tooltip -->
+  <div id="glossary-tooltip">
+    <div class="tt-header">
+      <span class="tt-tag" id="tt-tag">Concept</span>
+      <h5 class="tt-title" id="tt-title">Term Title</h5>
+    </div>
+    <p class="tt-desc" id="tt-desc">Explanation description goes here.</p>
+  </div>
+
+  <!-- Presentation Stage Frame -->
+  <main id="stage" aria-label="Data Visualization: Polygons & Pie Charts Presentation">
+    
+    <!-- Top Universal Header -->
+    <header class="presentation-header">
+      <div class="brand-meta">
+        <span class="brand-badge">DATA VISUALIZATION • LECTURE</span>
+        <div class="brand-title">
+          <strong>Visualizing Data: Polygons & Pie Charts</strong> — Patient Teacher Edition
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <button class="btn-action" id="btn-audio" title="Toggle Slide Sound Effects">
+          <span id="audio-icon">🔊</span> Sound
+        </button>
+        <button class="btn-action" id="btn-toc" title="Table of Contents (Shortcut: M)">
+          <span>📑</span> Index
+        </button>
+        <button class="btn-action" id="btn-theme" title="Toggle Light / Dark Mode (Shortcut: T)">
+          <span id="theme-icon">🌙</span> <span id="theme-label">Dark Mode</span>
+        </button>
+        <button class="btn-action" id="btn-fullscreen" title="Toggle Fullscreen (Shortcut: F)">
+          <span>⛶</span> Fullscreen
+        </button>
+      </div>
+    </header>
+
+    <!-- Top Progress Bar -->
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+
+    <!-- Slides Viewport -->
+    <div class="slides-container">
+
+      <!-- ======================================================================
+           SLIDE 1: Title & Introduction
+           ====================================================================== -->
+      <section class="slide active" id="slide-1" data-index="0">
+        <div class="cover-wrapper">
+          <div class="cover-content">
+            <div class="student-badge-pill">
+              🎓 Lecture for Aariz • Institute of Computing, KUST
+            </div>
+            <div class="slide-badge">Foundations of Statistical Representation</div>
+            <h1 class="hero-title">Visualizing Data: Polygons & Pie Charts</h1>
+            
+            <p style="font-size: 20px; line-height: 1.5; color: var(--ink-muted); margin-bottom: 24px;">
+              Welcome! Today we are learning how to take <span class="k-term" data-term="raw-data">raw data</span>—like the number of patients in a clinic—and turn it into visual shapes. We will focus on two methods: the <span class="k-term" data-term="frequency-polygon">Frequency Polygon</span> and the <span class="k-term" data-term="pie-chart">Pie Chart</span>.
+            </p>
+
+            <div class="glass-card accent-cyan">
+              <div class="card-header">
+                <span class="card-label label-cyan">🧠 The "Why": Why do we visualize data?</span>
+                <span style="font-size: 12px; font-weight:700; color:var(--neon-blue);">Cognitive Power</span>
+              </div>
+              <div class="card-body">
+                Because the human brain processes <span class="k-term" data-term="shapes-and-angles">shapes and angles</span> much faster than it processes lists of raw numbers. Visuals help us instantly answer <strong>"how"</strong> data is distributed and <strong>"why"</strong> certain categories dominate.
+              </div>
+            </div>
+
+            <div class="cover-feature-grid">
+              <div class="cover-card">
+                <h4>📐 Frequency Polygon</h4>
+                <p>Connects class midpoints into a closed shape to visualize continuous trend distributions.</p>
+              </div>
+              <div class="cover-card">
+                <h4>🥧 Pie Chart</h4>
+                <p>Slices a complete 360° circle into proportional wedges to show parts of a 100% whole.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cover Interactive Visual Banner -->
+          <div class="simulator-container">
+            <div class="sim-top-bar">
+              <span class="sim-status">
+                <span class="status-pulse"></span> Raw Data to Geometry Engine
+              </span>
+              <span style="font-size: 11px; color: var(--ink-muted);">Visual Transformation</span>
+            </div>
+            <div class="canvas-viewport">
+              <canvas id="canvas-slide-1" class="interactive-canvas"></canvas>
+            </div>
+            <div class="sim-toolbar">
+              <div style="font-size: 13px; color: var(--ink-muted);">
+                Dual Representation: <strong style="color:var(--neon-blue);">Continuous Polygon</strong> & <strong style="color:var(--purple);">Categorical Pie</strong>
+              </div>
+              <button class="sim-btn" id="btn-reseed-cover">🔄 Re-animate Visuals</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           SLIDE 2: The Frequency Polygon
+           ====================================================================== -->
+      <section class="slide" id="slide-2" data-index="1">
+        <div class="slide-badge">Continuous Distribution Geometry</div>
+        <h2 class="slide-title">The <span class="title-highlight">Frequency Polygon</span></h2>
+        
+        <div class="slide-split">
+          <!-- Left: Teaching Cards Stack -->
+          <div class="cards-stack">
+            <!-- Define Card -->
+            <div class="glass-card accent-cyan">
+              <div class="card-header">
+                <span class="card-label label-cyan">📖 Define: What is a Polygon?</span>
+              </div>
+              <div class="card-body">
+                The word <span class="k-term" data-term="polygon">"Polygon"</span> breaks down into <strong>"poly"</strong> meaning <em>many</em>, and <strong>"gon"</strong> meaning <em>angles or sides</em>. A polygon is <strong>always a closed figure</strong>.
+              </div>
+            </div>
+
+            <!-- Explain (The "How") Card -->
+            <div class="glass-card accent-purple">
+              <div class="card-header">
+                <span class="card-label label-purple">🔨 Explain (The "How"): Building the Polygon</span>
+              </div>
+              <div class="card-body">
+                How do we build it? Imagine a <span class="k-term" data-term="histogram">bar chart (histogram)</span>. If we put a single dot at the very <strong>top middle of each bar</strong> (<span class="k-term" data-term="midpoint">midpoints</span>) and connect those dots with a straight line, we get a frequency polygon.
+              </div>
+            </div>
+
+            <!-- The "Why" Card -->
+            <div class="glass-card accent-emerald">
+              <div class="card-header">
+                <span class="card-label label-emerald">⚓ The "Why": Why must it be closed?</span>
+              </div>
+              <div class="card-body">
+                To show that the data has a <strong>clear beginning and end</strong>. We ground the line by bringing the very first and very last points down to the <span class="k-term" data-term="baseline">baseline</span> (the zero mark on the x-axis).
+              </div>
+              <div class="card-subtext">
+                This proves mathematically that frequencies outside this range are zero, sealing the total area beneath the curve.
+              </div>
+            </div>
+
+            <!-- Visual Element Specification Card -->
+            <div class="glass-card accent-amber">
+              <div class="card-header">
+                <span class="card-label label-amber">📊 Visual Element & Coordinates</span>
+              </div>
+              <div class="card-body" style="font-size: 15px;">
+                Look at the graph on the right! We plot midpoints on the x-axis:
+                <strong style="color:var(--neon-blue);">44.5, 64.5, 84.5, ... up to 224.5</strong>,
+                and frequencies on the y-axis:
+                <strong style="color:var(--purple);">9, 10, 17...</strong>
+                Watch how the ends touch the floor at zero!
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Interactive Polygon Visualizer -->
+          <div class="simulator-container">
+            <div class="sim-top-bar">
+              <span class="sim-status">
+                <span class="status-pulse"></span> Frequency Polygon over Histogram
+              </span>
+              <span id="readout-polygon-state" style="font-size: 13px; font-weight:700; color:var(--neon-blue);">
+                Full Closed Polygon Active
+              </span>
+            </div>
+            <div class="canvas-viewport">
+              <canvas id="canvas-slide-2" class="interactive-canvas"></canvas>
+            </div>
+            <div class="sim-toolbar">
+              <button class="sim-btn active" id="btn-toggle-bars">📊 Toggle Bars</button>
+              <button class="sim-btn active" id="btn-toggle-dots">📍 Midpoint Dots</button>
+              <button class="sim-btn active" id="btn-toggle-line">📈 Polygon Line</button>
+              <button class="sim-btn active" id="btn-toggle-ground">⚓ Ground to Baseline</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           SLIDE 3: The Pie Chart - Concept
+           ====================================================================== -->
+      <section class="slide" id="slide-3" data-index="2">
+        <div class="slide-badge">Proportional Geometry & 360° Rules</div>
+        <h2 class="slide-title">The <span class="title-highlight">Pie Chart</span> — Concept & Rules</h2>
+        
+        <div class="slide-split">
+          <!-- Left: Teaching Cards Stack -->
+          <div class="cards-stack">
+            <!-- Define Card -->
+            <div class="glass-card accent-cyan">
+              <div class="card-header">
+                <span class="card-label label-cyan">🥧 Define: The Pie Chart</span>
+              </div>
+              <div class="card-body">
+                A <span class="k-term" data-term="pie-chart">Pie Chart</span> is a round chart or circle that represents <strong>exactly 360 degrees ($360^\circ$)</strong>.
+              </div>
+            </div>
+
+            <!-- Explain (The "How") Card -->
+            <div class="glass-card accent-purple">
+              <div class="card-header">
+                <span class="card-label label-purple">🔪 Explain (The "How"): Slicing the Whole</span>
+              </div>
+              <div class="card-body">
+                How does it work? We take our total data and <strong>slice the $360^\circ$ circle into pieces</strong>. Each category receives a slice whose angle directly reflects its share of the total.
+              </div>
+            </div>
+
+            <!-- The Golden Rules Card -->
+            <div class="glass-card accent-rose">
+              <div class="card-header">
+                <span class="card-label label-rose">⭐ The Golden Rules</span>
+              </div>
+              <div class="card-body">
+                <ol style="padding-left: 20px; font-size: 16px; line-height: 1.6;">
+                  <li><strong>Slices are not allowed to overlap.</strong></li>
+                  <li><strong>There can be no empty space left in the circle.</strong></li>
+                </ol>
+              </div>
+            </div>
+
+            <!-- The "Why" Card -->
+            <div class="glass-card accent-emerald">
+              <div class="card-header">
+                <span class="card-label label-emerald">⚖️ The "Why": Why use 360°?</span>
+              </div>
+              <div class="card-body">
+                Because a circle is mathematically $360^\circ$. If our total data is <strong>100%</strong>, then <strong>100% of our data must perfectly equal $360^\circ$ of visual space</strong>.
+              </div>
+              <div class="card-subtext">
+                If slices overlapped or had gaps, our data would be mathematically incorrect—implying double-counting or lost patients!
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Interactive Golden Rules Demonstrator -->
+          <div class="simulator-container">
+            <div class="sim-top-bar">
+              <span class="sim-status">
+                <span class="status-pulse"></span> 360° Circle & Golden Rules Simulator
+              </span>
+              <span id="readout-pie-rule" style="font-size: 13px; font-weight:700; color:var(--emerald);">
+                Status: Perfectly Valid (100% = 360°)
+              </span>
+            </div>
+            <div class="canvas-viewport">
+              <canvas id="canvas-slide-3" class="interactive-canvas"></canvas>
+            </div>
+            <div class="sim-toolbar">
+              <button class="sim-btn active" id="btn-rule-valid">✅ Valid 360° Pie</button>
+              <button class="sim-btn" id="btn-rule-gap">⚠️ Flaw: Empty Gap (Missing Data)</button>
+              <button class="sim-btn" id="btn-rule-overlap">❌ Flaw: Overlap (Double Counting)</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           SLIDE 4: The Pie Chart - Breaking Down the Math (Step-by-Step)
+           ====================================================================== -->
+      <section class="slide" id="slide-4" data-index="3">
+        <div class="slide-badge">Step-by-Step Math Laboratory</div>
+        <h2 class="slide-title">The Pie Chart — <span class="title-highlight">Breaking Down the Math</span></h2>
+        
+        <div class="slide-split">
+          <!-- Left: Step-by-Step Patient Teaching Deck -->
+          <div class="cards-stack">
+            <!-- Step Navigation Controls -->
+            <div class="step-navigator">
+              <span style="font-size: 12px; font-weight:800; color:var(--neon-blue); text-transform:uppercase;">Reveal:</span>
+              <span class="step-pill active" data-step="0">Formula</span>
+              <span class="step-pill" data-step="1">Step 1: Total</span>
+              <span class="step-pill" data-step="2">Step 2: LBP</span>
+              <span class="step-pill" data-step="3">Step 3: Sciatica</span>
+              <span class="step-pill" data-step="4">Step 4: Stroke</span>
+              <span class="step-pill" data-step="5">Step 5: CP</span>
+            </div>
+
+            <!-- Master Formula Card (Always visible or Step 0) -->
+            <div class="glass-card accent-cyan">
+              <div class="card-header">
+                <span class="card-label label-cyan">🏥 The Scenario & The Master Formula</span>
+                <span style="font-size: 12px; color:var(--neon-blue); font-weight:700;">Clinical Patient Data</span>
+              </div>
+              <div class="card-body">
+                We have patient data categorized into: <strong>Lower Back Pain (LBP)</strong>, <strong>Sciatica (S)</strong>, <strong>Stroke (ST)</strong>, and <strong>Cerebral Palsy (CP)</strong>.
+                <div class="math-callout">$$Angle = \left(\frac{\text{Obtained}}{\text{Total}}\right) \times 360$$</div>
+                <p class="card-subtext">
+                  <em>Why this formula?</em> We divide the obtained number by the total to find the <strong>fraction</strong>. We then multiply by 360 to find out how much of the circle's $360^\circ$ belongs to that fraction.
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 1: Find the Total -->
+            <div class="glass-card accent-purple math-step-card" id="card-step-1">
+              <div class="card-header">
+                <span class="card-label label-purple">Step 1: Find the Total</span>
+                <span class="q-badge">Denominator</span>
+              </div>
+              <div class="card-body">
+                Before we can slice anything, we need the whole pie:
+                <div style="font-size: 18px; font-weight:700; margin: 8px 0; color:var(--purple);">
+                  LBP (250) + Sciatica (60) + Stroke (150) + CP (30) = Total 490 patients.
+                </div>
+                <p class="card-subtext">
+                  Our total is <strong>490</strong>. Every single category will now be divided by 490.
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 2: Calculate LBP Angle -->
+            <div class="glass-card accent-cyan math-step-card" id="card-step-2">
+              <div class="card-header">
+                <span class="card-label label-cyan">Step 2: Calculate LBP Angle</span>
+                <span class="q-badge" style="color:#00d4ff;">Slice 1</span>
+              </div>
+              <div class="card-body">
+                Formula: $\left(\frac{250}{490}\right) \times 360 = \mathbf{184^\circ}$
+                <p class="card-subtext" style="color:var(--ink);">
+                  💡 <em>Teacher's Insight:</em> Because 250 is roughly half of 490, it takes up roughly half the circle ($180^\circ$).
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 3: Calculate Sciatica Angle -->
+            <div class="glass-card accent-purple math-step-card" id="card-step-3">
+              <div class="card-header">
+                <span class="card-label label-purple">Step 3: Calculate Sciatica Angle</span>
+                <span class="q-badge" style="color:#c084fc;">Slice 2</span>
+              </div>
+              <div class="card-body">
+                Formula: $\left(\frac{60}{490}\right) \times 360 = \mathbf{44^\circ}$
+                <p class="card-subtext">
+                  A smaller wedge ($44^\circ$) reflecting 60 out of 490 patients.
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 4: Calculate Stroke Angle -->
+            <div class="glass-card accent-emerald math-step-card" id="card-step-4">
+              <div class="card-header">
+                <span class="card-label label-emerald">Step 4: Calculate Stroke Angle</span>
+                <span class="q-badge" style="color:#34d399;">Slice 3</span>
+              </div>
+              <div class="card-body">
+                Formula: $\left(\frac{150}{490}\right) \times 360 = \mathbf{110^\circ}$
+                <p class="card-subtext">
+                  Stroke represents 150 patients, commanding a substantial $110^\circ$ slice.
+                </p>
+              </div>
+            </div>
+
+            <!-- Step 5: Calculate CP Angle -->
+            <div class="glass-card accent-amber math-step-card" id="card-step-5">
+              <div class="card-header">
+                <span class="card-label label-amber">Step 5: Calculate CP Angle</span>
+                <span class="q-badge" style="color:#fbbf24;">Slice 4 (Seals Circle)</span>
+              </div>
+              <div class="card-body">
+                Formula: $\left(\frac{30}{490}\right) \times 360 = \mathbf{22^\circ}$
+                <p class="card-subtext" style="color:var(--emerald);">
+                  🎯 <em>Check the Sum:</em> $184^\circ + 44^\circ + 110^\circ + 22^\circ = \mathbf{360^\circ}$! The circle is perfectly sealed!
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Interactive Dynamic Slicing Visualizer -->
+          <div class="simulator-container">
+            <div class="sim-top-bar">
+              <span class="sim-status">
+                <span class="status-pulse"></span> Dynamic Pie Slice Construction
+              </span>
+              <span id="readout-math-step" style="font-size: 13px; font-weight:700; color:var(--neon-blue);">
+                Ready: Master Formula Loaded
+              </span>
+            </div>
+            <div class="canvas-viewport">
+              <canvas id="canvas-slide-4" class="interactive-canvas"></canvas>
+            </div>
+            <div class="sim-toolbar">
+              <button class="sim-btn" id="btn-math-prev" disabled>⬅️ Previous Step</button>
+              <button class="sim-btn active" id="btn-math-next">Next Step ➡️</button>
+              <button class="sim-btn" id="btn-math-reveal-all">⚡ Show All Slices</button>
+              <button class="sim-btn" id="btn-math-reset">🔄 Reset</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           SLIDE 5: Conceptual Exam Questions & Short Answers (Quiz Slide)
+           ====================================================================== -->
+      <section class="slide" id="slide-5" data-index="4">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px;">
+          <div>
+            <div class="slide-badge">Exam Mastery & Knowledge Verification</div>
+            <h2 class="slide-title" style="margin-bottom: 0;">Conceptual Exam Questions & <span class="title-highlight">Short Answers</span></h2>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn-action" id="btn-toggle-all-answers">
+              <span>👁️</span> <span id="label-toggle-all">Reveal All Answers</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="exam-grid">
+          <!-- Q1 -->
+          <div class="exam-card" data-q="1">
+            <div>
+              <div class="exam-q-header">
+                <span class="q-badge">Question 1</span>
+                <span class="q-toggle-hint">Click card to reveal</span>
+              </div>
+              <div class="exam-question">
+                Why is it a strict mathematical requirement that a Frequency Polygon must be a "closed figure"?
+              </div>
+            </div>
+            <div class="exam-answer">
+              <strong style="color:var(--neon-blue);">Answer:</strong> A frequency polygon must be closed (anchored to the x-axis at both ends) to accurately represent the total area under the curve. By closing the figure, it proves that there are zero frequencies beyond the measured range, giving the data a definitive start and end point.
+            </div>
+          </div>
+
+          <!-- Q2 -->
+          <div class="exam-card" data-q="2">
+            <div>
+              <div class="exam-q-header">
+                <span class="q-badge">Question 2</span>
+                <span class="q-toggle-hint">Click card to reveal</span>
+              </div>
+              <div class="exam-question">
+                In a Pie Chart, how does the formula $(\text{Obtained} / \text{Total}) \times 360$ act as a translation tool?
+              </div>
+            </div>
+            <div class="exam-answer">
+              <strong style="color:var(--neon-blue);">Answer:</strong> The formula translates raw data into visual geometry. By dividing the <em>Obtained</em> value by the <em>Total</em>, you find the exact ratio or percentage of the whole. Multiplying that ratio by $360$ translates that percentage into literal degrees, ensuring the data perfectly maps onto a physical circle.
+            </div>
+          </div>
+
+          <!-- Q3 -->
+          <div class="exam-card" data-q="3">
+            <div>
+              <div class="exam-q-header">
+                <span class="q-badge">Question 3</span>
+                <span class="q-toggle-hint">Click card to reveal</span>
+              </div>
+              <div class="exam-question">
+                Why are overlaps and empty spaces strictly forbidden when constructing a Pie Chart?
+              </div>
+            </div>
+            <div class="exam-answer">
+              <strong style="color:var(--neon-blue);">Answer:</strong> A Pie Chart represents exactly 100% of a dataset. If slices overlapped, it would imply that a single data point belongs to two distinct categories at once, ruining the proportions. If there was empty space, it would mean the data does not add up to the total, violating the rule that the whole circle ($360^\circ$) equals the entire dataset.
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Bottom Navigation Dock Bar -->
+    <footer class="presentation-dock">
+      <div class="dock-left">
+        <span class="dock-slide-counter" id="dock-counter">Slide 1 / 5</span>
+        <div class="dock-dots" id="dock-dots">
+          <div class="dot-item active" data-goto="0" title="Slide 1: Intro"></div>
+          <div class="dot-item" data-goto="1" title="Slide 2: Frequency Polygon"></div>
+          <div class="dot-item" data-goto="2" title="Slide 3: Pie Chart Concept"></div>
+          <div class="dot-item" data-goto="3" title="Slide 4: Breaking Down Math"></div>
+          <div class="dot-item" data-goto="4" title="Slide 5: Exam Q&A"></div>
+        </div>
+      </div>
+
+      <div class="dock-controls">
+        <button class="btn-nav" id="btn-prev" disabled>
+          <span>←</span> Previous
+        </button>
+        <button class="btn-nav" id="btn-next">
+          Next <span>→</span>
+        </button>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Table of Contents Modal -->
+  <div id="toc-modal">
+    <div class="toc-box">
+      <div class="toc-header">
+        <h3 style="font-size: 22px; font-weight:800; color:var(--ink);">Data Visualization — Lecture Navigation</h3>
+        <button class="sim-btn" id="btn-close-toc">✕ Close</button>
+      </div>
+      <ul class="toc-list">
+        <li class="toc-item" data-goto="0">
+          <span><strong>Slide 1:</strong> Title & Introduction</span>
+          <span style="color:var(--neon-blue);">Raw Data to Visuals →</span>
+        </li>
+        <li class="toc-item" data-goto="1">
+          <span><strong>Slide 2:</strong> The Frequency Polygon</span>
+          <span style="color:var(--neon-blue);">Midpoints, Lines & Baseline →</span>
+        </li>
+        <li class="toc-item" data-goto="2">
+          <span><strong>Slide 3:</strong> The Pie Chart — Concept</span>
+          <span style="color:var(--neon-blue);">360° Slices & Golden Rules →</span>
+        </li>
+        <li class="toc-item" data-goto="3">
+          <span><strong>Slide 4:</strong> The Pie Chart — Breaking Down the Math</span>
+          <span style="color:var(--neon-blue);">Step-by-Step Patient Data →</span>
+        </li>
+        <li class="toc-item" data-goto="4">
+          <span><strong>Slide 5:</strong> Conceptual Exam Questions & Short Answers</span>
+          <span style="color:var(--neon-blue);">Quiz Review Q1 - Q3 →</span>
+        </li>
+      </ul>
+      <p style="font-size: 13px; color: var(--ink-muted); margin-top: 18px; text-align: center;">
+        Use <strong>Arrow Keys</strong> or <strong>Spacebar</strong> to navigate • Press <strong>T</strong> for theme • Press <strong>F</strong> for fullscreen
+      </p>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       JAVASCRIPT ARCHITECTURE: ENGINE, VISUAL SIMULATORS & GLOSSARY
+       ========================================================================== -->
+  <script>
+    // --------------------------------------------------------------------------
+    // 1. GLOSSARY DEFINITIONS (Interactive Hover States)
+    // --------------------------------------------------------------------------
+    const glossaryDict = {
+      'raw-data': {
+        title: 'Raw Data',
+        tag: 'Input',
+        desc: 'Unprocessed factual records, numbers, or patient counts collected before any summary or visual transformation.'
+      },
+      'frequency-polygon': {
+        title: 'Frequency Polygon',
+        tag: 'Chart Type',
+        desc: 'A line graph created by connecting the midpoints of the tops of histogram bars, anchored to zero at both ends.'
+      },
+      'pie-chart': {
+        title: 'Pie Chart',
+        tag: 'Chart Type',
+        desc: 'A circular statistical graphic divided into slices to illustrate numerical proportion, totaling exactly 360 degrees.'
+      },
+      'shapes-and-angles': {
+        title: 'Shapes & Angles',
+        tag: 'Perception',
+        desc: 'Geometric primitives that the human visual cortex processes pre-attentively in milliseconds.'
+      },
+      'polygon': {
+        title: 'Polygon',
+        tag: 'Etymology',
+        desc: 'From Greek "poly" (many) and "gon" (angles/sides). A 2D geometric figure bounded by a closed path of straight lines.'
+      },
+      'histogram': {
+        title: 'Histogram',
+        tag: 'Foundation',
+        desc: 'A contiguous bar chart where bar heights represent frequencies across continuous numerical class intervals.'
+      },
+      'midpoint': {
+        title: 'Class Midpoint',
+        tag: 'Anchor Point',
+        desc: 'The center value of each class interval, calculated as (Lower Limit + Upper Limit) / 2.'
+      },
+      'baseline': {
+        title: 'Baseline (Ground)',
+        tag: 'Anchor Requirement',
+        desc: 'The y = 0 axis line where the polygon must start and end to prove no frequencies exist outside the dataset range.'
+      }
+    };
+
+    const tooltipEl = document.getElementById('glossary-tooltip');
+    const ttTag = document.getElementById('tt-tag');
+    const ttTitle = document.getElementById('tt-title');
+    const ttDesc = document.getElementById('tt-desc');
+
+    document.querySelectorAll('.k-term').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        const key = el.getAttribute('data-term');
+        const info = glossaryDict[key];
+        if (!info) return;
+
+        ttTag.textContent = info.tag;
+        ttTitle.textContent = info.title;
+        ttDesc.textContent = info.desc;
+
+        const rect = el.getBoundingClientRect();
+        let top = rect.top - 85;
+        let left = rect.left + (rect.width / 2) - 160;
+
+        if (left < 20) left = 20;
+        if (left + 330 > window.innerWidth) left = window.innerWidth - 350;
+        if (top < 10) top = rect.bottom + 12;
+
+        tooltipEl.style.top = `${top}px`;
+        tooltipEl.style.left = `${left}px`;
+        tooltipEl.classList.add('show');
+        playBlip(620, 0.03);
+      });
+
+      el.addEventListener('mouseleave', () => {
+        tooltipEl.classList.remove('show');
+      });
+    });
+
+    // --------------------------------------------------------------------------
+    // 2. SLIDE NAVIGATION & STAGE SCALING ENGINE
+    // --------------------------------------------------------------------------
+    const slides = Array.from(document.querySelectorAll('section.slide'));
+    const dots = Array.from(document.querySelectorAll('.dot-item'));
+    const counterEl = document.getElementById('dock-counter');
+    const progressFill = document.getElementById('progress-fill');
+    const btnPrev = document.getElementById('btn-prev');
+    const btnNext = document.getElementById('btn-next');
+    let currentSlide = 0;
+
+    function fitStage() {
+      const scale = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
+      document.documentElement.style.setProperty('--scale', scale);
+    }
+    window.addEventListener('resize', fitStage);
+    fitStage();
+
+    function goToSlide(index) {
+      if (index < 0 || index >= slides.length) return;
+      currentSlide = index;
+
+      slides.forEach((slide, i) => {
+        slide.classList.toggle('active', i === currentSlide);
+      });
+
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentSlide);
+      });
+
+      counterEl.textContent = `Slide ${currentSlide + 1} / ${slides.length}`;
+      progressFill.style.width = `${((currentSlide + 1) / slides.length) * 100}%`;
+
+      btnPrev.disabled = (currentSlide === 0);
+      btnNext.disabled = (currentSlide === slides.length - 1);
+
+      playSlideSound();
+      renderSlideVisual(currentSlide);
+    }
+
+    btnPrev.addEventListener('click', () => goToSlide(currentSlide - 1));
+    btnNext.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+    dots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        goToSlide(parseInt(dot.getAttribute('data-goto'), 10));
+      });
+    });
+
+    // Keyboard Shortcuts
+    window.addEventListener('keydown', (e) => {
+      if (['ArrowRight', 'Space', ' '].includes(e.key)) {
+        if (e.target.tagName === 'INPUT') return;
+        e.preventDefault();
+        goToSlide(currentSlide + 1);
+      } else if (['ArrowLeft', 'Backspace'].includes(e.key)) {
+        if (e.target.tagName === 'INPUT') return;
+        e.preventDefault();
+        goToSlide(currentSlide - 1);
+      } else if (e.key.toLowerCase() === 't') {
+        toggleTheme();
+      } else if (e.key.toLowerCase() === 'f') {
+        toggleFullscreen();
+      } else if (e.key.toLowerCase() === 'm') {
+        toggleToc();
+      }
+    });
+
+    // Table of Contents Modal
+    const tocModal = document.getElementById('toc-modal');
+    const btnToc = document.getElementById('btn-toc');
+    const btnCloseToc = document.getElementById('btn-close-toc');
+
+    function toggleToc() {
+      tocModal.classList.toggle('open');
+    }
+    btnToc.addEventListener('click', toggleToc);
+    btnCloseToc.addEventListener('click', toggleToc);
+
+    document.querySelectorAll('.toc-item').forEach(item => {
+      item.addEventListener('click', () => {
+        goToSlide(parseInt(item.getAttribute('data-goto'), 10));
+        tocModal.classList.remove('open');
+      });
+    });
+
+    // --------------------------------------------------------------------------
+    // 3. THEME TOGGLE (SLATE & NEON BLUE & PURPLE GLASS)
+    // --------------------------------------------------------------------------
+    const btnTheme = document.getElementById('btn-theme');
+    const themeIcon = document.getElementById('theme-icon');
+    const themeLabel = document.getElementById('theme-label');
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.getAttribute('data-theme') === 'dark';
+      const newTheme = isDark ? 'light' : 'dark';
+      html.setAttribute('data-theme', newTheme);
+
+      themeIcon.textContent = isDark ? '☀️' : '🌙';
+      themeLabel.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+
+      playBlip(540, 0.05);
+      setTimeout(() => renderSlideVisual(currentSlide), 50);
+    }
+    btnTheme.addEventListener('click', toggleTheme);
+
+    // Fullscreen Toggle
+    const btnFullscreen = document.getElementById('btn-fullscreen');
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+    btnFullscreen.addEventListener('click', toggleFullscreen);
+
+    // --------------------------------------------------------------------------
+    // 4. AUDIO SYNTHESIZER
+    // --------------------------------------------------------------------------
+    let audioCtx = null;
+    let audioEnabled = true;
+    const btnAudio = document.getElementById('btn-audio');
+    const audioIcon = document.getElementById('audio-icon');
+
+    btnAudio.addEventListener('click', () => {
+      audioEnabled = !audioEnabled;
+      audioIcon.textContent = audioEnabled ? '🔊' : '🔇';
+    });
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) audioCtx = new AudioContext();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playBlip(freq, duration) {
+      if (!audioEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(0.04, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+      } catch (err) {}
+    }
+
+    function playSlideSound() {
+      if (!audioEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(360, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(560, ctx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.05, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.12);
+      } catch (err) {}
+    }
+
+    // --------------------------------------------------------------------------
+    // 5. CANVAS DRAWING HELPERS & VISUAL ENGINES
+    // --------------------------------------------------------------------------
+    function isDarkTheme() {
+      return document.documentElement.getAttribute('data-theme') === 'dark';
+    }
+
+    function initCanvas(id) {
+      const canvas = document.getElementById(id);
+      if (!canvas) return null;
+      const rect = canvas.parentElement.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      return { canvas, ctx, width: rect.width, height: rect.height };
+    }
+
+    function drawGrid(ctx, w, h) {
+      const dark = isDarkTheme();
+      ctx.strokeStyle = dark ? 'rgba(51, 65, 85, 0.22)' : 'rgba(203, 213, 225, 0.5)';
+      ctx.lineWidth = 1;
+      const step = 32;
+      for (let x = 0; x < w; x += step) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+      }
+      for (let y = 0; y < h; y += step) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      }
+    }
+
+    // ==========================================================================
+    // SLIDE 1: Cover Animated Visual (Dual Poly & Pie Harmony)
+    // ==========================================================================
+    let coverAnimId = null;
+    let coverTick = 0;
+
+    document.getElementById('btn-reseed-cover')?.addEventListener('click', () => {
+      coverTick = 0;
+      playBlip(720, 0.05);
+    });
+
+    function drawCoverSlideVisual() {
+      const res = initCanvas('canvas-slide-1');
+      if (!res) return;
+      const { ctx, width, height } = res;
+
+      ctx.clearRect(0, 0, width, height);
+      drawGrid(ctx, width, height);
+      coverTick += 0.02;
+
+      // Draw Mini Frequency Polygon on the left half
+      const polyLeft = 40;
+      const polyBottom = height - 60;
+      const polyPoints = [
+        { x: polyLeft, y: polyBottom },
+        { x: polyLeft + 50, y: polyBottom - 60 },
+        { x: polyLeft + 100, y: polyBottom - 140 },
+        { x: polyLeft + 150, y: polyBottom - 180 + Math.sin(coverTick) * 10 },
+        { x: polyLeft + 200, y: polyBottom - 110 },
+        { x: polyLeft + 250, y: polyBottom - 70 },
+        { x: polyLeft + 300, y: polyBottom }
+      ];
+
+      // Draw shaded polygon area
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(polyPoints[0].x, polyPoints[0].y);
+      for (let i = 1; i < polyPoints.length; i++) {
+        ctx.lineTo(polyPoints[i].x, polyPoints[i].y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = isDarkTheme() ? 'rgba(0, 212, 255, 0.15)' : 'rgba(0, 136, 204, 0.15)';
+      ctx.fill();
+
+      // Polygon perimeter line
+      ctx.strokeStyle = '#00d4ff';
+      ctx.lineWidth = 3;
+      ctx.shadowColor = '#00d4ff';
+      ctx.shadowBlur = 10;
+      ctx.stroke();
+
+      // Midpoint dots
+      polyPoints.forEach((p, idx) => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, (idx === 0 || idx === polyPoints.length - 1) ? 5 : 7, 0, Math.PI * 2);
+        ctx.fillStyle = (idx === 0 || idx === polyPoints.length - 1) ? '#fbbf24' : '#00d4ff';
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#ffffff';
+        ctx.stroke();
+      });
+      ctx.restore();
+
+      // Draw Rotating Mini Pie Chart on the right half
+      const pieCenter = { x: width - 180, y: height / 2 };
+      const pieRadius = 110;
+      const slices = [
+        { angle: (184 / 360) * Math.PI * 2, color: '#00d4ff', label: 'LBP 184°' },
+        { angle: (44 / 360) * Math.PI * 2, color: '#c084fc', label: 'S 44°' },
+        { angle: (110 / 360) * Math.PI * 2, color: '#34d399', label: 'ST 110°' },
+        { angle: (22 / 360) * Math.PI * 2, color: '#fbbf24', label: 'CP 22°' }
+      ];
+
+      let currentAngle = -Math.PI / 2 + (coverTick * 0.2);
+
+      slices.forEach((s) => {
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(pieCenter.x, pieCenter.y);
+        ctx.arc(pieCenter.x, pieCenter.y, pieRadius, currentAngle, currentAngle + s.angle);
+        ctx.closePath();
+        ctx.fillStyle = s.color;
+        ctx.shadowColor = s.color;
+        ctx.shadowBlur = 8;
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = isDarkTheme() ? '#0b1120' : '#ffffff';
+        ctx.stroke();
+        ctx.restore();
+
+        currentAngle += s.angle;
+      });
+
+      // Central inner donut ring for modern glass look
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(pieCenter.x, pieCenter.y, 42, 0, Math.PI * 2);
+      ctx.fillStyle = isDarkTheme() ? 'rgba(11, 17, 32, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+      ctx.fill();
+      ctx.strokeStyle = isDarkTheme() ? 'rgba(168, 85, 247, 0.3)' : 'rgba(124, 58, 237, 0.3)';
+      ctx.stroke();
+
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillStyle = '#00d4ff';
+      ctx.textAlign = 'center';
+      ctx.fillText('360°', pieCenter.x, pieCenter.y + 5);
+      ctx.restore();
+
+      coverAnimId = requestAnimationFrame(drawCoverSlideVisual);
+    }
+
+    // ==========================================================================
+    // SLIDE 2: Frequency Polygon Over Histogram Engine
+    // ==========================================================================
+    let showBars = true;
+    let showDots = true;
+    let showLine = true;
+    let showGround = true;
+
+    const btnBars = document.getElementById('btn-toggle-bars');
+    const btnDots = document.getElementById('btn-toggle-dots');
+    const btnLine = document.getElementById('btn-toggle-line');
+    const btnGround = document.getElementById('btn-toggle-ground');
+    const readoutPolygon = document.getElementById('readout-polygon-state');
+
+    btnBars?.addEventListener('click', () => {
+      showBars = !showBars;
+      btnBars.classList.toggle('active', showBars);
+      playBlip(500, 0.04);
+      drawSlide2Visual();
+    });
+
+    btnDots?.addEventListener('click', () => {
+      showDots = !showDots;
+      btnDots.classList.toggle('active', showDots);
+      playBlip(550, 0.04);
+      drawSlide2Visual();
+    });
+
+    btnLine?.addEventListener('click', () => {
+      showLine = !showLine;
+      btnLine.classList.toggle('active', showLine);
+      playBlip(600, 0.04);
+      drawSlide2Visual();
+    });
+
+    btnGround?.addEventListener('click', () => {
+      showGround = !showGround;
+      btnGround.classList.toggle('active', showGround);
+      readoutPolygon.textContent = showGround ? 'Full Closed Polygon Active (Anchored)' : 'Open Line (Missing Grounding)';
+      readoutPolygon.style.color = showGround ? 'var(--neon-blue)' : 'var(--amber)';
+      playBlip(showGround ? 700 : 400, 0.05);
+      drawSlide2Visual();
+    });
+
+    // Exact data specified: Midpoints like 44.5, 64.5, 84.5 up to 224.5; frequencies 9, 10, 17...
+    const polyData = [
+      { mid: 44.5, freq: 9 },
+      { mid: 64.5, freq: 17 },
+      { mid: 84.5, freq: 24 },
+      { mid: 104.5, freq: 19 },
+      { mid: 124.5, freq: 14 },
+      { mid: 144.5, freq: 10 },
+      { mid: 164.5, freq: 8 },
+      { mid: 184.5, freq: 5 },
+      { mid: 204.5, freq: 3 },
+      { mid: 224.5, freq: 1 }
+    ];
+
+    function drawSlide2Visual() {
+      const res = initCanvas('canvas-slide-2');
+      if (!res) return;
+      const { ctx, width, height } = res;
+
+      ctx.clearRect(0, 0, width, height);
+      drawGrid(ctx, width, height);
+
+      const marginL = 70;
+      const marginR = 40;
+      const marginT = 40;
+      const marginB = 70;
+      const plotW = width - marginL - marginR;
+      const plotH = height - marginT - marginB;
+      const baselineY = height - marginB;
+
+      // Coordinate mapping
+      const minX = 24.5; // Left anchor baseline
+      const maxX = 244.5; // Right anchor baseline
+      const maxFreq = 28;
+
+      function mapX(val) {
+        return marginL + ((val - minX) / (maxX - minX)) * plotW;
+      }
+      function mapY(freq) {
+        return baselineY - (freq / maxFreq) * plotH;
+      }
+
+      // 1. Draw Axes
+      ctx.strokeStyle = isDarkTheme() ? '#475569' : '#cbd5e1';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      // Y axis
+      ctx.moveTo(marginL, marginT);
+      ctx.lineTo(marginL, baselineY);
+      // X axis (Baseline)
+      ctx.lineTo(width - marginR, baselineY);
+      ctx.stroke();
+
+      // Axis labels & Y ticks
+      ctx.font = 'bold 12px sans-serif';
+      ctx.fillStyle = isDarkTheme() ? '#94a3b8' : '#475569';
+      ctx.textAlign = 'right';
+
+      [0, 5, 9, 10, 17, 24].forEach(f => {
+        const y = mapY(f);
+        ctx.fillText(f.toString(), marginL - 10, y + 4);
+        ctx.beginPath();
+        ctx.moveTo(marginL - 4, y);
+        ctx.lineTo(marginL, y);
+        ctx.stroke();
+      });
+
+      // Y-axis Title
+      ctx.save();
+      ctx.translate(22, height / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#c084fc';
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillText('Frequency (Number of Patients)', 0, 0);
+      ctx.restore();
+
+      // X-axis Title
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#00d4ff';
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillText('Class Midpoints (x)', marginL + plotW / 2, height - 16);
+
+      // 2. Draw Histogram Bars (if toggled)
+      const barHalfW = (mapX(64.5) - mapX(44.5)) / 2;
+      if (showBars) {
+        polyData.forEach(d => {
+          const bx = mapX(d.mid) - barHalfW;
+          const by = mapY(d.freq);
+          const bw = barHalfW * 2 - 2;
+          const bh = baselineY - by;
+
+          ctx.fillStyle = isDarkTheme() ? 'rgba(168, 85, 247, 0.16)' : 'rgba(124, 58, 237, 0.14)';
+          ctx.fillRect(bx, by, bw, bh);
+          ctx.strokeStyle = isDarkTheme() ? 'rgba(168, 85, 247, 0.45)' : 'rgba(124, 58, 237, 0.45)';
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(bx, by, bw, bh);
+        });
+      }
+
+      // X Ticks (Midpoints)
+      ctx.font = '11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = isDarkTheme() ? '#94a3b8' : '#475569';
+
+      polyData.forEach(d => {
+        const x = mapX(d.mid);
+        ctx.fillText(d.mid.toString(), x, baselineY + 18);
+        ctx.beginPath();
+        ctx.moveTo(x, baselineY);
+        ctx.lineTo(x, baselineY + 4);
+        ctx.stroke();
+      });
+
+      // Anchors labeled at baseline
+      if (showGround) {
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillText('24.5 (f=0)', mapX(minX), baselineY + 18);
+        ctx.fillText('244.5 (f=0)', mapX(maxX), baselineY + 18);
+      }
+
+      // 3. Prepare Polygon Point Chain
+      const linePoints = [];
+      if (showGround) {
+        linePoints.push({ x: mapX(minX), y: baselineY, isAnchor: true });
+      }
+      polyData.forEach(d => {
+        linePoints.push({ x: mapX(d.mid), y: mapY(d.freq), isAnchor: false, freq: d.freq });
+      });
+      if (showGround) {
+        linePoints.push({ x: mapX(maxX), y: baselineY, isAnchor: true });
+      }
+
+      // Draw Polygon Fill & Line
+      if (showLine && linePoints.length > 1) {
+        // Shaded interior area
+        if (showGround) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(linePoints[0].x, linePoints[0].y);
+          linePoints.forEach(p => ctx.lineTo(p.x, p.y));
+          ctx.closePath();
+          ctx.fillStyle = isDarkTheme() ? 'rgba(0, 212, 255, 0.12)' : 'rgba(0, 136, 204, 0.12)';
+          ctx.fill();
+          ctx.restore();
+        }
+
+        // Polygon perimeter stroke
+        ctx.save();
+        ctx.strokeStyle = '#00d4ff';
+        ctx.lineWidth = 3.5;
+        ctx.shadowColor = '#00d4ff';
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.moveTo(linePoints[0].x, linePoints[0].y);
+        for (let i = 1; i < linePoints.length; i++) {
+          ctx.lineTo(linePoints[i].x, linePoints[i].y);
+        }
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // 4. Draw Midpoint Dots
+      if (showDots) {
+        linePoints.forEach(p => {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.isAnchor ? 6 : 7, 0, Math.PI * 2);
+          ctx.fillStyle = p.isAnchor ? '#fbbf24' : '#00d4ff';
+          ctx.fill();
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = '#ffffff';
+          ctx.stroke();
+
+          // Value tag above peak dots
+          if (!p.isAnchor && [9, 17, 24, 10].includes(p.freq)) {
+            ctx.font = 'bold 11px monospace';
+            ctx.fillStyle = '#00d4ff';
+            ctx.textAlign = 'center';
+            ctx.fillText(p.freq.toString(), p.x, p.y - 12);
+          }
+          ctx.restore();
+        });
+      }
+    }
+
+    // ==========================================================================
+    // SLIDE 3: The Pie Chart - Concept & Golden Rules Simulator
+    // ==========================================================================
+    let pieRuleState = 'valid'; // 'valid' | 'gap' | 'overlap'
+    const btnRuleValid = document.getElementById('btn-rule-valid');
+    const btnRuleGap = document.getElementById('btn-rule-gap');
+    const btnRuleOverlap = document.getElementById('btn-rule-overlap');
+    const readoutPieRule = document.getElementById('readout-pie-rule');
+
+    btnRuleValid?.addEventListener('click', () => {
+      pieRuleState = 'valid';
+      btnRuleValid.classList.add('active');
+      btnRuleGap.classList.remove('active');
+      btnRuleOverlap.classList.remove('active');
+      readoutPieRule.textContent = 'Status: Perfectly Valid (100% = 360°, 0 Gap, 0 Overlap)';
+      readoutPieRule.style.color = 'var(--emerald)';
+      playBlip(750, 0.05);
+      drawSlide3Visual();
+    });
+
+    btnRuleGap?.addEventListener('click', () => {
+      pieRuleState = 'gap';
+      btnRuleGap.classList.add('active');
+      btnRuleValid.classList.remove('active');
+      btnRuleOverlap.classList.remove('active');
+      readoutPieRule.textContent = 'Rule Violation: Empty Space Left! (Total < 360°)';
+      readoutPieRule.style.color = 'var(--amber)';
+      playBlip(420, 0.05);
+      drawSlide3Visual();
+    });
+
+    btnRuleOverlap?.addEventListener('click', () => {
+      pieRuleState = 'overlap';
+      btnRuleOverlap.classList.add('active');
+      btnRuleValid.classList.remove('active');
+      btnRuleGap.classList.remove('active');
+      readoutPieRule.textContent = 'Rule Violation: Slices Overlap! (Double Counting Data)';
+      readoutPieRule.style.color = 'var(--rose)';
+      playBlip(320, 0.06);
+      drawSlide3Visual();
+    });
+
+    function drawSlide3Visual() {
+      const res = initCanvas('canvas-slide-3');
+      if (!res) return;
+      const { ctx, width, height } = res;
+
+      ctx.clearRect(0, 0, width, height);
+      drawGrid(ctx, width, height);
+
+      const cx = width / 2;
+      const cy = height / 2;
+      const R = 150;
+
+      // Outer guideline circle (Total 360°)
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, R + 12, 0, Math.PI * 2);
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = isDarkTheme() ? 'rgba(0, 212, 255, 0.4)' : 'rgba(0, 136, 204, 0.4)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Degree annotations
+      ctx.font = 'bold 11px sans-serif';
+      ctx.fillStyle = isDarkTheme() ? '#94a3b8' : '#475569';
+      ctx.fillText('0° / 360°', cx + R + 18, cy + 4);
+      ctx.fillText('90°', cx - 10, cy - R - 18);
+      ctx.fillText('180°', cx - R - 48, cy + 4);
+      ctx.fillText('270°', cx - 12, cy + R + 26);
+      ctx.restore();
+
+      if (pieRuleState === 'valid') {
+        // Exactly sums to 360°
+        const slices = [
+          { name: 'Category A', angle: 160 * (Math.PI / 180), color: '#00d4ff' },
+          { name: 'Category B', angle: 120 * (Math.PI / 180), color: '#c084fc' },
+          { name: 'Category C', angle: 80 * (Math.PI / 180), color: '#34d399' }
+        ];
+
+        let startA = -Math.PI / 2;
+        slices.forEach(s => {
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.arc(cx, cy, R, startA, startA + s.angle);
+          ctx.closePath();
+          ctx.fillStyle = s.color;
+          ctx.fill();
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = isDarkTheme() ? '#0b1120' : '#ffffff';
+          ctx.stroke();
+
+          // Label inside slice
+          const midA = startA + s.angle / 2;
+          const lx = cx + Math.cos(midA) * (R * 0.65);
+          const ly = cy + Math.sin(midA) * (R * 0.65);
+          ctx.fillStyle = '#060913';
+          ctx.font = 'bold 14px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(s.name, lx, ly);
+          ctx.restore();
+
+          startA += s.angle;
+        });
+
+      } else if (pieRuleState === 'gap') {
+        // Gap of 60 degrees empty space
+        const slices = [
+          { name: 'Category A', angle: 150 * (Math.PI / 180), color: '#00d4ff' },
+          { name: 'Category B', angle: 120 * (Math.PI / 180), color: '#c084fc' }
+        ];
+
+        let startA = -Math.PI / 2;
+        slices.forEach(s => {
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.arc(cx, cy, R, startA, startA + s.angle);
+          ctx.closePath();
+          ctx.fillStyle = s.color;
+          ctx.fill();
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = isDarkTheme() ? '#0b1120' : '#ffffff';
+          ctx.stroke();
+          ctx.restore();
+          startA += s.angle;
+        });
+
+        // Highlight Empty Gap
+        const gapAngle = (360 - 270) * (Math.PI / 180);
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, R, startA, startA + gapAngle);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(251, 191, 36, 0.18)';
+        ctx.fill();
+        ctx.setLineDash([5, 5]);
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        ctx.font = 'bold 14px sans-serif';
+        ctx.fillStyle = '#fbbf24';
+        ctx.textAlign = 'center';
+        ctx.fillText('❌ FORBIDDEN GAP: 90° Missing', cx + 60, cy - 60);
+        ctx.restore();
+
+      } else if (pieRuleState === 'overlap') {
+        // Overlap of 50 degrees
+        const s1Angle = 200 * (Math.PI / 180);
+        const s2Angle = 210 * (Math.PI / 180);
+        const startA = -Math.PI / 2;
+
+        // Slice 1
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, R, startA, startA + s1Angle);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(0, 212, 255, 0.7)';
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+
+        // Slice 2 overlapping
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, R, startA + s1Angle - 50 * (Math.PI / 180), startA + s1Angle - 50 * (Math.PI / 180) + s2Angle);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(251, 113, 133, 0.75)';
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.font = 'bold 14px sans-serif';
+        ctx.fillStyle = '#fb7185';
+        ctx.textAlign = 'center';
+        ctx.fillText('❌ FORBIDDEN OVERLAP', cx - 20, cy + 40);
+        ctx.fillText('(Double-Counted Data)', cx - 20, cy + 62);
+        ctx.restore();
+      }
+
+      // Status Note Box
+      ctx.fillStyle = isDarkTheme() ? 'rgba(11, 17, 32, 0.92)' : 'rgba(255, 255, 255, 0.92)';
+      ctx.fillRect(24, height - 56, 440, 40);
+      ctx.strokeStyle = isDarkTheme() ? 'rgba(168, 85, 247, 0.35)' : 'rgba(124, 58, 237, 0.35)';
+      ctx.strokeRect(24, height - 56, 440, 40);
+
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillStyle = pieRuleState === 'valid' ? 'var(--emerald)' : (pieRuleState === 'gap' ? 'var(--amber)' : 'var(--rose)');
+      ctx.fillText(
+        pieRuleState === 'valid' ? '✓ Golden Rules Honored: Complete 360° coverage without gaps.' :
+        (pieRuleState === 'gap' ? '⚠️ Missing Data: Slices must add up to exactly 360°!' : '❌ Overlap Error: Slices cannot occupy the same degree space!'),
+        36, height - 32
+      );
+    }
+
+    // ==========================================================================
+    // SLIDE 4: The Pie Chart - Step-by-Step Math Laboratory
+    // ==========================================================================
+    let currentMathStep = 0; // 0 = Formula, 1 = Total, 2 = LBP, 3 = Sciatica, 4 = Stroke, 5 = CP
+
+    const mathStepPills = document.querySelectorAll('.step-pill');
+    const mathCards = [
+      null,
+      document.getElementById('card-step-1'),
+      document.getElementById('card-step-2'),
+      document.getElementById('card-step-3'),
+      document.getElementById('card-step-4'),
+      document.getElementById('card-step-5')
+    ];
+    const btnMathPrev = document.getElementById('btn-math-prev');
+    const btnMathNext = document.getElementById('btn-math-next');
+    const btnMathRevealAll = document.getElementById('btn-math-reveal-all');
+    const btnMathReset = document.getElementById('btn-math-reset');
+    const readoutMathStep = document.getElementById('readout-math-step');
+
+    const patientSlices = [
+      { name: 'LBP', count: 250, deg: 184, color: '#00d4ff', label: 'LBP (184°)' },
+      { name: 'S', count: 60, deg: 44, color: '#c084fc', label: 'S (44°)' },
+      { name: 'ST', count: 150, deg: 110, color: '#34d399', label: 'ST (110°)' },
+      { name: 'CP', count: 30, deg: 22, color: '#fbbf24', label: 'CP (22°)' }
+    ];
+
+    function setMathStep(step) {
+      currentMathStep = Math.max(0, Math.min(5, step));
+
+      // Update pills
+      mathStepPills.forEach((pill, idx) => {
+        pill.classList.toggle('active', idx === currentMathStep);
+        pill.classList.toggle('completed', idx < currentMathStep && idx > 0);
+      });
+
+      // Update visible cards
+      for (let i = 1; i <= 5; i++) {
+        if (mathCards[i]) {
+          mathCards[i].classList.toggle('active', i <= currentMathStep);
+        }
+      }
+
+      // Buttons
+      btnMathPrev.disabled = (currentMathStep === 0);
+      btnMathNext.disabled = (currentMathStep === 5);
+
+      // Readout
+      if (currentMathStep === 0) {
+        readoutMathStep.textContent = 'Scenario & Master Formula: Angle = (Obt / Tot) * 360';
+        readoutMathStep.style.color = 'var(--neon-blue)';
+      } else if (currentMathStep === 1) {
+        readoutMathStep.textContent = 'Step 1: Total = 250 + 60 + 150 + 30 = 490 Patients';
+        readoutMathStep.style.color = 'var(--purple)';
+      } else if (currentMathStep === 2) {
+        readoutMathStep.textContent = 'Step 2: LBP Angle = (250 / 490) * 360 = 184° (Half Circle)';
+        readoutMathStep.style.color = 'var(--neon-blue)';
+      } else if (currentMathStep === 3) {
+        readoutMathStep.textContent = 'Step 3: Sciatica Angle = (60 / 490) * 360 = 44°';
+        readoutMathStep.style.color = 'var(--purple)';
+      } else if (currentMathStep === 4) {
+        readoutMathStep.textContent = 'Step 4: Stroke Angle = (150 / 490) * 360 = 110°';
+        readoutMathStep.style.color = 'var(--emerald)';
+      } else if (currentMathStep === 5) {
+        readoutMathStep.textContent = 'Step 5: CP Angle = (30 / 490) * 360 = 22° (360° Complete!)';
+        readoutMathStep.style.color = 'var(--amber)';
+      }
+
+      playBlip(400 + currentMathStep * 100, 0.05);
+      drawSlide4Visual();
+    }
+
+    btnMathNext?.addEventListener('click', () => setMathStep(currentMathStep + 1));
+    btnMathPrev?.addEventListener('click', () => setMathStep(currentMathStep - 1));
+    btnMathRevealAll?.addEventListener('click', () => setMathStep(5));
+    btnMathReset?.addEventListener('click', () => setMathStep(0));
+
+    mathStepPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        setMathStep(parseInt(pill.getAttribute('data-step'), 10));
+      });
+    });
+
+    function drawSlide4Visual() {
+      const res = initCanvas('canvas-slide-4');
+      if (!res) return;
+      const { ctx, width, height } = res;
+
+      ctx.clearRect(0, 0, width, height);
+      drawGrid(ctx, width, height);
+
+      const cx = width / 2;
+      const cy = height / 2;
+      const R = 150;
+
+      // Outer 360 ring
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, R + 10, 0, Math.PI * 2);
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = isDarkTheme() ? 'rgba(0, 212, 255, 0.3)' : 'rgba(0, 136, 204, 0.3)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.restore();
+
+      // If Step 0 or Step 1, draw empty target circle with patient legend
+      if (currentMathStep <= 1) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, R, 0, Math.PI * 2);
+        ctx.fillStyle = isDarkTheme() ? 'rgba(15, 23, 42, 0.5)' : 'rgba(255, 255, 255, 0.7)';
+        ctx.fill();
+        ctx.strokeStyle = isDarkTheme() ? '#334155' : '#cbd5e1';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.font = 'bold 15px sans-serif';
+        ctx.fillStyle = isDarkTheme() ? '#94a3b8' : '#475569';
+        ctx.textAlign = 'center';
+        if (currentMathStep === 0) {
+          ctx.fillText('Circle Ready: 360° Available Space', cx, cy - 8);
+          ctx.font = '13px sans-serif';
+          ctx.fillText('Click "Next Step" to start calculating slices', cx, cy + 16);
+        } else {
+          ctx.fillStyle = '#c084fc';
+          ctx.fillText('Total Patients: 490', cx, cy - 8);
+          ctx.font = '13px sans-serif';
+          ctx.fillStyle = isDarkTheme() ? '#94a3b8' : '#475569';
+          ctx.fillText('Now ready to calculate angles for LBP, S, ST, CP', cx, cy + 16);
+        }
+        ctx.restore();
+        return;
+      }
+
+      // Step 2 = 1 slice (LBP)
+      // Step 3 = 2 slices (LBP, S)
+      // Step 4 = 3 slices (LBP, S, ST)
+      // Step 5 = 4 slices (LBP, S, ST, CP)
+      const numSlicesToDraw = currentMathStep - 1; // 1 to 4
+      let startAngle = -Math.PI / 2;
+
+      for (let i = 0; i < numSlicesToDraw; i++) {
+        const s = patientSlices[i];
+        const rad = (s.deg / 360) * Math.PI * 2;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, R, startAngle, startAngle + rad);
+        ctx.closePath();
+        ctx.fillStyle = s.color;
+        ctx.shadowColor = s.color;
+        ctx.shadowBlur = 10;
+        ctx.fill();
+
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = isDarkTheme() ? '#0b1120' : '#ffffff';
+        ctx.stroke();
+
+        // Label inside slice
+        const midA = startAngle + rad / 2;
+        const textDist = (s.deg < 30) ? R * 0.78 : R * 0.62;
+        const lx = cx + Math.cos(midA) * textDist;
+        const ly = cy + Math.sin(midA) * textDist;
+
+        ctx.font = 'bold 14px sans-serif';
+        ctx.fillStyle = '#060913';
+        ctx.textAlign = 'center';
+        ctx.fillText(s.name, lx, ly - 2);
+
+        ctx.font = '11px sans-serif';
+        ctx.fillText(`${s.deg}°`, lx, ly + 14);
+
+        ctx.restore();
+        startAngle += rad;
+      }
+
+      // Center cap for stylish donut aesthetic
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, 38, 0, Math.PI * 2);
+      ctx.fillStyle = isDarkTheme() ? '#0b1120' : '#ffffff';
+      ctx.fill();
+      ctx.strokeStyle = isDarkTheme() ? 'rgba(0, 212, 255, 0.3)' : 'rgba(0, 136, 204, 0.3)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.font = 'bold 12px sans-serif';
+      ctx.fillStyle = isDarkTheme() ? '#94a3b8' : '#475569';
+      ctx.textAlign = 'center';
+      ctx.fillText(currentMathStep === 5 ? '360°' : `${patientSlices.slice(0, numSlicesToDraw).reduce((acc, c) => acc + c.deg, 0)}°`, cx, cy + 4);
+      ctx.restore();
+    }
+
+    // ==========================================================================
+    // SLIDE 5: Conceptual Exam Q&A Interactive Cards
+    // ==========================================================================
+    const examCards = document.querySelectorAll('.exam-card');
+    const btnToggleAll = document.getElementById('btn-toggle-all-answers');
+    const labelToggleAll = document.getElementById('label-toggle-all');
+    let allRevealed = false;
+
+    examCards.forEach(card => {
+      card.addEventListener('click', () => {
+        card.classList.toggle('active-reveal');
+        playBlip(card.classList.contains('active-reveal') ? 700 : 450, 0.04);
+      });
+    });
+
+    btnToggleAll?.addEventListener('click', () => {
+      allRevealed = !allRevealed;
+      examCards.forEach(c => c.classList.toggle('active-reveal', allRevealed));
+      labelToggleAll.textContent = allRevealed ? 'Hide All Answers' : 'Reveal All Answers';
+      playBlip(allRevealed ? 800 : 400, 0.06);
+    });
+
+    // --------------------------------------------------------------------------
+    // 6. MASTER DISPATCHER: RENDER SLIDE VISUALS
+    // --------------------------------------------------------------------------
+    function renderSlideVisual(index) {
+      if (coverAnimId) {
+        cancelAnimationFrame(coverAnimId);
+        coverAnimId = null;
+      }
+
+      if (index === 0) {
+        drawCoverSlideVisual();
+      } else if (index === 1) {
+        drawSlide2Visual();
+      } else if (index === 2) {
+        drawSlide3Visual();
+      } else if (index === 3) {
+        drawSlide4Visual();
+      }
+    }
+
+    // Initialize on load
+    window.addEventListener('load', () => {
+      fitStage();
+      goToSlide(0);
+
+      // Render KaTeX with safe fallback
+      if (window.renderMathInElement) {
+        try {
+          renderMathInElement(document.body, {
+            delimiters: [
+              { left: '$$', right: '$$', display: true },
+              { left: '$', right: '$', display: false }
+            ],
+            throwOnError: false
+          });
+        } catch (err) {
+          console.warn('KaTeX render error:', err);
+        }
+      } else {
+        document.querySelectorAll('.math-callout, .card-body, .exam-question, .exam-answer').forEach(el => {
+          if (el.innerHTML.includes('$')) {
+            el.innerHTML = el.innerHTML
+              .replace(/\$\$Angle = \\left\(\\frac\{\\text\{Obtained\}\}\{\\text\{Total\}\}\\right\) \\times 360\$\$/g, '<span style="font-family:Georgia,serif; font-size:1.15em; font-weight:bold;"><i>Angle</i> = (Obtained / Total) &times; 360</span>')
+              .replace(/\$360\^\\circ\$/g, '360&deg;')
+              .replace(/\$180\^\\circ\$/g, '180&deg;')
+              .replace(/\$184\^\\circ\$/g, '184&deg;')
+              .replace(/\$44\^\\circ\$/g, '44&deg;')
+              .replace(/\$110\^\\circ\$/g, '110&deg;')
+              .replace(/\$22\^\\circ\$/g, '22&deg;')
+              .replace(/\$Angle = \(\\text\{Obtained\} \/ \\text\{Total\}\) \\times 360\$/g, '<i>Angle</i> = (Obtained / Total) &times; 360');
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
+
