@@ -1,0 +1,2701 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Support Vector Machines (SVM) - CS463 | Kohat University of Science & Technology</title>
+  
+  <!-- KaTeX for crisp mathematical typography -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" 
+          onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+
+  <style>
+    /* ==========================================================================
+       1. THEME DESIGN SYSTEM: SLATE, NEON BLUE (#00d4ff) & PURPLE GLASSMORPHISM
+       ========================================================================== */
+    :root[data-theme="dark"] {
+      --bg-screen: #060913;
+      --paper: #0b1120;
+      --ink: #f8fafc;
+      --ink-muted: #94a3b8;
+      --ink-faint: #64748b;
+      --rule: rgba(51, 65, 85, 0.45);
+      
+      /* Neon Blue & Purple Accents */
+      --neon-blue: #00d4ff;
+      --neon-blue-glow: rgba(0, 212, 255, 0.35);
+      --neon-blue-wash: rgba(0, 212, 255, 0.12);
+      
+      --purple: #c084fc;
+      --purple-accent: #a855f7;
+      --purple-glow: rgba(168, 85, 247, 0.3);
+      --purple-wash: rgba(168, 85, 247, 0.14);
+      
+      --emerald: #34d399;
+      --emerald-wash: rgba(52, 211, 153, 0.12);
+      --rose: #fb7185;
+      --rose-wash: rgba(251, 113, 133, 0.12);
+      --amber: #fbbf24;
+      --amber-wash: rgba(251, 191, 36, 0.12);
+
+      /* Glassmorphism Variables */
+      --glass-bg: rgba(15, 23, 42, 0.68);
+      --glass-bg-hover: rgba(22, 34, 61, 0.85);
+      --glass-border: rgba(168, 85, 247, 0.22);
+      --glass-border-hover: rgba(0, 212, 255, 0.55);
+      --glass-shadow: 0 12px 36px 0 rgba(0, 0, 0, 0.55);
+      --glass-inner-glow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+
+      --canvas-bg: #070d19;
+      --hud-bg: rgba(11, 17, 32, 0.88);
+      --scale: 1;
+    }
+
+    :root[data-theme="light"] {
+      --bg-screen: #e2e8f0;
+      --paper: #ffffff;
+      --ink: #0f172a;
+      --ink-muted: #475569;
+      --ink-faint: #94a3b8;
+      --rule: rgba(203, 213, 225, 0.8);
+      
+      /* Vibrant Blue & Purple for Light Mode */
+      --neon-blue: #0088cc;
+      --neon-blue-glow: rgba(0, 136, 204, 0.25);
+      --neon-blue-wash: rgba(0, 136, 204, 0.09);
+      
+      --purple: #8b5cf6;
+      --purple-accent: #7c3aed;
+      --purple-glow: rgba(124, 58, 237, 0.2);
+      --purple-wash: rgba(124, 58, 237, 0.09);
+      
+      --emerald: #059669;
+      --emerald-wash: rgba(5, 150, 105, 0.1);
+      --rose: #e11d48;
+      --rose-wash: rgba(225, 29, 72, 0.1);
+      --amber: #d97706;
+      --amber-wash: rgba(217, 119, 6, 0.1);
+
+      /* Glassmorphism in Light Mode */
+      --glass-bg: rgba(255, 255, 255, 0.85);
+      --glass-bg-hover: rgba(255, 255, 255, 0.98);
+      --glass-border: rgba(168, 85, 247, 0.25);
+      --glass-border-hover: rgba(0, 136, 204, 0.6);
+      --glass-shadow: 0 10px 30px rgba(15, 23, 42, 0.1);
+      --glass-inner-glow: inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
+
+      --canvas-bg: #f8fafc;
+      --hud-bg: rgba(255, 255, 255, 0.92);
+      --scale: 1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-screen);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      user-select: none;
+    }
+
+    /* Background Ambient Gradients for Glassmorphism depth */
+    .ambient-glow-1 {
+      position: fixed;
+      top: 5%;
+      left: 10%;
+      width: 450px;
+      height: 450px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--neon-blue-glow) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(80px);
+      opacity: 0.6;
+      transition: background 0.4s ease;
+    }
+
+    .ambient-glow-2 {
+      position: fixed;
+      bottom: 5%;
+      right: 10%;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--purple-glow) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(90px);
+      opacity: 0.65;
+      transition: background 0.4s ease;
+    }
+
+    /* ==========================================================================
+       2. PRESENTATION STAGE (Fixed 1600x900 Aspect-Ratio Scaled)
+       ========================================================================== */
+    #stage {
+      width: 1600px;
+      height: 900px;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      margin: -450px 0 0 -800px;
+      transform: scale(var(--scale));
+      transform-origin: center center;
+      background: var(--paper);
+      overflow: hidden;
+      border-radius: 18px;
+      box-shadow: 0 25px 70px -15px rgba(0, 0, 0, 0.65), 0 0 0 1px var(--rule);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    /* Top Universal Header */
+    .presentation-header {
+      height: 64px;
+      padding: 0 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--rule);
+      background: var(--glass-bg);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      z-index: 20;
+    }
+
+    .brand-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand-badge {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 20px;
+      background: var(--neon-blue-wash);
+      color: var(--neon-blue);
+      border: 1px solid var(--neon-blue);
+      box-shadow: 0 0 10px var(--neon-blue-glow);
+    }
+
+    .brand-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink-muted);
+    }
+
+    .brand-title strong {
+      color: var(--ink);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Top Action Buttons (Theme Toggle, Audio, Overview, Fullscreen) */
+    .btn-action {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      color: var(--ink);
+      height: 38px;
+      padding: 0 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: all 0.25s ease;
+      box-shadow: var(--glass-inner-glow);
+    }
+
+    .btn-action:hover {
+      background: var(--glass-bg-hover);
+      border-color: var(--glass-border-hover);
+      color: var(--neon-blue);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 15px var(--neon-blue-glow);
+    }
+
+    .btn-action:active {
+      transform: translateY(1px);
+    }
+
+    /* Slide Content Viewport */
+    .slides-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Slide Section Transitions */
+    section.slide {
+      position: absolute;
+      inset: 0;
+      padding: 34px 50px 24px;
+      display: none;
+      opacity: 0;
+      transform: scale(0.985) translateY(8px);
+      transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+
+    section.slide::-webkit-scrollbar {
+      width: 6px;
+    }
+    section.slide::-webkit-scrollbar-thumb {
+      background: var(--rule);
+      border-radius: 4px;
+    }
+
+    section.slide.active {
+      display: flex;
+      flex-direction: column;
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      z-index: 10;
+    }
+
+    /* Bottom Dock Bar */
+    .presentation-dock {
+      height: 60px;
+      padding: 0 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--rule);
+      background: var(--glass-bg);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      z-index: 20;
+    }
+
+    .dock-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .dock-slide-counter {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--ink-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .dock-dots {
+      display: flex;
+      gap: 8px;
+    }
+
+    .dot-item {
+      width: 10px;
+      height: 10px;
+      border-radius: 5px;
+      background: var(--rule);
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .dot-item.active {
+      width: 28px;
+      background: linear-gradient(90deg, var(--neon-blue), var(--purple));
+      box-shadow: 0 0 10px var(--neon-blue-glow);
+    }
+
+    .dock-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-nav {
+      height: 38px;
+      padding: 0 18px;
+      border-radius: 9px;
+      font-size: 14px;
+      font-weight: 700;
+      border: 1px solid var(--glass-border);
+      background: var(--glass-bg);
+      color: var(--ink);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(10px);
+      transition: all 0.2s ease;
+    }
+
+    .btn-nav:hover:not(:disabled) {
+      background: var(--neon-blue-wash);
+      border-color: var(--neon-blue);
+      color: var(--neon-blue);
+      transform: translateY(-1px);
+      box-shadow: 0 0 14px var(--neon-blue-glow);
+    }
+
+    .btn-nav:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      border-color: var(--rule);
+    }
+
+    /* Top Slim Progress Bar */
+    .progress-bar-track {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.05);
+      z-index: 30;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 16.66%;
+      background: linear-gradient(90deg, var(--neon-blue), var(--purple));
+      box-shadow: 0 0 10px var(--neon-blue);
+      transition: width 0.35s ease;
+    }
+
+    /* ==========================================================================
+       3. TYPOGRAPHY & CARD COMPONENTS
+       ========================================================================== */
+    .slide-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--neon-blue);
+      margin-bottom: 8px;
+    }
+
+    .slide-badge::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--neon-blue);
+      box-shadow: 0 0 8px var(--neon-blue);
+    }
+
+    h1.hero-title {
+      font-size: 58px;
+      line-height: 1.1;
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      margin-bottom: 14px;
+      background: linear-gradient(135deg, var(--ink) 30%, var(--neon-blue) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    h2.slide-title {
+      font-size: 34px;
+      line-height: 1.15;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      color: var(--ink);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .title-highlight {
+      color: var(--neon-blue);
+      text-shadow: 0 0 20px var(--neon-blue-glow);
+    }
+
+    /* Two Column Layout (Left: Content Cards, Right: Visual Simulator) */
+    .slide-split {
+      display: grid;
+      grid-template-columns: 680px 1fr;
+      gap: 32px;
+      flex: 1;
+      align-items: stretch;
+      min-height: 0;
+    }
+
+    .cards-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      justify-content: flex-start;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    .cards-stack::-webkit-scrollbar {
+      width: 4px;
+    }
+    .cards-stack::-webkit-scrollbar-thumb {
+      background: var(--rule);
+      border-radius: 4px;
+    }
+
+    /* Glassmorphic Cards */
+    .glass-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 16px 20px;
+      box-shadow: var(--glass-shadow);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      position: relative;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .glass-card:hover {
+      background: var(--glass-bg-hover);
+      border-color: var(--glass-border-hover);
+      transform: translateX(3px);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25), 0 0 16px var(--purple-wash);
+    }
+
+    .glass-card.accent-cyan {
+      border-left: 4px solid var(--neon-blue);
+    }
+    .glass-card.accent-purple {
+      border-left: 4px solid var(--purple);
+    }
+    .glass-card.accent-emerald {
+      border-left: 4px solid var(--emerald);
+    }
+    .glass-card.accent-amber {
+      border-left: 4px solid var(--amber);
+    }
+    .glass-card.accent-rose {
+      border-left: 4px solid var(--rose);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .card-label {
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .label-cyan { color: var(--neon-blue); }
+    .label-purple { color: var(--purple); }
+    .label-emerald { color: var(--emerald); }
+    .label-amber { color: var(--amber); }
+    .label-rose { color: var(--rose); }
+
+    .card-body {
+      font-size: 17px;
+      line-height: 1.5;
+      color: var(--ink);
+    }
+
+    .card-body p {
+      margin-bottom: 6px;
+    }
+    .card-body p:last-child {
+      margin-bottom: 0;
+    }
+
+    .card-subtext {
+      font-size: 15px;
+      line-height: 1.45;
+      color: var(--ink-muted);
+      margin-top: 6px;
+    }
+
+    /* Math Box Container */
+    .math-callout {
+      background: rgba(0, 212, 255, 0.05);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      border-radius: 10px;
+      padding: 10px 16px;
+      margin: 10px 0;
+      text-align: center;
+      font-family: "KaTeX_Main", "Times New Roman", serif;
+      font-size: 24px;
+      color: var(--neon-blue);
+      box-shadow: inset 0 0 15px rgba(0, 212, 255, 0.08);
+    }
+
+    /* ==========================================================================
+       4. INTERACTIVE HOVER TERMS (GLOSSARY TOOLTIP SYSTEM)
+       ========================================================================== */
+    .k-term {
+      display: inline-block;
+      font-weight: 700;
+      color: var(--neon-blue);
+      border-bottom: 1.5px dashed var(--neon-blue);
+      cursor: help;
+      padding: 0 3px;
+      border-radius: 3px;
+      background: var(--neon-blue-wash);
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .k-term:hover {
+      background: var(--neon-blue);
+      color: #060913;
+      border-bottom-color: transparent;
+      box-shadow: 0 0 12px var(--neon-blue);
+      transform: translateY(-1px);
+    }
+
+    /* Floating Gloss Popover */
+    #glossary-tooltip {
+      position: fixed;
+      z-index: 1000;
+      max-width: 340px;
+      padding: 14px 18px;
+      background: var(--glass-bg);
+      border: 1px solid var(--neon-blue);
+      border-radius: 12px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 20px var(--neon-blue-glow);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    #glossary-tooltip.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .tt-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .tt-tag {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--neon-blue);
+      background: var(--neon-blue-wash);
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    .tt-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .tt-desc {
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--ink-muted);
+    }
+
+    /* ==========================================================================
+       5. VISUAL SIMULATOR PANEL (RIGHT COLUMN)
+       ========================================================================== */
+    .simulator-container {
+      background: var(--canvas-bg);
+      border: 1px solid var(--rule);
+      border-radius: 16px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .sim-top-bar {
+      padding: 10px 18px;
+      background: var(--glass-bg);
+      border-bottom: 1px solid var(--rule);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      backdrop-filter: blur(10px);
+    }
+
+    .sim-status {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--neon-blue);
+    }
+
+    .status-pulse {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--neon-blue);
+      box-shadow: 0 0 8px var(--neon-blue);
+      animation: pulseAnim 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseAnim {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .canvas-viewport {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    canvas.interactive-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .sim-toolbar {
+      padding: 12px 18px;
+      background: var(--glass-bg);
+      border-top: 1px solid var(--rule);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      backdrop-filter: blur(10px);
+    }
+
+    .sim-btn {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .sim-btn:hover {
+      background: var(--neon-blue-wash);
+      border-color: var(--neon-blue);
+      color: var(--neon-blue);
+      box-shadow: 0 0 10px var(--neon-blue-glow);
+    }
+
+    .sim-btn.active {
+      background: var(--neon-blue);
+      color: #060913;
+      border-color: var(--neon-blue);
+      box-shadow: 0 0 12px var(--neon-blue-glow);
+    }
+
+    /* Slider widget styles */
+    .slider-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .slider-group label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink-muted);
+    }
+
+    .sim-range {
+      -webkit-appearance: none;
+      width: 140px;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--rule);
+      outline: none;
+    }
+
+    .sim-range::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--neon-blue);
+      cursor: pointer;
+      box-shadow: 0 0 8px var(--neon-blue);
+      transition: transform 0.1s ease;
+    }
+
+    .sim-range::-webkit-slider-thumb:hover {
+      transform: scale(1.25);
+    }
+
+    /* ==========================================================================
+       6. SPECIAL SLIDE LAYOUTS: COVER SLIDE & EXAM SLIDE
+       ========================================================================== */
+    /* Slide 1: Cover */
+    .cover-wrapper {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      height: 100%;
+      align-items: center;
+    }
+
+    .cover-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .student-badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 18px;
+      border-radius: 30px;
+      background: var(--purple-wash);
+      border: 1px solid var(--purple);
+      color: var(--purple);
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      box-shadow: 0 0 20px var(--purple-glow);
+      width: fit-content;
+    }
+
+    .cover-feature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .cover-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 16px;
+      backdrop-filter: blur(12px);
+    }
+
+    .cover-card h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--neon-blue);
+      margin-bottom: 6px;
+    }
+
+    .cover-card p {
+      font-size: 13px;
+      line-height: 1.4;
+      color: var(--ink-muted);
+    }
+
+    /* Slide 6: Exam Q&A Flashcard Grid */
+    .exam-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 4px 14px;
+    }
+
+    .exam-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 20px 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: var(--glass-shadow);
+      backdrop-filter: blur(14px);
+      transition: all 0.25s ease;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .exam-card:hover {
+      border-color: var(--purple);
+      box-shadow: 0 10px 30px var(--purple-wash);
+      transform: translateY(-2px);
+    }
+
+    .exam-card.active-reveal {
+      border-color: var(--neon-blue);
+      box-shadow: 0 0 25px var(--neon-blue-glow);
+      background: var(--glass-bg-hover);
+    }
+
+    .exam-q-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .q-badge {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--neon-blue);
+      background: var(--neon-blue-wash);
+      border: 1px solid var(--neon-blue);
+      padding: 3px 10px;
+      border-radius: 6px;
+    }
+
+    .q-toggle-hint {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--purple);
+    }
+
+    .exam-question {
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.35;
+      color: var(--ink);
+      margin-bottom: 14px;
+    }
+
+    .exam-answer {
+      font-size: 15px;
+      line-height: 1.5;
+      color: var(--ink-muted);
+      border-top: 1px solid var(--rule);
+      padding-top: 12px;
+      display: none;
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+
+    .exam-card.active-reveal .exam-answer {
+      display: block;
+      animation: fadeInAnswer 0.25s ease forwards;
+    }
+
+    @keyframes fadeInAnswer {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Modal Table of Contents / Slide Picker */
+    #toc-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.85);
+      backdrop-filter: blur(16px);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #toc-modal.open {
+      display: flex;
+      animation: modalFadeIn 0.2s ease;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .toc-box {
+      width: 720px;
+      max-width: 90vw;
+      background: var(--paper);
+      border: 1px solid var(--purple);
+      border-radius: 18px;
+      padding: 30px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 30px var(--purple-glow);
+    }
+
+    .toc-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .toc-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      list-style: none;
+    }
+
+    .toc-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      border-radius: 10px;
+      background: var(--glass-bg);
+      border: 1px solid var(--rule);
+      color: var(--ink);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .toc-item:hover {
+      background: var(--neon-blue-wash);
+      border-color: var(--neon-blue);
+      color: var(--neon-blue);
+      transform: translateX(4px);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Glowing Blobs for Purple/Cyan Glass Depth -->
+  <div class="ambient-glow-1"></div>
+  <div class="ambient-glow-2"></div>
+
+  <!-- Shared Hover Glossary Floating Tooltip -->
+  <div id="glossary-tooltip">
+    <div class="tt-header">
+      <span class="tt-tag" id="tt-tag">Concept</span>
+      <h5 class="tt-title" id="tt-title">Term Title</h5>
+    </div>
+    <p class="tt-desc" id="tt-desc">Explanation description goes here.</p>
+  </div>
+
+  <!-- Presentation Stage Frame -->
+  <main id="stage" aria-label="CS463 Support Vector Machines Presentation">
+    
+    <!-- Top Fixed Presentation Bar -->
+    <header class="presentation-header">
+      <div class="brand-meta">
+        <span class="brand-badge">CS463 • LECTURE 5</span>
+        <div class="brand-title">
+          <strong>Support Vector Machines</strong> — Institute of Computing, KUST
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <!-- Quick Audio Feedback Toggle -->
+        <button class="btn-action" id="btn-audio" title="Toggle Slide Sound Effects">
+          <span id="audio-icon">🔊</span> Sound
+        </button>
+        <!-- Table of Contents / Slide Jump -->
+        <button class="btn-action" id="btn-toc" title="Table of Contents (Shortcut: M)">
+          <span>📑</span> Index
+        </button>
+        <!-- Theme Toggle Button -->
+        <button class="btn-action" id="btn-theme" title="Toggle Light / Dark Mode (Shortcut: T)">
+          <span id="theme-icon">🌙</span> <span id="theme-label">Dark Mode</span>
+        </button>
+        <!-- Fullscreen Toggle -->
+        <button class="btn-action" id="btn-fullscreen" title="Toggle Fullscreen (Shortcut: F)">
+          <span>⛶</span> Fullscreen
+        </button>
+      </div>
+    </header>
+
+    <!-- Top Progress Bar -->
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+
+    <!-- Slides Container -->
+    <div class="slides-container">
+
+      <!-- ======================================================================
+           SLIDE 1: Title & Introduction
+           ====================================================================== -->
+      <section class="slide active" id="slide-1" data-index="0">
+        <div class="cover-wrapper">
+          <div class="cover-content">
+            <div class="student-badge-pill">
+              🎓 Lecture for Aariz • Institute of Computing, Kohat University of Science & Technology
+            </div>
+            <div class="slide-badge">Foundations of Modern Machine Learning</div>
+            <h1 class="hero-title">Support Vector Machines (SVM) - CS463</h1>
+            <p style="font-size: 20px; line-height: 1.5; color: var(--ink-muted); margin-bottom: 24px;">
+              Welcome to our session on <span class="k-term" data-term="svm">Support Vector Machines (SVM)</span>. SVM is a very powerful algorithm that is widely used within both industry and academia.
+            </p>
+
+            <div class="glass-card accent-cyan">
+              <div class="card-header">
+                <span class="card-label label-cyan">💡 Why use it?</span>
+                <span style="font-size: 12px; font-weight:700; color:var(--neon-blue);">Strategic Advantage</span>
+              </div>
+              <div class="card-body">
+                When compared to <span class="k-term" data-term="logistic-regression">logistic regression</span> and <span class="k-term" data-term="neural-networks">neural networks</span>, SVM often provides a cleaner and more powerful way of learning complex <span class="k-term" data-term="non-linear">non-linear functions</span>.
+              </div>
+            </div>
+
+            <div class="cover-feature-grid">
+              <div class="cover-card">
+                <h4>🎯 High Dimensionality</h4>
+                <p>Exceptional generalization even when the number of features exceeds training samples.</p>
+              </div>
+              <div class="cover-card">
+                <h4>⚡ Global Optimum</h4>
+                <p>Formulated as convex quadratic optimization: no getting stuck in local minima!</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cover Interactive Visual Banner -->
+          <div class="simulator-container">
+            <div class="sim-top-bar">
+              <span class="sim-status">
+                <span class="status-pulse"></span> SVM Decision Boundary Engine
+              </span>
+              <span style="font-size: 11px; color: var(--ink-muted);">CS463 Interactive Visualizer</span>
+            </div>
+            <div class="canvas-viewport">
+              <canvas id="canvas-slide-1" class="interactive-canvas"></canvas>
+            </div>
+            <div class="sim-toolbar">
+              <div style="font-size: 13px; color: var(--ink-muted);">
+                Points: <strong style="color:var(--neon-blue);">Class +1</strong> (Cyan) vs <strong style="color:var(--purple);">Class -1</strong> (Purple)
+              </div>
+              <button class="sim-btn" id="btn-reseed-cover">🔄 Re-seed Data Points</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           SLIDE 2: The Core Concept - Hyperplanes and Margins
+           ====================================================================== -->
+      <section class="slide" id="slide-2" data-index="1">
+        <div class="slide-badge">Core Theoretical Architecture</div>
+        <h2 class="slide-title">The Core Concept — <span class="title-highlight">Hyperplanes & Margins</span></h2>
+        
+        <div class="slide-split">
+          <!-- Left: Cards Stack -->
+          <div class="cards-stack">
+            <!-- The Goal Card -->
+            <div class="glass-card accent-cyan">
+              <div class="card-header">
+                <span class="card-label label-cyan">🎯 The Goal</span>
+              </div>
+              <div class="card-body">
+                The core goal of SVM is to find the <span class="k-term" data-term="optimal-boundary">optimal decision boundary</span> that maximizes the <span class="k-term" data-term="margin">margin</span> between two classes.
+              </div>
+            </div>
+
+            <!-- What is a Hyperplane Card -->
+            <div class="glass-card accent-purple">
+              <div class="card-header">
+                <span class="card-label label-purple">📐 What is a Hyperplane?</span>
+              </div>
+              <div class="card-body">
+                This is your <span class="k-term" data-term="decision-boundary">decision boundary</span>. In a 2D space, this boundary is just a <strong>line</strong>. In 3D, it becomes a <strong>plane</strong>. In N-dimensions, it is an <strong>(N-1)-dimensional hyperplane</strong>.
+              </div>
+            </div>
+
+            <!-- The Math Card -->
+            <div class="glass-card accent-emerald">
+              <div class="card-header">
+                <span class="card-label label-emerald">🔢 The Math</span>
+              </div>
+              <div class="card-body">
+                It is defined mathematically as:
+                <div class="math-callout">$$w^Tx + b = 0$$</div>
+                Simply put, $\mathbf{w}$ determines the <strong>orientation (angle)</strong> of the boundary, $\mathbf{x}$ represents your data points, and $\mathbf{b}$ <strong>shifts</strong> the boundary away from the origin.
+              </div>
+            </div>
+
+            <!-- What is the Margin Card -->
+            <div class="glass-card accent-amber">
+              <div class="card-header">
+                <span class="card-label label-amber">📏 What is the Margin?</span>
+              </div>
+              <div class="card-body">
+                The margin is the distance between the decision boundary and the <strong>closest data points</strong> of any class.
+              </div>
+            </div>
+
+            <!-- Why maximize it Card -->
+            <div class="glass-card accent-rose">
+              <div class="card-header">
+                <span class="card-label label-rose">🛡️ Why maximize it?</span>
+              </div>
+              <div class="card-body">
+                Maximizing the margin provides the best <span class="k-term" data-term="generalization">generalization</span>. Think of it as a <strong>wide street</strong>; a wider street means the model is less sensitive to slight noise or variations in future test data.
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Interactive Margin Playground -->
+          <div class="simulator-container">
+            <div class="sim-top-bar">
+              <span class="sim-status">
+                <span class="status-pulse"></span> Interactive Margin & Street Visualizer
+              </span>
+              <span id="readout-margin-width" style="font-size: 13px; font-weight:700; color:var(--neon-blue);">
+                Street Margin: Maximum (Optimal)
+              </span>
+            </div>
+            <div class="canvas-viewport">
+              <canvas id="canvas-slide-2" class="interactive-canvas"></canvas>
+            </div>
+            <div class="sim-toolbar">
+              <button class="sim-btn active" id="btn-boundary-opt">🌟 Optimal (Max Margin)</button>
+              <button class="sim-btn" id="btn-boundary-subopt">⚠️ Suboptimal (Narrow Margin)</button>
+              
+              <div class="slider-group">
+                <label for="slider-angle">Rotate Angle ($w$):</label>
+                <input type="range" class="sim-range" id="slider-angle" min="-45" max="45" value="0">
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           SLIDE 3: Support Vectors
+           ====================================================================== -->
+      <section class="slide" id="slide-3" data-index="2">
+        <div class="slide-badge">The Critical Anchor Points</div>
+        <h2 class="slide-title">Understanding <span class="title-highlight">Support Vectors</span></h2>
+        
+        <div class="slide-split">
+          <!-- Left: Cards Stack -->
+          <div class="cards-stack">
+            <!-- What are they Card -->
+            <div class="glass-card accent-cyan">
+              <div class="card-header">
+                <span class="card-label label-cyan">📍 What are they?</span>
+              </div>
+              <div class="card-body">
+                <span class="k-term" data-term="support-vectors">Support Vectors</span> are the <strong>critical data points</strong> that lie directly on the margins.
+              </div>
+              <div class="card-subtext">
+                They represent the hardest cases to classify and sit on the gutter lines: $w^Tx + b = +1$ and $w^Tx + b = -1$.
+              </div>
+            </div>
+
+            <!-- How do they dictate the model Card -->
+            <div class="glass-card accent-purple">
+              <div class="card-header">
+                <span class="card-label label-purple">👑 How do they dictate the model?</span>
+              </div>
+              <div class="card-body">
+                <strong>They completely define the model.</strong> If you remove all other data points from the dataset (the ones safely away from the street), the decision boundary stays <strong>exactly the same</strong>.
+              </div>
+              <div class="card-subtext">
+                In SVM, only a tiny subset of your data points actually matters! All other training points could be completely discarded without changing the hyperplane by a single millimeter.
+              </div>
+            </div>
+
+            <!-- Memory & Computation Advantage -->
+            <div class="glass-card accent-emerald">
+              <div class="card-header">
+                <span class="card-label label-emerald">⚡ Sparsity Benefit</span>
+              </div>
+              <div class="card-body">
+                Because only support vectors are stored in memory, SVM predictions require computing inner products against just a handful of points, making deployment fast and memory-efficient.
+              </div>
+            </div>
+
+            <!-- Interactive Guidance Hint -->
+            <div class="glass-card accent-amber">
+              <div class="card-header">
+                <span class="card-label label-amber">🧪 Try The Interactive Proof!</span>
+              </div>
+              <div class="card-body" style="font-size: 15px;">
+                Click the <strong>"Remove Non-Support Vectors"</strong> button on the right. Notice how 12 points vanish, yet the decision line and street width do not move at all!
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Interactive Support Vector Demonstrator -->
+          <div class="simulator-container">
+            <div class="sim-top-bar">
+              <span class="sim-status">
+                <span class="status-pulse"></span> Support Vector Anchors & Sparsity Proof
+              </span>
+              <span id="readout-sv-count" style="font-size: 13px; font-weight:700; color:var(--purple);">
+                Active Points: 15 / 15 (3 Support Vectors)
+              </span>
+            </div>
+            <div class="canvas-viewport">
+              <canvas id="canvas-slide-3" class="interactive-canvas"></canvas>
+            </div>
+            <div class="sim-toolbar">
+              <button class="sim-btn" id="btn-toggle-non-sv">✂️ Remove Non-Support Vectors</button>
+              <button class="sim-btn" id="btn-highlight-sv">✨ Pulse Support Vectors</button>
+              <button class="sim-btn" id="btn-reset-sv">🔄 Reset All Points</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           SLIDE 4: The Kernel Trick (Handling Non-Linear Data)
+           ====================================================================== -->
+      <section class="slide" id="slide-4" data-index="3">
+        <div class="slide-badge">Non-Linear Classification Magic</div>
+        <h2 class="slide-title">The <span class="title-highlight">Kernel Trick</span> — Non-Linear Spaces</h2>
+        
+        <div class="slide-split">
+          <!-- Left: Cards Stack -->
+          <div class="cards-stack">
+            <!-- The Problem Card -->
+            <div class="glass-card accent-rose">
+              <div class="card-header">
+                <span class="card-label label-rose">❌ The Problem</span>
+              </div>
+              <div class="card-body">
+                Often, data classes <strong>cannot be split by a straight line</strong>. Real-world phenomena frequently display concentric rings, spirals, or intricate non-linear decision landscapes.
+              </div>
+            </div>
+
+            <!-- The Solution Card -->
+            <div class="glass-card accent-cyan">
+              <div class="card-header">
+                <span class="card-label label-cyan">💡 The Solution</span>
+              </div>
+              <div class="card-body">
+                We use <span class="k-term" data-term="kernel">Kernels</span> to transform the features into a <strong>higher-dimensional space</strong> where they become linearly separable.
+              </div>
+              <div class="card-subtext">
+                For example, if 2D data is inseparable, adding a 3D dimension ($z = x^2 + y^2$) might create a <strong>level difference (a gap)</strong> where we can easily draw a flat plane between the classes.
+              </div>
+            </div>
+
+            <!-- Why is it a "Trick"? Card -->
+            <div class="glass-card accent-purple">
+              <div class="card-header">
+                <span class="card-label label-purple">🎩 Why is it a "Trick"?</span>
+              </div>
+              <div class="card-body">
+                Mapping thousands of points into a high-dimensional (or infinite) space makes calculating distances <strong>computationally impossible</strong>.
+              </div>
+              <div class="card-subtext">
+                The <span class="k-term" data-term="kernel-trick">Kernel mathematically bypasses this</span>, finding the nonlinear decision boundary efficiently by computing dot products directly as $K(x_i, x_j)$ without ever explicitly visiting the high dimension!
+              </div>
+            </div>
+
+            <!-- Popular Kernels Card -->
+            <div class="glass-card accent-emerald">
+              <div class="card-header">
+                <span class="card-label label-emerald">📚 Popular Kernel Options</span>
+              </div>
+              <div class="card-body">
+                Popular options include the <strong>Linear</strong>, <strong>Polynomial</strong>, <strong>Gaussian</strong>, and <span class="k-term" data-term="rbf">Radial Basis Function (RBF)</span> kernels.
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Interactive 2D vs 3D Lift Simulator -->
+          <div class="simulator-container">
+            <div class="sim-top-bar">
+              <span class="sim-status">
+                <span class="status-pulse"></span> Dimensionality Projection Engine
+              </span>
+              <span id="readout-kernel-mode" style="font-size: 13px; font-weight:700; color:var(--neon-blue);">
+                Current View: 2D Inseparable Rings
+              </span>
+            </div>
+            <div class="canvas-viewport">
+              <canvas id="canvas-slide-4" class="interactive-canvas"></canvas>
+            </div>
+            <div class="sim-toolbar">
+              <button class="sim-btn active" id="btn-kernel-2d">🔴 2D Input Space (Inseparable)</button>
+              <button class="sim-btn" id="btn-kernel-3d">🚀 3D Feature Space Lift (\(z = x^2 + y^2\))</button>
+              
+              <div class="slider-group">
+                <label for="slider-elevation">3D Lift & Plane:</label>
+                <input type="range" class="sim-range" id="slider-elevation" min="0" max="100" value="0">
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           SLIDE 5: Real-World Pragmatism - Hard vs. Soft Margin
+           ====================================================================== -->
+      <section class="slide" id="slide-5" data-index="4">
+        <div class="slide-badge">Practical Machine Learning Engineering</div>
+        <h2 class="slide-title">Real-World Pragmatism — <span class="title-highlight">Hard vs. Soft Margin</span></h2>
+        
+        <div class="slide-split">
+          <!-- Left: Cards Stack -->
+          <div class="cards-stack">
+            <!-- Hard Margin Card -->
+            <div class="glass-card accent-rose">
+              <div class="card-header">
+                <span class="card-label label-rose">🛑 Hard Margin (Zero Tolerance)</span>
+              </div>
+              <div class="card-body">
+                Assumes your data is <strong>perfectly linearly separable</strong>, meaning a straight line can separate classes without a single error. No data points are allowed to cross the margin boundaries.
+              </div>
+            </div>
+
+            <!-- Why Hard Margin fails Card -->
+            <div class="glass-card accent-amber">
+              <div class="card-header">
+                <span class="card-label label-amber">⚠️ Why Hard Margin fails</span>
+              </div>
+              <div class="card-body">
+                If there is a <strong>single outlier</strong> or a tiny bit of noise, a Hard Margin SVM will fail completely or severely <span class="k-term" data-term="overfitting">overfit</span> because the optimization math breaks down.
+              </div>
+            </div>
+
+            <!-- Soft Margin Card -->
+            <div class="glass-card accent-emerald">
+              <div class="card-header">
+                <span class="card-label label-emerald">✅ Soft Margin (Real-World Approach)</span>
+              </div>
+              <div class="card-body">
+                Real-world data is noisy. Soft Margin introduces <span class="k-term" data-term="slack-variables">Slack Variables ($\xi$)</span>, which act like a <strong>"hall pass"</strong> allowing some data points to violate the margin or end up on the wrong side.
+              </div>
+            </div>
+
+            <!-- How to control it (Parameter C) Card -->
+            <div class="glass-card accent-purple">
+              <div class="card-header">
+                <span class="card-label label-purple">🎛️ How to control it (Parameter C)</span>
+              </div>
+              <div class="card-body">
+                You use the hyperparameter <span class="k-term" data-term="c-parameter">$C$</span> to dictate how strict the model should be:
+                <ul style="margin-top: 8px; padding-left: 20px; font-size: 15px;">
+                  <li style="margin-bottom: 6px;">
+                    <strong style="color:var(--rose);">High C:</strong> Acts closer to a Hard Margin. It heavily penalizes mistakes, forcing a narrow margin to avoid errors, which <strong>risks overfitting</strong>.
+                  </li>
+                  <li>
+                    <strong style="color:var(--emerald);">Low C:</strong> Tolerates mistakes easily. It prioritizes a wide, safe margin even if a few points sit on the wrong side, <strong>improving generalization</strong>.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Interactive Parameter C Slider Simulator -->
+          <div class="simulator-container">
+            <div class="sim-top-bar">
+              <span class="sim-status">
+                <span class="status-pulse"></span> Hyperparameter C Strictness Controller
+              </span>
+              <span id="readout-c-state" style="font-size: 13px; font-weight:700; color:var(--emerald);">
+                Mode: Balanced Soft Margin (C = 1.0)
+              </span>
+            </div>
+            <div class="canvas-viewport">
+              <canvas id="canvas-slide-5" class="interactive-canvas"></canvas>
+            </div>
+            <div class="sim-toolbar">
+              <button class="sim-btn" id="btn-preset-low-c">🍃 Low C (Wide Street)</button>
+              <button class="sim-btn active" id="btn-preset-mid-c">⚖️ Balanced C</button>
+              <button class="sim-btn" id="btn-preset-high-c">⚔️ High C (Strict)</button>
+              
+              <div class="slider-group" style="flex: 1; justify-content: flex-end;">
+                <label for="slider-c-param">Control Knob C:</label>
+                <input type="range" class="sim-range" id="slider-c-param" min="1" max="100" value="50">
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           SLIDE 6: Conceptual Exam Questions & Short Answers
+           ====================================================================== -->
+      <section class="slide" id="slide-6" data-index="5">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px;">
+          <div>
+            <div class="slide-badge">Assessment & Knowledge Verification</div>
+            <h2 class="slide-title" style="margin-bottom: 0;">Conceptual Exam Questions & <span class="title-highlight">Short Answers</span></h2>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn-action" id="btn-toggle-all-answers">
+              <span>👁️</span> <span id="label-toggle-all">Reveal All Answers</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="exam-grid">
+          <!-- Q1 -->
+          <div class="exam-card" data-q="1">
+            <div>
+              <div class="exam-q-header">
+                <span class="q-badge">Question 1</span>
+                <span class="q-toggle-hint">Click card to toggle answer</span>
+              </div>
+              <div class="exam-question">
+                Why does a Support Vector Machine prioritize maximizing the margin rather than just drawing any line that separates the training data?
+              </div>
+            </div>
+            <div class="exam-answer">
+              <strong style="color:var(--neon-blue);">Answer:</strong> Maximizing the margin ensures the best generalization for future data. By creating the widest possible "street" between classes, the model becomes robust and less sensitive to slight noise or variations in unseen test data.
+            </div>
+          </div>
+
+          <!-- Q2 -->
+          <div class="exam-card" data-q="2">
+            <div>
+              <div class="exam-q-header">
+                <span class="q-badge">Question 2</span>
+                <span class="q-toggle-hint">Click card to toggle answer</span>
+              </div>
+              <div class="exam-question">
+                How do Support Vectors influence the decision boundary mathematically?
+              </div>
+            </div>
+            <div class="exam-answer">
+              <strong style="color:var(--neon-blue);">Answer:</strong> Support vectors are the specific critical data points sitting directly on the margin boundaries. They are the only points that matter; if all other non-support vector data points were deleted, the position of the decision boundary would remain exactly the same.
+            </div>
+          </div>
+
+          <!-- Q3 -->
+          <div class="exam-card" data-q="3">
+            <div>
+              <div class="exam-q-header">
+                <span class="q-badge">Question 3</span>
+                <span class="q-toggle-hint">Click card to toggle answer</span>
+              </div>
+              <div class="exam-question">
+                Why is the "Kernel Trick" necessary, and how does it bypass computational limitations?
+              </div>
+            </div>
+            <div class="exam-answer">
+              <strong style="color:var(--neon-blue);">Answer:</strong> The Kernel Trick is necessary when data cannot be separated by a straight line in its original dimension. It mathematically projects the data into a higher-dimensional space where it <em>is</em> linearly separable. It is a "trick" because it computes the relationships between points in this high-dimensional space without actually performing the computationally impossible task of mapping every point into infinite dimensions.
+            </div>
+          </div>
+
+          <!-- Q4 -->
+          <div class="exam-card" data-q="4">
+            <div>
+              <div class="exam-q-header">
+                <span class="q-badge">Question 4</span>
+                <span class="q-toggle-hint">Click card to toggle answer</span>
+              </div>
+              <div class="exam-question">
+                How does the hyperparameter $C$ dictate the trade-off between overfitting and generalization in a Soft Margin SVM?
+              </div>
+            </div>
+            <div class="exam-answer">
+              <strong style="color:var(--neon-blue);">Answer:</strong> The $C$ parameter acts as a strictness control knob. A high $C$ heavily penalizes misclassifications, resulting in a very narrow margin that risks overfitting to the training noise. A low $C$ prioritizes a wider, safer margin, tolerating a few misclassified points to achieve better generalization on new data.
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Bottom Navigation Dock Bar -->
+    <footer class="presentation-dock">
+      <div class="dock-left">
+        <span class="dock-slide-counter" id="dock-counter">Slide 1 / 6</span>
+        <div class="dock-dots" id="dock-dots">
+          <div class="dot-item active" data-goto="0" title="Slide 1: Intro"></div>
+          <div class="dot-item" data-goto="1" title="Slide 2: Hyperplanes & Margins"></div>
+          <div class="dot-item" data-goto="2" title="Slide 3: Support Vectors"></div>
+          <div class="dot-item" data-goto="3" title="Slide 4: The Kernel Trick"></div>
+          <div class="dot-item" data-goto="4" title="Slide 5: Hard vs. Soft Margin"></div>
+          <div class="dot-item" data-goto="5" title="Slide 6: Exam Q&A"></div>
+        </div>
+      </div>
+
+      <div class="dock-controls">
+        <button class="btn-nav" id="btn-prev" disabled>
+          <span>←</span> Previous
+        </button>
+        <button class="btn-nav" id="btn-next">
+          Next <span>→</span>
+        </button>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Table of Contents Modal -->
+  <div id="toc-modal">
+    <div class="toc-box">
+      <div class="toc-header">
+        <h3 style="font-size: 22px; font-weight:800; color:var(--ink);">CS463 SVM — Lecture Directory</h3>
+        <button class="sim-btn" id="btn-close-toc">✕ Close</button>
+      </div>
+      <ul class="toc-list">
+        <li class="toc-item" data-goto="0">
+          <span><strong>Slide 1:</strong> Title & Introduction</span>
+          <span style="color:var(--neon-blue);">Welcome & Motivation →</span>
+        </li>
+        <li class="toc-item" data-goto="1">
+          <span><strong>Slide 2:</strong> The Core Concept — Hyperplanes & Margins</span>
+          <span style="color:var(--neon-blue);">Math & Street Concept →</span>
+        </li>
+        <li class="toc-item" data-goto="2">
+          <span><strong>Slide 3:</strong> Support Vectors</span>
+          <span style="color:var(--neon-blue);">Critical Points & Sparsity →</span>
+        </li>
+        <li class="toc-item" data-goto="3">
+          <span><strong>Slide 4:</strong> The Kernel Trick (Handling Non-Linear Data)</span>
+          <span style="color:var(--neon-blue);">Higher Dimensions →</span>
+        </li>
+        <li class="toc-item" data-goto="4">
+          <span><strong>Slide 5:</strong> Real-World Pragmatism — Hard vs. Soft Margin</span>
+          <span style="color:var(--neon-blue);">Slack (\(\xi\)) & Hyperparameter C →</span>
+        </li>
+        <li class="toc-item" data-goto="5">
+          <span><strong>Slide 6:</strong> Conceptual Exam Questions & Short Answers</span>
+          <span style="color:var(--neon-blue);">Q1 - Q4 Exam Review →</span>
+        </li>
+      </ul>
+      <p style="font-size: 13px; color: var(--ink-muted); margin-top: 18px; text-align: center;">
+        Use <strong>Arrow Keys</strong> or <strong>Spacebar</strong> to navigate • Press <strong>T</strong> to toggle theme • Press <strong>F</strong> for fullscreen
+      </p>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       JAVASCRIPT ARCHITECTURE: ENGINE, VISUAL SIMULATORS & GLOSSARY
+       ========================================================================== -->
+  <script>
+    // --------------------------------------------------------------------------
+    // 1. GLOSSARY DEFINITIONS (Interactive Hover States)
+    // --------------------------------------------------------------------------
+    const glossaryDict = {
+      'svm': {
+        title: 'Support Vector Machine',
+        tag: 'Supervised Algorithm',
+        desc: 'A robust maximum-margin classification and regression model that finds the optimal separating hyperplane.'
+      },
+      'logistic-regression': {
+        title: 'Logistic Regression',
+        tag: 'Probabilistic Model',
+        desc: 'A baseline classification algorithm maximizing likelihood; unlike SVM, it uses all points, not just boundary points.'
+      },
+      'neural-networks': {
+        title: 'Neural Networks',
+        tag: 'Deep Learning',
+        desc: 'Multi-layer models capable of non-linear learning, but prone to local minima and high parameter tuning.'
+      },
+      'non-linear': {
+        title: 'Non-Linear Functions',
+        tag: 'Complexity',
+        desc: 'Decision boundaries that cannot be formed by a simple straight line or flat plane in the input space.'
+      },
+      'optimal-boundary': {
+        title: 'Optimal Decision Boundary',
+        tag: 'Optimization',
+        desc: 'The unique hyperplane that maximizes geometric clearance (margin) to the nearest points of any class.'
+      },
+      'margin': {
+        title: 'Margin (Street)',
+        tag: 'Geometric Distance',
+        desc: 'The perpendicular distance between the decision hyperplane and the closest training data points ($2/||w||$).'
+      },
+      'decision-boundary': {
+        title: 'Decision Boundary',
+        tag: 'Separator',
+        desc: 'The geometric surface partition where predicted classification flips between classes ($w^Tx + b = 0$).'
+      },
+      'generalization': {
+        title: 'Generalization',
+        tag: 'Robustness',
+        desc: 'The model’s capability to accurately classify previously unseen test data rather than memorizing training samples.'
+      },
+      'support-vectors': {
+        title: 'Support Vectors',
+        tag: 'Core Anchors',
+        desc: 'The critical training examples situated directly on the gutters. Removing all non-support vectors leaves the hyperplane unchanged.'
+      },
+      'kernel': {
+        title: 'Kernel Function',
+        tag: 'Transformation',
+        desc: 'A mathematical function that computes the inner product of vectors in a transformed higher-dimensional feature space.'
+      },
+      'kernel-trick': {
+        title: 'The Kernel Trick',
+        tag: 'Computational Hack',
+        desc: 'Calculates high-dimensional relationships $K(x_i, x_j)$ without ever explicitly mapping or storing high-dimensional vectors.'
+      },
+      'rbf': {
+        title: 'RBF (Radial Basis Function)',
+        tag: 'Gaussian Kernel',
+        desc: 'Maps points implicitly into an infinite-dimensional space based on Euclidean distance: $K(x, x\') = \\exp(-\\gamma ||x - x\'||^2)$.'
+      },
+      'slack-variables': {
+        title: 'Slack Variables (\\(\\xi\\))',
+        tag: 'Hall Pass',
+        desc: 'Measures how far a data point violates the margin or lands on the erroneous side of the boundary in Soft Margin SVM.'
+      },
+      'c-parameter': {
+        title: 'Hyperparameter C',
+        tag: 'Strictness Knob',
+        desc: 'Governs the trade-off: high C heavily penalizes misclassification (narrow street); low C allows violations for a wider street.'
+      },
+      'overfitting': {
+        title: 'Overfitting',
+        tag: 'Modeling Risk',
+        desc: 'When a model memorizes noise or outliers in the training set, failing to generalize to new real-world data.'
+      }
+    };
+
+    // Tooltip elements
+    const tooltipEl = document.getElementById('glossary-tooltip');
+    const ttTag = document.getElementById('tt-tag');
+    const ttTitle = document.getElementById('tt-title');
+    const ttDesc = document.getElementById('tt-desc');
+
+    document.querySelectorAll('.k-term').forEach(el => {
+      el.addEventListener('mouseenter', (e) => {
+        const key = el.getAttribute('data-term');
+        const info = glossaryDict[key];
+        if (!info) return;
+
+        ttTag.textContent = info.tag;
+        ttTitle.textContent = info.title;
+        ttDesc.textContent = info.desc;
+
+        const rect = el.getBoundingClientRect();
+        let top = rect.top - 90;
+        let left = rect.left + (rect.width / 2) - 150;
+
+        // Keep inside window bounds
+        if (left < 20) left = 20;
+        if (left + 320 > window.innerWidth) left = window.innerWidth - 340;
+        if (top < 10) top = rect.bottom + 12;
+
+        tooltipEl.style.top = `${top}px`;
+        tooltipEl.style.left = `${left}px`;
+        tooltipEl.classList.add('show');
+        
+        // Play subtle hover sound if audio enabled
+        playBlip(600, 0.03);
+      });
+
+      el.addEventListener('mouseleave', () => {
+        tooltipEl.classList.remove('show');
+      });
+    });
+
+    // --------------------------------------------------------------------------
+    // 2. SLIDE NAVIGATION & STAGE SCALING ENGINE
+    // --------------------------------------------------------------------------
+    const slides = Array.from(document.querySelectorAll('section.slide'));
+    const dots = Array.from(document.querySelectorAll('.dot-item'));
+    const counterEl = document.getElementById('dock-counter');
+    const progressFill = document.getElementById('progress-fill');
+    const btnPrev = document.getElementById('btn-prev');
+    const btnNext = document.getElementById('btn-next');
+    let currentSlide = 0;
+
+    function fitStage() {
+      const scale = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
+      document.documentElement.style.setProperty('--scale', scale);
+    }
+    window.addEventListener('resize', fitStage);
+    fitStage();
+
+    function goToSlide(index) {
+      if (index < 0 || index >= slides.length) return;
+      currentSlide = index;
+
+      slides.forEach((slide, i) => {
+        slide.classList.toggle('active', i === currentSlide);
+      });
+
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentSlide);
+      });
+
+      counterEl.textContent = `Slide ${currentSlide + 1} / ${slides.length}`;
+      progressFill.style.width = `${((currentSlide + 1) / slides.length) * 100}%`;
+
+      btnPrev.disabled = (currentSlide === 0);
+      btnNext.disabled = (currentSlide === slides.length - 1);
+
+      // Play navigation chime
+      playSlideSound();
+
+      // Trigger respective canvas rendering
+      renderSlideVisual(currentSlide);
+    }
+
+    btnPrev.addEventListener('click', () => goToSlide(currentSlide - 1));
+    btnNext.addEventListener('click', () => goToSlide(currentSlide + 1));
+
+    dots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        goToSlide(parseInt(dot.getAttribute('data-goto'), 10));
+      });
+    });
+
+    // Keyboard Navigation
+    window.addEventListener('keydown', (e) => {
+      if (['ArrowRight', 'Space', ' '].includes(e.key)) {
+        if (e.target.tagName === 'INPUT') return;
+        e.preventDefault();
+        goToSlide(currentSlide + 1);
+      } else if (['ArrowLeft', 'Backspace'].includes(e.key)) {
+        if (e.target.tagName === 'INPUT') return;
+        e.preventDefault();
+        goToSlide(currentSlide - 1);
+      } else if (e.key.toLowerCase() === 't') {
+        toggleTheme();
+      } else if (e.key.toLowerCase() === 'f') {
+        toggleFullscreen();
+      } else if (e.key.toLowerCase() === 'm') {
+        toggleToc();
+      }
+    });
+
+    // Table of Contents Modal Actions
+    const tocModal = document.getElementById('toc-modal');
+    const btnToc = document.getElementById('btn-toc');
+    const btnCloseToc = document.getElementById('btn-close-toc');
+
+    function toggleToc() {
+      tocModal.classList.toggle('open');
+    }
+    btnToc.addEventListener('click', toggleToc);
+    btnCloseToc.addEventListener('click', toggleToc);
+
+    document.querySelectorAll('.toc-item').forEach(item => {
+      item.addEventListener('click', () => {
+        goToSlide(parseInt(item.getAttribute('data-goto'), 10));
+        tocModal.classList.remove('open');
+      });
+    });
+
+    // --------------------------------------------------------------------------
+    // 3. THEME TOGGLE (SLATE & NEON BLUE & PURPLE GLASS)
+    // --------------------------------------------------------------------------
+    const btnTheme = document.getElementById('btn-theme');
+    const themeIcon = document.getElementById('theme-icon');
+    const themeLabel = document.getElementById('theme-label');
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.getAttribute('data-theme') === 'dark';
+      const newTheme = isDark ? 'light' : 'dark';
+      html.setAttribute('data-theme', newTheme);
+
+      themeIcon.textContent = isDark ? '☀️' : '🌙';
+      themeLabel.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+
+      playBlip(520, 0.05);
+
+      // Re-render active canvas for theme palette adjustment
+      setTimeout(() => renderSlideVisual(currentSlide), 50);
+    }
+    btnTheme.addEventListener('click', toggleTheme);
+
+    // Fullscreen Toggle
+    const btnFullscreen = document.getElementById('btn-fullscreen');
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+    btnFullscreen.addEventListener('click', toggleFullscreen);
+
+    // --------------------------------------------------------------------------
+    // 4. AUDIO SYNTHESIZER (WEB AUDIO API CHIMES)
+    // --------------------------------------------------------------------------
+    let audioCtx = null;
+    let audioEnabled = true;
+    const btnAudio = document.getElementById('btn-audio');
+    const audioIcon = document.getElementById('audio-icon');
+
+    btnAudio.addEventListener('click', () => {
+      audioEnabled = !audioEnabled;
+      audioIcon.textContent = audioEnabled ? '🔊' : '🔇';
+    });
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) audioCtx = new AudioContext();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playBlip(freq, duration) {
+      if (!audioEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(0.04, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+      } catch (err) {}
+    }
+
+    function playSlideSound() {
+      if (!audioEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(320, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(540, ctx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.05, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.12);
+      } catch (err) {}
+    }
+
+    // --------------------------------------------------------------------------
+    // 5. CANVAS DRAWING HELPERS & SIMULATION ENGINES
+    // --------------------------------------------------------------------------
+    function isDarkTheme() {
+      return document.documentElement.getAttribute('data-theme') === 'dark';
+    }
+
+    function initCanvas(id) {
+      const canvas = document.getElementById(id);
+      if (!canvas) return null;
+      const rect = canvas.parentElement.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      return { canvas, ctx, width: rect.width, height: rect.height };
+    }
+
+    function drawGrid(ctx, w, h) {
+      const dark = isDarkTheme();
+      ctx.strokeStyle = dark ? 'rgba(51, 65, 85, 0.22)' : 'rgba(203, 213, 225, 0.5)';
+      ctx.lineWidth = 1;
+      const step = 32;
+      for (let x = 0; x < w; x += step) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+        ctx.stroke();
+      }
+      for (let y = 0; y < h; y += step) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+        ctx.stroke();
+      }
+    }
+
+    function drawPoint(ctx, x, y, color, radius = 7, halo = false) {
+      if (halo) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(x, y, radius + 8, 0, Math.PI * 2);
+        ctx.fillStyle = color === '#00d4ff' ? 'rgba(0, 212, 255, 0.25)' : 'rgba(168, 85, 247, 0.25)';
+        ctx.fill();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.restore();
+      }
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = isDarkTheme() ? '#0b1120' : '#ffffff';
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // ==========================================================================
+    // SLIDE 1: Cover Dynamic Scan Simulation
+    // ==========================================================================
+    let coverAnimId = null;
+    let coverScanAngle = 0;
+    let coverPoints = [];
+
+    function generateCoverPoints() {
+      coverPoints = [];
+      // Cyan class
+      for (let i = 0; i < 18; i++) {
+        coverPoints.push({
+          x: 120 + Math.random() * 220,
+          y: 70 + Math.random() * 220,
+          type: '+1',
+          color: '#00d4ff'
+        });
+      }
+      // Purple class
+      for (let i = 0; i < 18; i++) {
+        coverPoints.push({
+          x: 360 + Math.random() * 240,
+          y: 200 + Math.random() * 260,
+          type: '-1',
+          color: '#c084fc'
+        });
+      }
+    }
+    generateCoverPoints();
+
+    document.getElementById('btn-reseed-cover')?.addEventListener('click', () => {
+      generateCoverPoints();
+      playBlip(700, 0.05);
+    });
+
+    function drawCoverSlideVisual() {
+      const res = initCanvas('canvas-slide-1');
+      if (!res) return;
+      const { ctx, width, height } = res;
+
+      ctx.clearRect(0, 0, width, height);
+      drawGrid(ctx, width, height);
+
+      coverScanAngle += 0.015;
+      const midX = width / 2;
+      const midY = height / 2;
+      const slope = -0.75 + Math.sin(coverScanAngle) * 0.12;
+      const intercept = midY - slope * midX;
+
+      // Draw Separating Hyperplane
+      ctx.save();
+      ctx.strokeStyle = '#00d4ff';
+      ctx.lineWidth = 3;
+      ctx.shadowColor = '#00d4ff';
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.moveTo(0, intercept);
+      ctx.lineTo(width, slope * width + intercept);
+      ctx.stroke();
+
+      // Gutters
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = isDarkTheme() ? 'rgba(0, 212, 255, 0.4)' : 'rgba(0, 136, 204, 0.4)';
+      ctx.setLineDash([6, 6]);
+      const margin = 55;
+      ctx.beginPath();
+      ctx.moveTo(0, intercept - margin);
+      ctx.lineTo(width, slope * width + intercept - margin);
+      ctx.moveTo(0, intercept + margin);
+      ctx.lineTo(width, slope * width + intercept + margin);
+      ctx.stroke();
+      ctx.restore();
+
+      // Draw Data points
+      coverPoints.forEach(p => {
+        drawPoint(ctx, p.x, p.y, p.color, 7);
+      });
+
+      // HUD overlay
+      ctx.fillStyle = isDarkTheme() ? 'rgba(11, 17, 32, 0.85)' : 'rgba(255, 255, 255, 0.88)';
+      ctx.fillRect(16, 16, 250, 48);
+      ctx.strokeStyle = isDarkTheme() ? 'rgba(0, 212, 255, 0.3)' : 'rgba(0, 136, 204, 0.3)';
+      ctx.strokeRect(16, 16, 250, 48);
+
+      ctx.font = 'bold 12px sans-serif';
+      ctx.fillStyle = isDarkTheme() ? '#00d4ff' : '#0088cc';
+      ctx.fillText('OPTIMAL SEPARATION: ACTIVE', 28, 36);
+      ctx.fillStyle = isDarkTheme() ? '#94a3b8' : '#475569';
+      ctx.fillText('Kernel: Linear • Margin: Maximized', 28, 52);
+
+      coverAnimId = requestAnimationFrame(drawCoverSlideVisual);
+    }
+
+    // ==========================================================================
+    // SLIDE 2: Hyperplanes & Margins Playground
+    // ==========================================================================
+    let slide2Mode = 'optimal';
+    let slide2AngleOffset = 0;
+
+    const btnOpt = document.getElementById('btn-boundary-opt');
+    const btnSubopt = document.getElementById('btn-boundary-subopt');
+    const sliderAngle = document.getElementById('slider-angle');
+    const readoutMarginWidth = document.getElementById('readout-margin-width');
+
+    btnOpt?.addEventListener('click', () => {
+      slide2Mode = 'optimal';
+      btnOpt.classList.add('active');
+      btnSubopt.classList.remove('active');
+      sliderAngle.value = 0;
+      slide2AngleOffset = 0;
+      readoutMarginWidth.textContent = 'Street Margin: Maximum (Optimal)';
+      readoutMarginWidth.style.color = 'var(--neon-blue)';
+      playBlip(750, 0.04);
+      drawSlide2Visual();
+    });
+
+    btnSubopt?.addEventListener('click', () => {
+      slide2Mode = 'suboptimal';
+      btnSubopt.classList.add('active');
+      btnOpt.classList.remove('active');
+      readoutMarginWidth.textContent = 'Street Margin: Narrow (Suboptimal - Prone to Noise)';
+      readoutMarginWidth.style.color = 'var(--amber)';
+      playBlip(400, 0.04);
+      drawSlide2Visual();
+    });
+
+    sliderAngle?.addEventListener('input', (e) => {
+      slide2AngleOffset = parseFloat(e.target.value) * (Math.PI / 180);
+      drawSlide2Visual();
+    });
+
+    function drawSlide2Visual() {
+      const res = initCanvas('canvas-slide-2');
+      if (!res) return;
+      const { ctx, width, height } = res;
+
+      ctx.clearRect(0, 0, width, height);
+      drawGrid(ctx, width, height);
+
+      // Fixed illustrative points
+      const classCyan = [
+        { x: 180, y: 110 }, { x: 250, y: 90 }, { x: 310, y: 140 },
+        { x: 230, y: 190 }, { x: 160, y: 220 }, { x: 270, y: 230 }
+      ];
+      const classPurple = [
+        { x: 450, y: 310 }, { x: 530, y: 330 }, { x: 410, y: 380 },
+        { x: 480, y: 420 }, { x: 570, y: 390 }, { x: 390, y: 450 }
+      ];
+
+      // Margin calculations
+      const cx = width / 2;
+      const cy = height / 2;
+      let baseSlope = (slide2Mode === 'optimal') ? -0.7 : -0.25;
+      baseSlope += Math.tan(slide2AngleOffset);
+
+      const d = (slide2Mode === 'optimal') ? 68 : 26; // Street width half
+      const b = cy - baseSlope * cx;
+
+      // Draw Street Shading (Margin Corridor)
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(0, b - d);
+      ctx.lineTo(width, baseSlope * width + (b - d));
+      ctx.lineTo(width, baseSlope * width + (b + d));
+      ctx.lineTo(0, b + d);
+      ctx.closePath();
+      ctx.fillStyle = isDarkTheme() ? 'rgba(0, 212, 255, 0.08)' : 'rgba(0, 136, 204, 0.08)';
+      ctx.fill();
+
+      // Draw Gutters (+1 and -1)
+      ctx.setLineDash([6, 6]);
+      ctx.strokeStyle = isDarkTheme() ? '#fbbf24' : '#d97706';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, b - d); ctx.lineTo(width, baseSlope * width + (b - d));
+      ctx.moveTo(0, b + d); ctx.lineTo(width, baseSlope * width + (b + d));
+      ctx.stroke();
+
+      // Draw Decision Hyperplane (w^T x + b = 0)
+      ctx.setLineDash([]);
+      ctx.strokeStyle = isDarkTheme() ? '#00d4ff' : '#0088cc';
+      ctx.lineWidth = 3.5;
+      ctx.shadowColor = '#00d4ff';
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.moveTo(0, b);
+      ctx.lineTo(width, baseSlope * width + b);
+      ctx.stroke();
+      ctx.restore();
+
+      // Render Data Points
+      classCyan.forEach(p => drawPoint(ctx, p.x, p.y, '#00d4ff', 8));
+      classPurple.forEach(p => drawPoint(ctx, p.x, p.y, '#c084fc', 8));
+
+      // Highlight Nearest Points with Halo
+      drawPoint(ctx, 270, 230, '#00d4ff', 8, true);
+      drawPoint(ctx, 450, 310, '#c084fc', 8, true);
+
+      // Labels on Street Gutters
+      ctx.font = 'bold 13px monospace';
+      ctx.fillStyle = isDarkTheme() ? '#00d4ff' : '#0088cc';
+      ctx.fillText('Hyperplane: w^T x + b = 0', 30, b - 10);
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillText('Gutter: w^T x + b = +1', 30, (b - d) - 10);
+      ctx.fillText('Gutter: w^T x + b = -1', 30, (b + d) + 20);
+
+      // Margin Dimension Bracket
+      ctx.save();
+      ctx.strokeStyle = isDarkTheme() ? '#34d399' : '#059669';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      const markX = 640;
+      const markY1 = baseSlope * markX + (b - d);
+      const markY2 = baseSlope * markX + (b + d);
+      ctx.moveTo(markX, markY1);
+      ctx.lineTo(markX, markY2);
+      ctx.stroke();
+
+      ctx.fillStyle = isDarkTheme() ? '#34d399' : '#059669';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.fillText(`Margin Width = ${d * 2}px`, markX + 10, (markY1 + markY2) / 2);
+      ctx.restore();
+    }
+
+    // ==========================================================================
+    // SLIDE 3: Support Vectors Sparsity Proof
+    // ==========================================================================
+    let hideNonSV = false;
+    let pulseSVAnim = false;
+
+    const btnToggleNonSV = document.getElementById('btn-toggle-non-sv');
+    const btnPulseSV = document.getElementById('btn-highlight-sv');
+    const btnResetSV = document.getElementById('btn-reset-sv');
+    const readoutSVCount = document.getElementById('readout-sv-count');
+
+    btnToggleNonSV?.addEventListener('click', () => {
+      hideNonSV = !hideNonSV;
+      btnToggleNonSV.textContent = hideNonSV ? '👁️ Restore Non-Support Vectors' : '✂️ Remove Non-Support Vectors';
+      btnToggleNonSV.classList.toggle('active', hideNonSV);
+      readoutSVCount.textContent = hideNonSV 
+        ? 'Active Points: 3 / 15 (Boundary Completely Unchanged!)' 
+        : 'Active Points: 15 / 15 (3 Support Vectors)';
+      readoutSVCount.style.color = hideNonSV ? 'var(--emerald)' : 'var(--purple)';
+      playBlip(hideNonSV ? 820 : 450, 0.05);
+      drawSlide3Visual();
+    });
+
+    btnPulseSV?.addEventListener('click', () => {
+      pulseSVAnim = true;
+      playBlip(900, 0.08);
+      drawSlide3Visual();
+      setTimeout(() => { pulseSVAnim = false; drawSlide3Visual(); }, 1200);
+    });
+
+    btnResetSV?.addEventListener('click', () => {
+      hideNonSV = false;
+      btnToggleNonSV.textContent = '✂️ Remove Non-Support Vectors';
+      btnToggleNonSV.classList.remove('active');
+      readoutSVCount.textContent = 'Active Points: 15 / 15 (3 Support Vectors)';
+      readoutSVCount.style.color = 'var(--purple)';
+      playBlip(600, 0.04);
+      drawSlide3Visual();
+    });
+
+    function drawSlide3Visual() {
+      const res = initCanvas('canvas-slide-3');
+      if (!res) return;
+      const { ctx, width, height } = res;
+
+      ctx.clearRect(0, 0, width, height);
+      drawGrid(ctx, width, height);
+
+      const m = -0.65;
+      const b = height / 2 - m * (width / 2);
+      const d = 60; // gutter distance
+
+      // Draw the invariant Street & Decision Boundary
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(0, b - d);
+      ctx.lineTo(width, m * width + (b - d));
+      ctx.lineTo(width, m * width + (b + d));
+      ctx.lineTo(0, b + d);
+      ctx.closePath();
+      ctx.fillStyle = isDarkTheme() ? 'rgba(168, 85, 247, 0.08)' : 'rgba(124, 58, 237, 0.08)';
+      ctx.fill();
+
+      // Gutters
+      ctx.setLineDash([5, 5]);
+      ctx.strokeStyle = isDarkTheme() ? '#fbbf24' : '#d97706';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(0, b - d); ctx.lineTo(width, m * width + (b - d));
+      ctx.moveTo(0, b + d); ctx.lineTo(width, m * width + (b + d));
+      ctx.stroke();
+
+      // Hyperplane
+      ctx.setLineDash([]);
+      ctx.strokeStyle = isDarkTheme() ? '#00d4ff' : '#0088cc';
+      ctx.lineWidth = 3.5;
+      ctx.shadowColor = '#00d4ff';
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.moveTo(0, b); ctx.lineTo(width, m * width + b);
+      ctx.stroke();
+      ctx.restore();
+
+      // 3 Support Vectors (Sitting precisely on the margin lines!)
+      const svPoints = [
+        { x: 300, y: m * 300 + (b - d), color: '#00d4ff', label: 'x_sv1' },
+        { x: 460, y: m * 460 + (b - d), color: '#00d4ff', label: 'x_sv2' },
+        { x: 380, y: m * 380 + (b + d), color: '#c084fc', label: 'x_sv3' }
+      ];
+
+      // Non-Support Vector points (Safely far inside each territory)
+      const nonSVPoints = [
+        { x: 160, y: 110, color: '#00d4ff' }, { x: 220, y: 80, color: '#00d4ff' },
+        { x: 180, y: 190, color: '#00d4ff' }, { x: 330, y: 70, color: '#00d4ff' },
+        { x: 260, y: 140, color: '#00d4ff' }, { x: 420, y: 60, color: '#00d4ff' },
+        { x: 460, y: 440, color: '#c084fc' }, { x: 540, y: 390, color: '#c084fc' },
+        { x: 500, y: 460, color: '#c084fc' }, { x: 600, y: 350, color: '#c084fc' },
+        { x: 580, y: 440, color: '#c084fc' }, { x: 390, y: 490, color: '#c084fc' }
+      ];
+
+      // Draw Non-SV if not hidden
+      if (!hideNonSV) {
+        nonSVPoints.forEach(p => {
+          drawPoint(ctx, p.x, p.y, p.color, 6.5);
+        });
+      }
+
+      // Draw the 3 Support Vectors with prominent pulsing glow
+      svPoints.forEach((p, idx) => {
+        drawPoint(ctx, p.x, p.y, p.color, 9, true);
+
+        // Vector labels
+        ctx.font = 'bold 13px monospace';
+        ctx.fillStyle = p.color;
+        ctx.fillText(p.label, p.x - 18, p.y - 18);
+      });
+
+      // Status Note Box on Canvas
+      ctx.fillStyle = isDarkTheme() ? 'rgba(11, 17, 32, 0.9)' : 'rgba(255, 255, 255, 0.9)';
+      ctx.fillRect(20, height - 60, 480, 44);
+      ctx.strokeStyle = isDarkTheme() ? 'rgba(168, 85, 247, 0.4)' : 'rgba(124, 58, 237, 0.4)';
+      ctx.strokeRect(20, height - 60, 480, 44);
+
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillStyle = isDarkTheme() ? '#34d399' : '#059669';
+      ctx.fillText(hideNonSV ? '✓ PROOF COMPLETE: Boundary did not move 1 pixel!' : 'ℹ️ Only the glowing vectors determine w and b.', 32, height - 34);
+    }
+
+    // ==========================================================================
+    // SLIDE 4: Kernel Trick (2D Inseparable to 3D Lifted Space)
+    // ==========================================================================
+    let kernelElev = 0;
+    const btnKernel2D = document.getElementById('btn-kernel-2d');
+    const btnKernel3D = document.getElementById('btn-kernel-3d');
+    const sliderElev = document.getElementById('slider-elevation');
+    const readoutKernelMode = document.getElementById('readout-kernel-mode');
+
+    btnKernel2D?.addEventListener('click', () => {
+      kernelElev = 0;
+      sliderElev.value = 0;
+      btnKernel2D.classList.add('active');
+      btnKernel3D.classList.remove('active');
+      readoutKernelMode.textContent = 'Current View: 2D Inseparable Rings (Line Fails)';
+      readoutKernelMode.style.color = 'var(--rose)';
+      playBlip(380, 0.05);
+      drawSlide4Visual();
+    });
+
+    btnKernel3D?.addEventListener('click', () => {
+      kernelElev = 100;
+      sliderElev.value = 100;
+      btnKernel3D.classList.add('active');
+      btnKernel2D.classList.remove('active');
+      readoutKernelMode.textContent = 'Current View: 3D Lifted Space (Flat Plane Separates!)';
+      readoutKernelMode.style.color = 'var(--neon-blue)';
+      playBlip(780, 0.05);
+      drawSlide4Visual();
+    });
+
+    sliderElev?.addEventListener('input', (e) => {
+      kernelElev = parseFloat(e.target.value);
+      if (kernelElev > 50) {
+        btnKernel3D.classList.add('active');
+        btnKernel2D.classList.remove('active');
+        readoutKernelMode.textContent = 'Current View: 3D Lifted Space (Flat Plane Separates!)';
+        readoutKernelMode.style.color = 'var(--neon-blue)';
+      } else {
+        btnKernel2D.classList.add('active');
+        btnKernel3D.classList.remove('active');
+        readoutKernelMode.textContent = 'Current View: 2D Inseparable Rings (Line Fails)';
+        readoutKernelMode.style.color = 'var(--rose)';
+      }
+      drawSlide4Visual();
+    });
+
+    function drawSlide4Visual() {
+      const res = initCanvas('canvas-slide-4');
+      if (!res) return;
+      const { ctx, width, height } = res;
+
+      ctx.clearRect(0, 0, width, height);
+      drawGrid(ctx, width, height);
+
+      const cx = width / 2;
+      const cy = height / 2;
+      const t = kernelElev / 100; // 0 = 2D planar, 1 = 3D paraboloid isometric
+
+      // Ring Data (Inner class vs Outer ring class)
+      const innerCluster = [];
+      const outerRing = [];
+
+      // Generate fixed deterministic points
+      for (let i = 0; i < 14; i++) {
+        const angle = (i / 14) * Math.PI * 2;
+        const r = 35 + ((i % 3) * 12);
+        innerCluster.push({ x: r * Math.cos(angle), y: r * Math.sin(angle), r2: r * r });
+      }
+      for (let i = 0; i < 24; i++) {
+        const angle = (i / 24) * Math.PI * 2;
+        const r = 120 + ((i % 4) * 15);
+        outerRing.push({ x: r * Math.cos(angle), y: r * Math.sin(angle), r2: r * r });
+      }
+
+      // Projection transform: If t > 0, project onto tilted isometric 3D space
+      function project(x, y, z) {
+        // Flat 2D position
+        const flatX = cx + x;
+        const flatY = cy + y;
+
+        // 3D Isometric projection
+        const isoX = cx + (x * 0.9 - y * 0.4);
+        const isoY = cy + (x * 0.3 + y * 0.6) - z * 0.8;
+
+        return {
+          x: flatX * (1 - t) + isoX * t,
+          y: flatY * (1 - t) + isoY * t
+        };
+      }
+
+      // When in 3D (t > 0.4), draw the slicing hyperplane flat separating plane!
+      if (t > 0.35) {
+        ctx.save();
+        const planeZ = 85; // Separating threshold
+        const p1 = project(-160, -160, planeZ);
+        const p2 = project(160, -160, planeZ);
+        const p3 = project(160, 160, planeZ);
+        const p4 = project(-160, 160, planeZ);
+
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.lineTo(p3.x, p3.y);
+        ctx.lineTo(p4.x, p4.y);
+        ctx.closePath();
+        ctx.fillStyle = isDarkTheme() ? 'rgba(0, 212, 255, 0.22)' : 'rgba(0, 136, 204, 0.2)';
+        ctx.fill();
+        ctx.strokeStyle = '#00d4ff';
+        ctx.lineWidth = 2;
+        ctx.shadowColor = '#00d4ff';
+        ctx.shadowBlur = 12;
+        ctx.stroke();
+
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillStyle = '#00d4ff';
+        ctx.fillText('Separating Hyperplane (Flat 2D Cut)', p1.x + 20, p1.y - 10);
+        ctx.restore();
+      }
+
+      // Draw Inner Cluster (Class +1: Cyan) - stays in valley (low z)
+      innerCluster.forEach(pt => {
+        const z = (pt.r2 / 160); // Low elevation
+        const p = project(pt.x, pt.y, z * t);
+        drawPoint(ctx, p.x, p.y, '#00d4ff', 7);
+      });
+
+      // Draw Outer Ring (Class -1: Purple) - climbs up the rim (high z)
+      outerRing.forEach(pt => {
+        const z = (pt.r2 / 120); // High elevation
+        const p = project(pt.x, pt.y, z * t);
+        drawPoint(ctx, p.x, p.y, '#c084fc', 7);
+      });
+
+      // In 2D, show the failed linear attempt
+      if (t < 0.2) {
+        ctx.save();
+        ctx.strokeStyle = isDarkTheme() ? '#fb7185' : '#e11d48';
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash([6, 6]);
+        ctx.beginPath();
+        ctx.moveTo(cx - 180, cy - 140);
+        ctx.lineTo(cx + 180, cy + 140);
+        ctx.stroke();
+
+        ctx.font = 'bold 13px sans-serif';
+        ctx.fillStyle = isDarkTheme() ? '#fb7185' : '#e11d48';
+        ctx.fillText('❌ Any straight line fails in 2D space!', cx - 140, cy + 170);
+        ctx.restore();
+      } else {
+        // High dimensional label
+        ctx.fillStyle = isDarkTheme() ? '#34d399' : '#059669';
+        ctx.font = 'bold 13px sans-serif';
+        ctx.fillText('✓ Transformed into linearly separable gap via Kernel!', cx - 170, height - 30);
+      }
+    }
+
+    // ==========================================================================
+    // SLIDE 5: Hard vs Soft Margin & Parameter C Controller
+    // ==========================================================================
+    let paramC = 50; // 1 = Low C, 50 = Balanced, 100 = High C
+    const sliderC = document.getElementById('slider-c-param');
+    const readoutCState = document.getElementById('readout-c-state');
+    const btnLowC = document.getElementById('btn-preset-low-c');
+    const btnMidC = document.getElementById('btn-preset-mid-c');
+    const btnHighC = document.getElementById('btn-preset-high-c');
+
+    function updateCVisualization(val) {
+      paramC = val;
+      sliderC.value = val;
+
+      btnLowC.classList.toggle('active', val <= 20);
+      btnMidC.classList.toggle('active', val > 20 && val < 80);
+      btnHighC.classList.toggle('active', val >= 80);
+
+      if (val >= 80) {
+        readoutCState.textContent = 'High C: Strict Penalty • Narrow Street • Risk of Overfitting';
+        readoutCState.style.color = 'var(--rose)';
+      } else if (val <= 20) {
+        readoutCState.textContent = 'Low C: High Tolerance • Wide Safe Margin • High Generalization';
+        readoutCState.style.color = 'var(--emerald)';
+      } else {
+        readoutCState.textContent = 'Balanced C: Soft Margin with Controlled Slack Variables';
+        readoutCState.style.color = 'var(--neon-blue)';
+      }
+
+      drawSlide5Visual();
+    }
+
+    btnLowC?.addEventListener('click', () => { updateCVisualization(10); playBlip(500, 0.04); });
+    btnMidC?.addEventListener('click', () => { updateCVisualization(50); playBlip(650, 0.04); });
+    btnHighC?.addEventListener('click', () => { updateCVisualization(95); playBlip(800, 0.04); });
+
+    sliderC?.addEventListener('input', (e) => {
+      updateCVisualization(parseFloat(e.target.value));
+    });
+
+    function drawSlide5Visual() {
+      const res = initCanvas('canvas-slide-5');
+      if (!res) return;
+      const { ctx, width, height } = res;
+
+      ctx.clearRect(0, 0, width, height);
+      drawGrid(ctx, width, height);
+
+      // Margin width inversely proportional to C
+      // High C => very small d (narrow margin, zero error)
+      // Low C => large d (wide street, points inside corridor)
+      const normC = paramC / 100;
+      const d = 85 - (normC * 65); // ranges from 85px (Low C) down to 20px (High C)
+
+      const m = -0.55;
+      const b = height / 2 - m * (width / 2);
+
+      // Draw Street Corridor
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(0, b - d);
+      ctx.lineTo(width, m * width + (b - d));
+      ctx.lineTo(width, m * width + (b + d));
+      ctx.lineTo(0, b + d);
+      ctx.closePath();
+      ctx.fillStyle = normC > 0.8 
+        ? (isDarkTheme() ? 'rgba(251, 113, 133, 0.08)' : 'rgba(225, 29, 72, 0.08)')
+        : (isDarkTheme() ? 'rgba(52, 211, 153, 0.08)' : 'rgba(5, 150, 105, 0.08)');
+      ctx.fill();
+
+      // Margin Gutters
+      ctx.setLineDash([5, 5]);
+      ctx.strokeStyle = isDarkTheme() ? '#fbbf24' : '#d97706';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(0, b - d); ctx.lineTo(width, m * width + (b - d));
+      ctx.moveTo(0, b + d); ctx.lineTo(width, m * width + (b + d));
+      ctx.stroke();
+
+      // Hyperplane
+      ctx.setLineDash([]);
+      ctx.strokeStyle = isDarkTheme() ? '#00d4ff' : '#0088cc';
+      ctx.lineWidth = 3;
+      ctx.shadowColor = '#00d4ff';
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.moveTo(0, b); ctx.lineTo(width, m * width + b);
+      ctx.stroke();
+      ctx.restore();
+
+      // Standard Training points
+      const classCyan = [
+        { x: 190, y: 120 }, { x: 260, y: 100 }, { x: 210, y: 180 },
+        { x: 290, y: 150 }, { x: 330, y: 120 }
+      ];
+      const classPurple = [
+        { x: 440, y: 340 }, { x: 520, y: 320 }, { x: 480, y: 400 },
+        { x: 560, y: 370 }, { x: 410, y: 420 }
+      ];
+
+      // Noisy Outliers that create Slack Variables (\xi)
+      const noisyPoints = [
+        { x: 335, y: 245, color: '#00d4ff', targetGutterY: m * 335 + (b - d) }, // Penetrates margin
+        { x: 380, y: 260, color: '#c084fc', targetGutterY: m * 380 + (b + d) }  // Sits inside street
+      ];
+
+      classCyan.forEach(p => drawPoint(ctx, p.x, p.y, '#00d4ff', 7));
+      classPurple.forEach(p => drawPoint(ctx, p.x, p.y, '#c084fc', 7));
+
+      // Draw Outliers and their Slack Variable (\xi) Vectors
+      noisyPoints.forEach((np, i) => {
+        drawPoint(ctx, np.x, np.y, np.color, 8, true);
+
+        // Draw red dashed slack arrow connecting point to its ideal gutter
+        ctx.save();
+        ctx.setLineDash([3, 3]);
+        ctx.strokeStyle = '#fb7185';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(np.x, np.y);
+        ctx.lineTo(np.x, np.targetGutterY);
+        ctx.stroke();
+
+        // Arrow head
+        ctx.fillStyle = '#fb7185';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillText(`Slack ξ_${i+1}`, np.x + 8, (np.y + np.targetGutterY) / 2);
+        ctx.restore();
+      });
+
+      // Margin Stats Telemetry Box
+      ctx.fillStyle = isDarkTheme() ? 'rgba(11, 17, 32, 0.92)' : 'rgba(255, 255, 255, 0.92)';
+      ctx.fillRect(width - 320, 20, 300, 72);
+      ctx.strokeStyle = isDarkTheme() ? 'rgba(0, 212, 255, 0.3)' : 'rgba(0, 136, 204, 0.3)';
+      ctx.strokeRect(width - 320, 20, 300, 72);
+
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillStyle = isDarkTheme() ? '#00d4ff' : '#0088cc';
+      ctx.fillText(`Hyperparameter C: ${paramC}`, width - 305, 42);
+      ctx.font = '12px sans-serif';
+      ctx.fillStyle = isDarkTheme() ? '#94a3b8' : '#475569';
+      ctx.fillText(`Street Margin Width: ${Math.round(d * 2)}px`, width - 305, 60);
+      ctx.fillText(normC > 0.8 ? 'Penalty: Extreme (Hard Margin)' : 'Penalty: Soft (Hall Pass Enabled)', width - 305, 78);
+    }
+
+    // ==========================================================================
+    // SLIDE 6: Conceptual Exam Q&A Interactive Cards
+    // ==========================================================================
+    const examCards = document.querySelectorAll('.exam-card');
+    const btnToggleAll = document.getElementById('btn-toggle-all-answers');
+    const labelToggleAll = document.getElementById('label-toggle-all');
+    let allRevealed = false;
+
+    examCards.forEach(card => {
+      card.addEventListener('click', () => {
+        card.classList.toggle('active-reveal');
+        playBlip(card.classList.contains('active-reveal') ? 700 : 450, 0.04);
+      });
+    });
+
+    btnToggleAll?.addEventListener('click', () => {
+      allRevealed = !allRevealed;
+      examCards.forEach(c => c.classList.toggle('active-reveal', allRevealed));
+      labelToggleAll.textContent = allRevealed ? 'Hide All Answers' : 'Reveal All Answers';
+      playBlip(allRevealed ? 800 : 400, 0.06);
+    });
+
+    // --------------------------------------------------------------------------
+    // 6. MASTER DISPATCHER: RENDER SLIDE VISUALS
+    // --------------------------------------------------------------------------
+    function renderSlideVisual(index) {
+      if (coverAnimId) {
+        cancelAnimationFrame(coverAnimId);
+        coverAnimId = null;
+      }
+
+      if (index === 0) {
+        drawCoverSlideVisual();
+      } else if (index === 1) {
+        drawSlide2Visual();
+      } else if (index === 2) {
+        drawSlide3Visual();
+      } else if (index === 3) {
+        drawSlide4Visual();
+      } else if (index === 4) {
+        drawSlide5Visual();
+      }
+    }
+
+    // Initialize presentation on load
+    window.addEventListener('load', () => {
+      fitStage();
+      goToSlide(0);
+      
+      // Auto-render KaTeX if available, otherwise apply safe HTML math formatting
+      if (window.renderMathInElement) {
+        try {
+          renderMathInElement(document.body, {
+            delimiters: [
+              { left: '$$', right: '$$', display: true },
+              { left: '$', right: '$', display: false }
+            ],
+            throwOnError: false
+          });
+        } catch (err) {
+          console.warn('KaTeX render error:', err);
+        }
+      } else {
+        // Fallback for offline mode without internet KaTeX CDN
+        document.querySelectorAll('.math-callout, .card-body, .exam-question, .exam-answer, .sim-toolbar label').forEach(el => {
+          if (el.innerHTML.includes('$')) {
+            el.innerHTML = el.innerHTML
+              .replace(/\$\$w\^Tx \+ b = 0\$\$/g, '<span style="font-family:Georgia,serif; font-size:1.2em; font-weight:bold;"><i>w</i><sup>T</sup><i>x</i> + <i>b</i> = 0</span>')
+              .replace(/\$w\^Tx \+ b = 0\$/g, '<span style="font-family:Georgia,serif; font-weight:bold;"><i>w</i><sup>T</sup><i>x</i> + <i>b</i> = 0</span>')
+              .replace(/\$w\$/g, '<b>w</b>')
+              .replace(/\$x\$/g, '<b>x</b>')
+              .replace(/\$b\$/g, '<b>b</b>')
+              .replace(/\$\\xi\$/g, '&xi;')
+              .replace(/\$C\$/g, '<i>C</i>');
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
