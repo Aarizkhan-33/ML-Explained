@@ -3,688 +3,2416 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Machine Learning | Logistic Regression</title>
+<title>CS463: Logistic Regression &amp; Regularization</title>
 <style>
-/* CSS Variables for Dark Theme */
-:root{--paper:#0f172a;--ink:#f8fafc;--muted:#94a3b8;--rule:#334155;--blue:#38bdf8;--bluewash:#0369a133;--amber:#fbbf24;--amberwash:#b4530933;--green:#34d399;--greenwash:#065f4633;--red:#f87171;--redwash:#7f1d1d33;--soft:#1e293b;--neon:#00f3ff;--pink:#f43f5e;--pinkwash:#9f123933;--scale:1}
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden}
-body{background:#020617;color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+/* ==========================================================================
+   1. VISUAL DESIGN SYSTEM: DARK STAGE & PALETTE
+   ========================================================================== */
+:root {
+  --paper: #0f172a;
+  --ink: #f8fafc;
+  --muted: #94a3b8;
+  --rule: #334155;
+  --soft: #1e293b;
+  --blue: #38bdf8;
+  --bluewash: rgba(56, 189, 248, 0.15);
+  --amber: #fbbf24;
+  --amberwash: rgba(251, 191, 36, 0.15);
+  --green: #34d399;
+  --greenwash: rgba(52, 211, 153, 0.15);
+  --red: #f87171;
+  --redwash: rgba(248, 113, 113, 0.15);
+  --pink: #f43f5e;
+  --pinkwash: rgba(244, 63, 94, 0.15);
+  --neon: #00f3ff;
+  --neonwash: rgba(0, 243, 255, 0.15);
+  --scale: 1;
+}
 
-/* Presentation Stage & Slide Animations */
-#stage{width:1600px;height:900px;position:absolute;left:50%;top:50%;margin:-450px 0 0 -800px;transform:scale(var(--scale));background:var(--paper);overflow:hidden;transform-origin:center; box-shadow: 0 0 50px rgba(0,0,0,0.8);}
-section.slide{display:none;position:absolute;inset:0;padding:64px 76px 100px}
-section.slide.active{display:block; animation:arrive .22s ease}
-@keyframes arrive{from{opacity:.4}to{opacity:1}}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+body {
+  background: #020617;
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
 
-/* Typography */
-h1,h2,h3,p{margin:0}
-h1{font-size:105px;line-height:1.01;letter-spacing:-3px;font-weight:650}
-h2{font-size:53px;line-height:1.1;letter-spacing:-1.8px;font-weight:650; margin-bottom: 10px;}
-h3{font-size:30px;line-height:1.25;font-weight:650}
-p{font-size:28px;line-height:1.45}
-.lead{font-size:28px;color:var(--muted);margin-bottom:30px;max-width:1280px}
-.label{font-size:20px;letter-spacing:1.6px;text-transform:uppercase;font-weight:650;color:var(--muted)}
-.blue{color:var(--blue)} .amber{color:var(--amber)} .green{color:var(--green)} .red{color:var(--red)} .pink{color:var(--pink)}
+/* ==========================================================================
+   2. STAGE & RESPONSIVE SCALING ARCHITECTURE (1600 x 900)
+   ========================================================================== */
+#stage {
+  width: 1600px;
+  height: 900px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: -450px 0 0 -800px;
+  transform: scale(var(--scale));
+  transform-origin: center center;
+  background: var(--paper);
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 0 65px rgba(0, 0, 0, 0.85);
+  border: 1px solid var(--rule);
+}
+
+section.slide {
+  display: none;
+  position: absolute;
+  inset: 0;
+  padding: 56px 76px 95px;
+  overflow-y: auto;
+  background: var(--paper);
+}
+section.slide::-webkit-scrollbar { width: 7px; }
+section.slide::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 4px; }
+section.slide.active {
+  display: block;
+  animation: arrive 0.22s ease-out;
+}
+@keyframes arrive {
+  from { opacity: 0.35; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Dedicated Cover Slide Layout */
+section.slide.cover-slide.active {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 60px 100px;
+}
+
+/* ==========================================================================
+   3. TYPOGRAPHY & CARD COMPONENTS
+   ========================================================================== */
+h1, h2, h3, h4, p, ul, li { margin: 0; }
+h1 { font-size: 74px; line-height: 1.05; letter-spacing: -2px; font-weight: 700; margin-bottom: 18px; }
+h2 { font-size: 44px; line-height: 1.15; letter-spacing: -1.2px; font-weight: 700; margin-bottom: 12px; color: var(--blue); }
+h3 { font-size: 26px; line-height: 1.25; font-weight: 650; margin-bottom: 10px; }
+h4 { font-size: 22px; line-height: 1.3; font-weight: 650; margin-bottom: 8px; }
+p, li { font-size: 21px; line-height: 1.5; color: var(--ink); }
+ul { padding-left: 28px; margin-bottom: 12px; }
+
+.lead { font-size: 23px; color: var(--muted); margin-bottom: 22px; max-width: 1450px; line-height: 1.4; }
+.label { font-size: 17px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; color: var(--muted); margin-bottom: 10px; }
+
+.muted { color: var(--muted); }
+.blue { color: var(--blue); }
+.amber { color: var(--amber); }
+.green { color: var(--green); }
+.red { color: var(--red); }
+.pink { color: var(--pink); }
+.neon { color: var(--neon); }
 
 /* Layout Grids */
-.columns{display:grid;grid-template-columns:1fr 1fr;gap:65px;margin-top:20px;}
-.divider{border-left:1.5px solid var(--rule);padding-left:56px}
-.rule{border-top:1.5px solid var(--rule); margin-top:30px; padding-top:20px;}
-.reveal{opacity:0;transform:translateY(9px);visibility:hidden;transition:opacity .28s ease,transform .28s ease}
-.reveal.shown{opacity:1;transform:none;visibility:visible}
+.columns { display: grid; grid-template-columns: 1fr 1fr; gap: 38px; margin-top: 14px; }
+.columns-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 26px; margin-top: 14px; }
+.divider { border-left: 1.5px solid var(--rule); padding-left: 36px; }
 
-/* Info Cards */
-.card{background:var(--soft);padding:30px;border-radius:12px;border-top:4px solid var(--blue);box-shadow:0 10px 25px rgba(0,0,0,0.4);}
-.card h4{font-size:32px;margin:0 0 15px 0;color:var(--ink);}
-.card p{font-size:24px;color:var(--muted);}
-.card.spam{border-color:var(--red);} .card.bank{border-color:var(--green);}
+/* Progressive Reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(9px);
+  visibility: hidden;
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+.reveal.shown {
+  opacity: 1;
+  transform: none;
+  visibility: visible;
+}
 
-/* Interactive Tables */
-.table-container {background: var(--soft); border-radius: 8px; border: 1px solid var(--rule); overflow: hidden;}
-table.stats-table {width: 100%; border-collapse: collapse; font-size: 26px; text-align: center;}
-table.stats-table th {background: #111827; color: var(--muted); padding: 18px 12px; border-bottom: 2px solid var(--rule); font-weight: 600;}
-table.stats-table td {padding: 16px 12px; transition: all 0.3s;}
-table.stats-table tr {border-bottom: 1px solid var(--rule);}
-table.stats-table tr:last-child {border-bottom: none;}
+/* Info Cards & Boxes */
+.card {
+  background: var(--soft);
+  padding: 20px 24px;
+  border-radius: 10px;
+  border-top: 4px solid var(--blue);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+  margin-bottom: 18px;
+}
+.card h4 { font-size: 22px; margin-bottom: 10px; color: var(--ink); }
+.card p { font-size: 19px; color: var(--muted); }
+.card.amber { border-color: var(--amber); }
+.card.green { border-color: var(--green); }
+.card.pink { border-color: var(--pink); }
+.card.red { border-color: var(--red); }
 
-/* Highlight Cell States */
-.hl-row {background: var(--bluewash);}
-.hl-row td:first-child {box-shadow: inset 4px 0 0 var(--blue);}
-.hl-cell-amber {background: var(--amberwash); color: var(--amber); font-weight: 700;}
-.hl-cell-blue {background: var(--bluewash); color: var(--blue); font-weight: 700;}
-.hl-cell-green {background: var(--greenwash); color: var(--green); font-weight: 700;}
-.hl-cell-red {background: var(--redwash); color: var(--red); font-weight: 700;}
-.inactive-cell {opacity: 0.2;}
-.invisible {opacity: 0; pointer-events: none;}
+.info-box {
+  background: var(--soft);
+  padding: 18px 22px;
+  border-radius: 8px;
+  border-left: 4px solid var(--neon);
+  margin-bottom: 18px;
+}
+.info-box .badge {
+  display: inline-block;
+  background: var(--neonwash);
+  color: var(--neon);
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
 
-/* Live Layout Panels */
-.live-slide{padding-top:45px!important}
-.live-slide h2{font-size:47px}
-.live-grid{display:grid;grid-template-columns: 820px 1fr; gap: 40px; margin-top: 15px; height: 650px;}
-.calc-pane {display: flex; flex-direction: column; gap: 20px;}
-.live-explanation{font-size: 25px; line-height: 1.45; padding: 25px; background: var(--soft); border-radius: 8px; border-left: 5px solid var(--blue); box-shadow: 0 10px 30px rgba(0,0,0,0.5); min-height: 200px;}
-.live-explanation strong{color: var(--blue); font-weight: 700;}
-.live-explanation ul {margin: 10px 0 0 0; padding-left: 30px;}
-.live-explanation li {margin-bottom: 8px;}
+/* Math Boards & Custom CSS Fractions */
+.math-board {
+  background: #111827;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 18px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 18px;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+}
+.formula-main {
+  font-family: "Cambria Math", "Cambria", "STIX Two Math", "Times New Roman", "DejaVu Serif", serif;
+  font-size: 26px;
+  color: var(--blue);
+  letter-spacing: 0.5px;
+  line-height: 1.45;
+}
+.math-sym, .math-var, var {
+  font-style: italic;
+  font-family: "Cambria Math", "Cambria", "Times New Roman", serif;
+  color: inherit;
+}
+sub, sup {
+  font-size: 72%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+sup { top: -0.45em; }
+sub { bottom: -0.22em; }
 
-/* Math Boards */
-.math-board {background: #111827; border: 1px solid var(--rule); border-radius: 8px; padding: 30px; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;}
-.formula-main {font-family: Georgia, serif; transition: all 0.3s;}
-.math-flex {display: flex; align-items: center; justify-content: center;}
+/* Calculation Instruction & Flow Helpers */
+.calc-box {
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--blue);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 8px 0;
+  font-size: 15px;
+  line-height: 1.45;
+}
+.calc-box.pink-border { border-left-color: var(--pink); }
+.calc-box.green-border { border-left-color: var(--green); }
+.calc-box.amber-border { border-left-color: var(--amber); }
+.calc-box.neon-border { border-left-color: var(--neon); }
+.calc-box .calc-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.flow-diagram {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 8px 0;
+}
+.flow-pill {
+  background: var(--soft);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+.flow-pill .flow-sub {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: normal;
+  text-transform: uppercase;
+}
+.flow-arrow {
+  color: var(--neon);
+  font-weight: bold;
+  font-size: 18px;
+}
 
-/* CSS Fraction Builder */
-.fraction-container {display: inline-flex; align-items: center; justify-content: center; gap: 12px; font-size: 45px; vertical-align: middle; margin: 0 10px;}
-.fraction-block {display: flex; flex-direction: column; text-align: center;}
-.fraction-top {border-bottom: 3px solid var(--ink); padding: 0 10px 5px 10px; margin-bottom: 5px;}
+.math-flex {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  vertical-align: middle;
+}
+.fraction-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  vertical-align: middle;
+  margin: 0 4px;
+}
+.fraction-block {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+  text-align: center;
+  margin: 0 4px;
+  line-height: 1.1;
+}
+.fraction-top {
+  border-bottom: 2px solid currentColor;
+  padding: 0 4px 2px;
+}
+.fraction-bottom {
+  padding: 2px 4px 0;
+}
 
-/* Canvas Layouts */
-.curve-grid {display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; margin-top: 20px; height: 600px;}
-.curve-visual {background: #111827; border: 1px solid var(--rule); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); padding: 20px; position:relative;}
-.curve-visual canvas {max-width: 100%; height: auto; width: 100%;}
-.curve-content {display: flex; flex-direction: column; justify-content: center; gap: 20px;}
-.info-box {background: var(--soft); padding: 22px; border-radius: 8px; border-left: 4px solid var(--neon);}
-.info-box .badge {display: inline-block; background: rgba(0, 243, 255, 0.15); color: var(--neon); padding: 4px 12px; border-radius: 4px; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; border: 1px solid rgba(0, 243, 255, 0.3);}
-.info-box p {font-size: 22px; line-height: 1.5;}
-.info-box p strong {color: var(--neon);}
+/* ==========================================================================
+   4. LIVE INTERACTIVE TRACE SLIDES
+   ========================================================================== */
+.live-slide { padding-top: 45px !important; }
+.live-grid {
+  display: grid;
+  grid-template-columns: 820px 1fr;
+  gap: 36px;
+  margin-top: 10px;
+  height: 670px;
+  align-items: stretch;
+}
+.table-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.calc-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  justify-content: flex-start;
+}
+.live-explanation {
+  font-size: 21px;
+  line-height: 1.5;
+  padding: 22px 24px;
+  background: var(--soft);
+  border-radius: 10px;
+  border-left: 5px solid var(--blue);
+  min-height: 190px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
+}
+.live-explanation strong { color: var(--blue); }
 
-/* Navigation & Cover */
-#nav{position:absolute;left:76px;right:76px;bottom:25px;display:flex;justify-content:space-between;align-items:center;z-index:5;height:42px}
-.slide-number{font-size:20px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:74px;text-align:center}
-.slide.cover-slide.active{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px;padding:70px 100px;text-align:center}
-.cover-slide h1{font-size:110px;line-height:1.04;letter-spacing:-3px;text-align:center}
-.cover-slide .cover-subtitle{font-size:31px;max-width:none;text-align:center;margin-top:30px}
-.cover-slide .cover-top{font-size:21px}
+/* Tables */
+table.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 19px;
+  text-align: center;
+  background: var(--soft);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+table.stats-table th {
+  background: #111827;
+  color: var(--muted);
+  padding: 12px 14px;
+  border-bottom: 2px solid var(--rule);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+table.stats-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink);
+}
+.hl-row { background: var(--bluewash); }
+.hl-cell-blue { font-weight: bold; color: var(--blue); background: var(--bluewash); }
+.hl-cell-amber { font-weight: bold; color: var(--amber); background: var(--amberwash); }
+.hl-cell-green { font-weight: bold; color: var(--green); background: var(--greenwash); }
+.hl-cell-red { font-weight: bold; color: var(--red); background: var(--redwash); }
+.hl-cell-pink { font-weight: bold; color: var(--pink); background: var(--pinkwash); }
+.invisible { opacity: 0; visibility: hidden; }
+
+/* Canvas Visual Container */
+.curve-visual {
+  background: #111827;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  width: 100%;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+canvas { max-width: 100%; height: auto; display: block; }
+.canvas-caption { font-size: 15px; color: var(--muted); margin-top: 8px; text-align: center; }
+
+/* ==========================================================================
+   5. NAVIGATION BAR & CONTROLS
+   ========================================================================== */
+#nav {
+  position: absolute;
+  left: 76px;
+  right: 76px;
+  bottom: 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 5;
+  height: 48px;
+}
+.nav-btn {
+  background: var(--soft);
+  border: 1px solid var(--rule);
+  color: var(--ink);
+  padding: 9px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+.nav-btn:hover:not(:disabled) {
+  background: var(--blue);
+  color: #020617;
+  border-color: var(--blue);
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.45);
+}
+.nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.nav-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.slide-number {
+  font-size: 18px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+.step-indicator {
+  font-size: 13px;
+  color: var(--blue);
+  letter-spacing: 1px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
 </style>
 </head>
 <body>
-<main id="stage" aria-label="Logistic Regression">
 
-<!-- Slide 1: Cover -->
-<section class="slide active cover-slide">
-  <p class="cover-top label">Machine Learning Algorithms</p>
-  <div class="cover-title">
-    <h1 class="blue">Logistic Regression</h1>
-    <p class="cover-subtitle">Binary Classification, Sigmoid Math, and Regularization</p>
-  </div>
-  <p style="color:var(--muted); font-size:20px; margin-top:50px;">Use Left/Right Arrows or Spacebar to navigate.</p>
-</section>
+<main id="stage" aria-label="CS463 Logistic Regression Presentation">
 
-<!-- Slide 2: Concepts -->
-<section class="slide" data-steps="3">
-  <h2>The Purpose of Classification</h2>
-  <p class="lead">Used when the variable we want to predict takes on discrete values (usually 0 or 1).</p>
-  <div class="columns" style="gap:40px;">
-    <div>
-      <div class="reveal" data-step="1">
-        <h3 class="blue">Why Linear Regression Fails</h3>
-        <p style="font-size:24px; margin-top:10px;">Linear regression draws an infinite straight line. Its output can be <span class="red">less than 0</span> or <span class="green">greater than 1</span>. This makes no mathematical sense when we need a strict probability (like a 70% chance of rain).</p>
+  <!-- ======================================================================
+       SLIDE 1: Cover Slide
+       ====================================================================== -->
+  <section class="slide active cover-slide">
+    <p class="label">Machine Learning &amp; Expert Systems (CS463) &bull; Kohat University of Science &amp; Technology (KUST)</p>
+    <h1 class="blue">Logistic Regression &amp; Regularization</h1>
+    <p class="lead" style="font-size:28px; max-width:1150px;">
+      Binary Classification, Decision Boundaries, Log-Loss, Multiclass One-vs-All &amp; Overfitting
+    </p>
+    <div class="card" style="margin-top:28px; padding:18px 36px; border-top-color:var(--neon);">
+      <p style="font-size:22px; color:var(--ink);">
+        Course Instructor: <strong>Dr. Shafaq Mussadiq</strong> &bull; Institute of Computing (IOC)
+      </p>
+    </div>
+    <p style="color:var(--muted); margin-top:28px; font-size:18px;">
+      Use Left/Right Arrows, Spacebar, or the navigation buttons below.
+    </p>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 2: Binary Classification & Examples
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>What is Binary Classification?</h2>
+    <p class="lead">Predicting discrete category labels instead of continuous numbers.</p>
+    <div class="columns">
+      <div>
+        <!-- Step 0: Core Definition visible immediately -->
+        <div class="info-box">
+          <span class="badge">Definition</span>
+          <p style="font-size:19px; line-height:1.5;">
+            Classification is a supervised learning task where the target output <strong>y</strong> takes on only a small number of discrete category values rather than continuous numbers. In <strong>Binary Classification</strong>:
+          </p>
+          <div class="math-board" style="padding:10px; margin:12px 0 8px;">
+            <div class="formula-main" style="font-size:26px;">y &isin; {0, 1}</div>
+          </div>
+          <div class="flow-diagram" style="margin-top:8px; justify-content:center;">
+            <span class="flow-pill"><span class="flow-sub">Continuous Problem</span>Linear Regression: y &isin; &reals;</span>
+            <span class="flow-arrow">&ne;</span>
+            <span class="flow-pill" style="border-color:var(--neon);"><span class="flow-sub">Discrete Problem</span>Classification: y &isin; {0, 1}</span>
+          </div>
+        </div>
+
+        <div class="card reveal" data-step="1" style="border-top-color:var(--neon);">
+          <h4 class="neon">Positive vs. Negative Class &amp; Labels</h4>
+          <ul style="font-size:18px;">
+            <li><strong>0 (Negative Class, &minus;):</strong> Absence of the target condition (e.g., Not Spam, Normal transaction, Benign tumor).</li>
+            <li><strong>1 (Positive Class, +):</strong> Presence of the target condition (e.g., Spam email, Fraudulent transaction, Malignant tumor).</li>
+          </ul>
+          <p style="font-size:16px; color:var(--muted); margin-top:8px;">
+            Given an input feature vector <strong>x<sup>(i)</sup></strong>, its corresponding <strong>y<sup>(i)</sup></strong> is called the <strong>label</strong> for that training example.
+          </p>
+        </div>
       </div>
-      <div class="reveal rule" data-step="3">
-        <h3 class="amber">The Logistic Solution</h3>
-        <p style="font-size: 24px; margin-top:10px;">
-          Logistic Regression takes that linear line and "squishes" it so the output is bounded <strong>strictly between 0 and 1</strong>. The output represents the <em>probability</em> that an item belongs to the positive class (1).
+
+      <div class="divider reveal" data-step="2">
+        <h3>Real-World Binary Classification Tasks</h3>
+        <div class="card red" style="margin-bottom:12px;">
+          <h4 class="red">&bull; Email Filtering</h4>
+          <p style="font-size:18px;">Spam (1) vs. Not Spam (0)</p>
+        </div>
+        <div class="card green" style="margin-bottom:12px;">
+          <h4 class="green">&bull; Online Transactions</h4>
+          <p style="font-size:18px;">Fraudulent &mdash; Yes (1) vs. No (0)</p>
+        </div>
+        <div class="card amber" style="margin-bottom:12px;">
+          <h4 class="amber">&bull; Medical Diagnosis</h4>
+          <p style="font-size:18px;">Tumor &mdash; Malignant (1) vs. Benign (0)</p>
+        </div>
+
+        <div class="reveal" data-step="3">
+          <div class="calc-box neon-border" style="margin-top:10px;">
+            <div class="calc-title" style="color:var(--neon);">Core Mathematical Objective:</div>
+            Find a hypothesis function <strong>h<sub><span class="math-sym">&theta;</span></sub>(x)</strong> that outputs a calibrated probability score:
+            <div style="font-size:16px; color:var(--blue); margin-top:4px; font-weight:bold;">
+              h<sub><span class="math-sym">&theta;</span></sub>(x) = P(y = 1 | x; <span class="math-sym">&theta;</span>) &ensp;&rarr;&ensp; Predict y = 1 if h<sub><span class="math-sym">&theta;</span></sub>(x) &ge; 0.5
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 3: Why Linear Regression Fails for Classification
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>Why Linear Regression Fails Here</h2>
+    <p class="lead">Using a straight line with a 0.5 threshold breaks down on outliers and outputs impossible probabilities.</p>
+    <div class="columns">
+      <div>
+        <div class="curve-visual">
+          <canvas id="canvas-lin-fail" width="560" height="380"></canvas>
+          <div class="canvas-caption">
+            Tumor Size (x) vs. Malignant? (0 or 1). Observe how a distant outlier tilts the line flatter and shifts the threshold!
+          </div>
+        </div>
+      </div>
+
+      <div class="divider">
+        <!-- Step 0: The Core Dilemma (Always visible so right pane is never blank!) -->
+        <div class="info-box" style="border-color:var(--amber);">
+          <span class="badge" style="color:var(--amber); background:var(--amberwash);">The Starting Dilemma</span>
+          <h4 style="color:var(--ink); font-size:19px; margin-bottom:6px;">Can We Just Fit a Line and Threshold at 0.5?</h4>
+          <p style="font-size:17px; line-height:1.45;">
+            In binary classification, the target is discrete: <strong>y &isin; {0, 1}</strong>. A simple intuitive idea is to fit a standard linear regression line:
+          </p>
+          <div class="formula-main" style="font-size:21px; margin:6px 0; text-align:center;">
+            h<sub><span class="math-sym">&theta;</span></sub>(x) = <span class="math-sym">&theta;</span><sub>0</sub> + <span class="math-sym">&theta;</span><sub>1</sub>x
+          </div>
+          <p style="font-size:15px; color:var(--muted); margin-top:4px;">
+            Press <strong>Next</strong> to trace why thresholding this line fails fatally on outliers!
+          </p>
+        </div>
+
+        <!-- Step 1: The Threshold Rule -->
+        <div class="reveal" data-step="1">
+          <div class="math-board" style="padding:10px 18px; border-color:var(--pink); margin-top:8px;">
+            <div class="formula-main" style="font-size:20px;">
+              Predict y = 1 &ensp;if&ensp; h<sub><span class="math-sym">&theta;</span></sub>(x) &ge; 0.5 &emsp;|&emsp; Predict y = 0 &ensp;if&ensp; h<sub><span class="math-sym">&theta;</span></sub>(x) &lt; 0.5
+            </div>
+            <div style="font-size:15px; color:var(--muted); margin-top:4px;">
+              Threshold Cutoff: <span class="math-sym">&theta;</span><sub>0</sub> + <span class="math-sym">&theta;</span><sub>1</sub>x = 0.5 &ensp;&rArr;&ensp; <strong style="color:var(--neon);">x<sub>threshold</sub> = (0.5 &minus; <span class="math-sym">&theta;</span><sub>0</sub>) / <span class="math-sym">&theta;</span><sub>1</sub></strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Fatal Flaw 1 with Calculation Walkthrough -->
+        <div class="reveal" data-step="2">
+          <div class="card red" style="margin-top:8px;">
+            <h4 class="red">Fatal Flaw 1: Sensitivity to Outliers</h4>
+            <div class="calc-box" style="border-left-color:var(--red); padding:8px 12px; margin:6px 0;">
+              <div class="calc-title" style="color:var(--red); font-size:12px;">Step-by-Step Calculation Walkthrough:</div>
+              <div style="font-size:15px; line-height:1.45;">
+                <div class="flow-diagram" style="margin:4px 0;">
+                  <span class="flow-pill" style="font-size:13px;"><span class="flow-sub">1. Add Outlier</span>x = 0.95 (far right)</span>
+                  <span class="flow-arrow">&rarr;</span>
+                  <span class="flow-pill" style="font-size:13px;"><span class="flow-sub">2. Flattens Line</span>Slope <span class="math-sym">&theta;</span>₁ decreases</span>
+                  <span class="flow-arrow">&rarr;</span>
+                  <span class="flow-pill" style="font-size:13px; border-color:var(--red);"><span class="flow-sub">3. Threshold Shifts</span>0.45 &rarr; 0.62</span>
+                </div>
+                &bull; <strong>Before outlier:</strong> Threshold was at <strong>x = 0.45</strong>. All 4 malignant tumors (x &ge; 0.52) were correctly predicted y = 1 &check;.<br>
+                &bull; <strong>After outlier:</strong> Slope flattens &rarr; Threshold shifts right to <strong>x = 0.62</strong>.<br>
+                &bull; <strong>Clinical Disaster:</strong> Tumors at <strong>x = 0.52</strong> and <strong>x = 0.60</strong> now have h(x) &lt; 0.5 &ensp;&rArr;&ensp; <strong style="color:var(--red);">Misclassified as benign (y = 0)!</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Fatal Flaw 2 -->
+        <div class="reveal" data-step="3">
+          <div class="card pink" style="margin-top:8px;">
+            <h4 class="pink">Fatal Flaw 2: Invalid Probabilities (&minus;&infin; to +&infin;)</h4>
+            <p style="font-size:16px;">
+              A straight line outputs unbounded values. For large tumors, <strong>h(x) = 1.8</strong>; for small tumors, <strong>h(x) = &minus;0.4</strong>. Probabilities must strictly obey:
+            </p>
+            <div class="formula-main" style="font-size:20px; text-align:center; color:var(--pink); margin:4px 0;">
+              0 &le; P(y = 1 | x) &le; 1
+            </div>
+            <p style="font-size:15px; color:var(--muted);">
+              Linear regression cannot satisfy this constraint. We need an S-shaped activation function!
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 4: Hypothesis Representation — The Sigmoid Function
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>The Logistic (Sigmoid) Hypothesis</h2>
+    <p class="lead">Squishing any real score z into a valid probability strictly between 0 and 1.</p>
+    <div class="columns">
+      <div>
+        <div class="curve-visual">
+          <canvas id="canvas-sigmoid" width="560" height="380"></canvas>
+          <div class="canvas-caption">
+            The Sigmoid Function g(z) maps any real number z into the interval (0, 1).
+          </div>
+        </div>
+      </div>
+
+      <div class="divider">
+        <!-- Step 0: Hypothesis Pipeline visible immediately -->
+        <div class="math-board" style="padding:12px 20px;">
+          <div class="formula-main math-flex" style="font-size:24px;">
+            h<sub><span class="math-sym">&theta;</span></sub>(x) = g(<span class="math-sym">&theta;</span><sup>T</sup>x), &emsp; z = <span class="math-sym">&theta;</span><sup>T</sup>x, &emsp; 
+            g(z) = 
+            <span class="fraction-block">
+              <span class="fraction-top">1</span>
+              <span class="fraction-bottom">1 + e<sup>&minus;z</sup></span>
+            </span>
+          </div>
+        </div>
+
+        <div class="flow-diagram" style="margin:8px 0; justify-content:center;">
+          <span class="flow-pill"><span class="flow-sub">1. Features</span>x</span>
+          <span class="flow-arrow">&rarr;</span>
+          <span class="flow-pill"><span class="flow-sub">2. Score</span>z = <span class="math-sym">&theta;</span><sup>T</sup>x</span>
+          <span class="flow-arrow">&rarr;</span>
+          <span class="flow-pill"><span class="flow-sub">3. Sigmoid g(z)</span>P(y = 1 | x)</span>
+          <span class="flow-arrow">&rarr;</span>
+          <span class="flow-pill" style="border-color:var(--green);"><span class="flow-sub">4. Threshold &ge; 0.5</span>Predict y &isin; {0, 1}</span>
+        </div>
+
+        <div class="reveal" data-step="1">
+          <div class="info-box" style="border-color:var(--blue); margin-top:8px;">
+            <span class="badge" style="color:var(--blue); background:var(--bluewash);">Term-by-Term &amp; Euler's Number (e &approx; 2.718)</span>
+            <ul style="font-size:17px; margin-top:4px;">
+              <li><strong>z = <span class="math-sym">&theta;</span><sup>T</sup>x:</strong> Raw linear score stretching from &minus;&infin; to +&infin;.</li>
+              <li>When <strong>z &rarr; +&infin;</strong>: e<sup>&minus;z</sup> &rarr; 0 &ensp;&rArr;&ensp; g(z) = 1 / (1 + 0) = <strong>1</strong>.</li>
+              <li>When <strong>z = 0</strong>: e<sup>0</sup> = 1 &ensp;&rArr;&ensp; g(0) = 1 / (1 + 1) = <strong>0.5</strong> (decision cutoff!).</li>
+              <li>When <strong>z &rarr; &minus;&infin;</strong>: e<sup>&minus;z</sup> &rarr; +&infin; &ensp;&rArr;&ensp; g(z) = 1 / (1 + &infin;) = <strong>0</strong>.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="reveal" data-step="2">
+          <div class="calc-box green-border">
+            <div class="calc-title" style="color:var(--green);">How Probability is Calculated from z:</div>
+            <div style="font-size:15px; line-height:1.5;">
+              &bull; <strong>If z = +2:</strong> g(2) = 1 / (1 + e<sup>&minus;2</sup>) = 1 / (1 + 0.135) &approx; <strong>0.881</strong> (88.1% Malignant &rarr; Predict y=1 &check;)<br>
+              &bull; <strong>If z = 0:</strong> g(0) = 1 / (1 + e<sup>0</sup>) = 1 / (1 + 1) = <strong>0.500</strong> (50.0% Exact Decision Cutoff)<br>
+              &bull; <strong>If z = &minus;2:</strong> g(&minus;2) = 1 / (1 + e<sup>2</sup>) = 1 / (1 + 7.389) &approx; <strong>0.119</strong> (11.9% Malignant &rarr; Predict y=0)
+            </div>
+          </div>
+        </div>
+
+        <div class="reveal" data-step="3">
+          <div class="card green" style="margin-top:8px;">
+            <h4 class="green">Probabilistic Meaning</h4>
+            <p style="font-size:17px;">
+              <strong>h<sub><span class="math-sym">&theta;</span></sub>(x) = P(y = 1 | x; <span class="math-sym">&theta;</span>) = 1 &minus; P(y = 0 | x; <span class="math-sym">&theta;</span>)</strong>, so P(y=0|x) + P(y=1|x) = 1.
+            </p>
+            <p style="font-size:16px; color:var(--muted); margin-top:4px;">
+              Example: If h<sub><span class="math-sym">&theta;</span></sub>(x) = 0.70, the patient has a <strong>70% probability</strong> of malignancy (y=1) and a <strong>30% chance</strong> of a benign tumor (y=0).
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 5: Decision Boundaries — Linear & Non-Linear
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>Decision Boundaries: Separating Class 1 from Class 0</h2>
+    <p class="lead">Where h<sub><span class="math-sym">&theta;</span></sub>(x) &ge; 0.5 corresponds directly to <span class="math-sym">&theta;</span><sup>T</sup>x &ge; 0.</p>
+
+    <!-- Top Key Rule: Visible from Step 0 -->
+    <div class="math-board" style="padding:12px 28px; margin-bottom:14px; border-color:var(--neon);">
+      <div class="formula-main" style="font-size:23px;">
+        <span class="math-sym">&theta;</span><sup>T</sup>x &ge; 0 &ensp;&rArr;&ensp; h<sub><span class="math-sym">&theta;</span></sub>(x) &ge; 0.5 &ensp;&rArr;&ensp; <strong style="color:var(--green);">predict y = 1</strong>
+        &emsp;|&emsp;
+        <span class="math-sym">&theta;</span><sup>T</sup>x &lt; 0 &ensp;&rArr;&ensp; h<sub><span class="math-sym">&theta;</span></sub>(x) &lt; 0.5 &ensp;&rArr;&ensp; <strong style="color:var(--pink);">predict y = 0</strong>
+      </div>
+      <div class="flow-diagram" style="margin-top:6px; justify-content:center;">
+        <span class="flow-pill"><span class="flow-sub">1. Linear Combination</span><span class="math-sym">&theta;</span><sup>T</sup>x = z</span>
+        <span class="flow-arrow">&rarr;</span>
+        <span class="flow-pill"><span class="flow-sub">2. Sigmoid Activation</span>g(z) = 1/(1+e<sup>&minus;z</sup>)</span>
+        <span class="flow-arrow">&rarr;</span>
+        <span class="flow-pill"><span class="flow-sub">3. Threshold Decision</span>g(z) &ge; 0.5 &hArr; z &ge; 0</span>
+        <span class="flow-arrow">&rarr;</span>
+        <span class="flow-pill" style="border-color:var(--green);"><span class="flow-sub">4. Output</span>Class 1</span>
+      </div>
+      <p style="font-size:15px; color:var(--muted); margin-top:4px;">
+        Crucial Exam Note: The decision boundary is a mathematical property of the <strong>parameters <span class="math-sym">&theta;</span></strong>, NOT a property of the dataset!
+      </p>
+    </div>
+
+    <div class="columns-3">
+      <!-- Example 1 -->
+      <div class="card reveal" data-step="1" style="border-top-color:var(--pink);">
+        <h4 class="pink">Example 1: Diagonal Line</h4>
+        <div class="curve-visual" style="height:180px; padding:4px;">
+          <canvas id="canvas-db-diag" width="360" height="170"></canvas>
+        </div>
+        <div class="math-board" style="padding:6px; margin:8px 0 4px;">
+          <div class="formula-main" style="font-size:18px;"><span class="math-sym">&theta;</span> = [&minus;3, 1, 1]<sup>T</sup></div>
+          <div style="font-size:15px; color:var(--muted); margin-top:2px;">
+            &minus;3 + x₁ + x₂ &ge; 0 &ensp;&hArr;&ensp; <strong style="color:var(--pink);">x₁ + x₂ &ge; 3</strong>
+          </div>
+        </div>
+        <div class="calc-box pink-border" style="padding:6px 10px; font-size:14px;">
+          <div class="calc-title" style="color:var(--pink); font-size:12px;">How It's Calculated:</div>
+          Set <span class="math-sym">&theta;</span><sup>T</sup>x = 0 &rArr; &minus;3 + 1&middot;x₁ + 1&middot;x₂ = 0 &rArr; <strong>x₁ + x₂ = 3</strong>.<br>
+          Points above/right (x₁ + x₂ &ge; 3) &rarr; <strong>y = 1</strong>; below &rarr; <strong>y = 0</strong>.
+        </div>
+      </div>
+
+      <!-- Example 2 -->
+      <div class="card reveal" data-step="2" style="border-top-color:var(--blue);">
+        <h4 class="blue">Example 2: Vertical Line</h4>
+        <div class="curve-visual" style="height:180px; padding:4px;">
+          <canvas id="canvas-db-vert" width="360" height="170"></canvas>
+        </div>
+        <div class="math-board" style="padding:6px; margin:8px 0 4px;">
+          <div class="formula-main" style="font-size:18px;"><span class="math-sym">&theta;</span> = [5, &minus;1, 0]<sup>T</sup></div>
+          <div style="font-size:15px; color:var(--muted); margin-top:2px;">
+            5 &minus; x₁ &ge; 0 &ensp;&hArr;&ensp; <strong style="color:var(--blue);">x₁ &le; 5</strong>
+          </div>
+        </div>
+        <div class="calc-box" style="padding:6px 10px; font-size:14px;">
+          <div class="calc-title" style="font-size:12px;">How It's Calculated:</div>
+          Set <span class="math-sym">&theta;</span><sup>T</sup>x = 0 &rArr; 5 &minus; 1&middot;x₁ + 0&middot;x₂ = 0 &rArr; <strong>x₁ = 5</strong>.<br>
+          Because of the &minus;1 coefficient, 5 &minus; x₁ &ge; 0 means <strong>x₁ &le; 5</strong> is Class 1 (left side!).
+        </div>
+      </div>
+
+      <!-- Example 3 -->
+      <div class="card reveal" data-step="3" style="border-top-color:var(--neon);">
+        <h4 class="neon">Example 3: Non-Linear Circle</h4>
+        <div class="curve-visual" style="height:180px; padding:4px;">
+          <canvas id="canvas-db-circle" width="360" height="170"></canvas>
+        </div>
+        <div class="math-board" style="padding:6px; margin:8px 0 4px;">
+          <div class="formula-main" style="font-size:18px;">
+            z = <span class="math-sym">&theta;</span><sub>0</sub> + <span class="math-sym">&theta;</span><sub>1</sub>x<sub>1</sub><sup>2</sup> + <span class="math-sym">&theta;</span><sub>2</sub>x<sub>2</sub><sup>2</sup>
+          </div>
+          <div style="font-size:15px; color:var(--muted); margin-top:2px;">
+            With <span class="math-sym">&theta;</span> = [&minus;1, 1, 1]<sup>T</sup>: &ensp;<strong style="color:var(--neon);">x<sub>1</sub><sup>2</sup> + x<sub>2</sub><sup>2</sup> &ge; 1</strong>
+          </div>
+        </div>
+        <div class="calc-box neon-border" style="padding:6px 10px; font-size:14px;">
+          <div class="calc-title" style="color:var(--neon); font-size:12px;">How It's Calculated:</div>
+          Set z = 0 &rArr; &minus;1 + x₁² + x₂² = 0 &rArr; <strong>x₁² + x₂² = 1</strong> (Circle of radius r = 1).<br>
+          Points outside circle (x₁² + x₂² &ge; 1) &rarr; <strong>y = 1</strong>; inside &rarr; <strong>y = 0</strong>!
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 6: Live Trace 1 — Sigmoid Probability & Decision Boundary
+       ====================================================================== -->
+  <section class="slide live-slide" data-live="boundary">
+    <h2>Live Trace: From &theta;<sup>T</sup>x to Probability &amp; Classification</h2>
+    <p class="lead">Evaluate h<sub>&theta;</sub>(x) = g(&theta;₀ + &theta;₁x₁ + &theta;₂x₂) using &theta;₀ = &minus;3, &theta;₁ = 1, &theta;₂ = 1.</p>
+
+    <div class="live-grid">
+      <div class="table-container">
+        <table class="stats-table" id="boundary-table">
+          <!-- Dynamically populated -->
+        </table>
+
+        <div class="math-board" style="padding:14px 20px;">
+          <div class="formula-main" id="boundary-math-display" style="font-size:22px;">
+            Awaiting evaluation steps...
+          </div>
+        </div>
+      </div>
+
+      <div class="calc-pane">
+        <div class="live-explanation" id="boundary-explanation" aria-live="polite">
+          <!-- Live teacher explanation text -->
+        </div>
+        <div class="card blue" id="boundary-summary-card" style="margin-top:auto;">
+          <h4 class="blue">Decision Rule Reference</h4>
+          <p id="boundary-summary-text" style="font-size:18px;">
+            Boundary equation is x₁ + x₂ = 3. Press Next to trace each patient.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 7: Why MSE Fails & The Logistic Cost Function
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>The Cost Function: Why Logarithms Replace MSE</h2>
+    <p class="lead">Mean Squared Error becomes wavy (non-convex) with the Sigmoid function; logarithms restore a convex bowl.</p>
+    <div class="columns">
+      <div>
+        <!-- Step 0: Non-convex dilemma visible immediately -->
+        <div class="info-box" style="border-color:var(--pink);">
+          <span class="badge" style="color:var(--pink); background:var(--pinkwash);">Why Not Squared Error?</span>
+          <p style="font-size:18px; line-height:1.45;">
+            Plugging the non-linear Sigmoid h<sub><span class="math-sym">&theta;</span></sub>(x) = 1 / (1 + e<sup>&minus;<span class="math-sym">&theta;</span><sup>T</sup>x</sup>) into MSE creates a <strong>non-convex</strong> cost surface riddled with local minima. Gradient Descent gets trapped in false valleys!
+          </p>
+          <div class="flow-diagram" style="margin-top:6px;">
+            <span class="flow-pill"><span class="flow-sub">Linear Reg</span>MSE &rarr; Bowl (Convex) &check;</span>
+            <span class="flow-arrow">&ne;</span>
+            <span class="flow-pill" style="border-color:var(--pink);"><span class="flow-sub">Logistic Reg</span>MSE + Sigmoid &rarr; Wavy (Non-Convex) &cross;</span>
+          </div>
+        </div>
+
+        <div class="math-board reveal" data-step="1" style="padding:10px 18px;">
+          <h4 style="color:var(--muted); font-size:17px; margin-bottom:6px;">Piecewise Log-Loss Definition</h4>
+          <div class="formula-main math-flex" style="font-size:20px; line-height:1.5;">
+            Cost(h<sub><span class="math-sym">&theta;</span></sub>(x), y) = 
+            <span style="display:inline-block; text-align:left; padding-left:12px;">
+              &minus;ln(h<sub><span class="math-sym">&theta;</span></sub>(x)) &emsp;&emsp;&ensp; if y = 1<br>
+              &minus;ln(1 &minus; h<sub><span class="math-sym">&theta;</span></sub>(x)) &emsp; if y = 0
+            </span>
+          </div>
+        </div>
+
+        <div class="reveal" data-step="2">
+          <div class="calc-box green-border">
+            <div class="calc-title" style="color:var(--green);">How Asymptotic Penalties Work:</div>
+            <div style="font-size:15px; line-height:1.45;">
+              &bull; <strong>If y = 1 and h = 0.99:</strong> Cost = &minus;ln(0.99) &approx; <strong>0.010</strong> (confident &amp; correct &rarr; tiny cost).<br>
+              &bull; <strong>If y = 1 and h = 0.01:</strong> Cost = &minus;ln(0.01) &approx; <strong>4.605</strong> (confident &amp; wrong &rarr; huge penalty!).<br>
+              &bull; <strong>If y = 1 and h &rarr; 0:</strong> Cost &rarr; <strong>+&infin;</strong> (infinite penalty prevents false negatives!).
+            </div>
+          </div>
+        </div>
+
+        <div class="card green reveal" data-step="3" style="margin-top:8px;">
+          <h4 class="green">Why It Works (Guaranteed Global Minimum)</h4>
+          <p style="font-size:16px;">
+            The logarithmic cost function is mathematically proven to be <strong>strictly convex</strong> for logistic regression! Gradient Descent will always converge to the single optimal parameter vector <span class="math-sym">&theta;</span>*.
+          </p>
+        </div>
+      </div>
+
+      <div class="divider reveal" data-step="1">
+        <h3>Log-Loss Curve Visuals</h3>
+        <div class="curve-visual" style="margin-bottom:12px; height:230px; padding:6px;">
+          <canvas id="canvas-cost-y1" width="540" height="215"></canvas>
+        </div>
+        <div class="curve-visual" style="height:230px; padding:6px;">
+          <canvas id="canvas-cost-y0" width="540" height="215"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 8: Simplified Cost Function & Gradient Descent
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>Simplified Cost Function &amp; Gradient Descent</h2>
+    <p class="lead">Compressing the two cases into one formula and taking its derivative.</p>
+
+    <!-- Top Board: Visible on Step 0 -->
+    <div class="math-board" style="padding:14px 24px; border-color:var(--amber);">
+      <h4 style="color:var(--amber); font-size:18px; margin-bottom:6px;">Single-Line Formulation (The Zeroing Trick)</h4>
+      <div class="formula-main" style="font-size:24px;">
+        Cost(h<sub><span class="math-sym">&theta;</span></sub>(x), y) = &minus;y ln(h<sub><span class="math-sym">&theta;</span></sub>(x)) &minus; (1 &minus; y) ln(1 &minus; h<sub><span class="math-sym">&theta;</span></sub>(x))
+      </div>
+      <div class="calc-box amber-border" style="margin-top:10px; width:100%; max-width:960px;">
+        <div class="calc-title" style="color:var(--amber);">Why this single formula calculates both cases perfectly:</div>
+        <div style="font-size:15px; line-height:1.45;">
+          &bull; <strong>When y = 1:</strong> (1 &minus; y) becomes (1 &minus; 1) = 0 &ensp;&rArr;&ensp; Cost = &minus;(1) ln(h) &minus; 0 = <strong style="color:var(--green);">&minus;ln(h(x))</strong> &check;<br>
+          &bull; <strong>When y = 0:</strong> y becomes 0 &ensp;&rArr;&ensp; Cost = &minus;0 &minus; (1 &minus; 0) ln(1 &minus; h) = <strong style="color:var(--pink);">&minus;ln(1 &minus; h(x))</strong> &check;
+        </div>
+      </div>
+    </div>
+
+    <!-- Middle Board -->
+    <div class="math-board reveal" data-step="1" style="border-color:var(--blue); padding:14px 24px;">
+      <h4 style="color:var(--blue); font-size:18px; margin-bottom:6px;">Full Logistic Regression Cost Function J(<span class="math-sym">&theta;</span>)</h4>
+      <div class="formula-main math-flex" style="font-size:23px;">
+        J(<span class="math-sym">&theta;</span>) = &minus;
+        <span class="fraction-block">
+          <span class="fraction-top">1</span>
+          <span class="fraction-bottom">m</span>
+        </span>
+        &sum;<sub>i=1</sub><sup>m</sup> [ y<sup>(i)</sup> ln(h<sub><span class="math-sym">&theta;</span></sub>(x<sup>(i)</sup>)) + (1 &minus; y<sup>(i)</sup>) ln(1 &minus; h<sub><span class="math-sym">&theta;</span></sub>(x<sup>(i)</sup>)) ]
+      </div>
+      <p style="font-size:15px; color:var(--muted); margin-top:6px;">
+        Averages the log-loss across all <em>m</em> training examples. Minimizing J(<span class="math-sym">&theta;</span>) is equivalent to Maximum Likelihood Estimation!
+      </p>
+    </div>
+
+    <!-- Bottom Board -->
+    <div class="columns reveal" data-step="2">
+      <div class="math-board" style="border-color:var(--green);">
+        <h4 style="color:var(--green); font-size:18px; margin-bottom:6px;">Gradient Descent Parameter Update</h4>
+        <div style="font-size:15px; color:var(--muted); margin-bottom:4px;">repeat until convergence {</div>
+        <div class="formula-main math-flex" style="font-size:22px;">
+          <span class="math-sym">&theta;</span><sub>j</sub> := <span class="math-sym">&theta;</span><sub>j</sub> &minus;
+          <span class="fraction-block">
+            <span class="fraction-top">&alpha;</span>
+            <span class="fraction-bottom">m</span>
+          </span>
+          &sum;<sub>i=1</sub><sup>m</sup> (h<sub><span class="math-sym">&theta;</span></sub>(x<sup>(i)</sup>) &minus; y<sup>(i)</sup>) x<sub>j</sub><sup>(i)</sup>
+        </div>
+        <div style="font-size:15px; color:var(--neon); margin-top:6px;">(simultaneously update all <span class="math-sym">&theta;</span><sub>j</sub> for j = 0, 1, ..., n)</div>
+        <div style="font-size:15px; color:var(--muted); margin-top:4px;">}</div>
+      </div>
+
+      <div class="card pink reveal" data-step="3">
+        <h4 class="pink">Classic Exam Trap!</h4>
+        <p style="font-size:17px;">
+          This update equation looks <strong>identical to Linear Regression</strong>! What makes it fundamentally different is the definition of h<sub><span class="math-sym">&theta;</span></sub>(x):
+        </p>
+        <p style="font-size:17px; margin-top:6px; color:var(--ink);">
+          &bull; Linear Regression: <strong>h<sub><span class="math-sym">&theta;</span></sub>(x) = <span class="math-sym">&theta;</span><sup>T</sup>x</strong><br>
+          &bull; Logistic Regression: <strong>h<sub><span class="math-sym">&theta;</span></sub>(x) = 1 / (1 + e<sup>&minus;<span class="math-sym">&theta;</span><sup>T</sup>x</sup>)</strong> (Sigmoid!)
         </p>
       </div>
     </div>
-    <div class="divider">
-      <h3 class="muted" style="margin-bottom:20px;">Daily Life Examples</h3>
-      <div class="reveal card spam" data-step="2" style="margin-bottom:20px;">
-        <h4>📧 Email Filtering</h4>
-        <p>Predicting if a message is <strong>Spam (1)</strong> or <strong>Normal (0)</strong>.</p>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 9: Live Trace 2 — Log-Loss Cost Calculation
+       ====================================================================== -->
+  <section class="slide live-slide" data-live="cost">
+    <h2>Live Trace: How Log-Loss Penalizes Predictions</h2>
+    <p class="lead">Tracing Cost = &minus;y log(h) &minus; (1&minus;y) log(1&minus;h) across three cases (using natural log ln).</p>
+
+    <div class="live-grid">
+      <div class="table-container">
+        <table class="stats-table" id="cost-table">
+          <!-- Dynamically populated -->
+        </table>
+
+        <div class="math-board" style="padding:14px 20px;">
+          <div class="formula-main" id="cost-math-display" style="font-size:22px;">
+            Awaiting cost evaluation...
+          </div>
+        </div>
       </div>
-      <div class="reveal card bank" data-step="2">
-        <h4>💳 Fraud Detection</h4>
-        <p>Determining if a bank transaction is <strong>Fraudulent (1)</strong> or <strong>Normal (0)</strong>.</p>
+
+      <div class="calc-pane">
+        <div class="live-explanation" id="cost-explanation" aria-live="polite">
+          <!-- Step-by-step cost explanation text -->
+        </div>
+        <div class="card amber" id="cost-summary-card" style="margin-top:auto;">
+          <h4 class="amber">Asymptotic Penalty Insight</h4>
+          <p id="cost-summary-text" style="font-size:18px;">
+            Notice how Email 2 alone drives the total cost up to 1.307!
+          </p>
+        </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- Slide 3: What is Z? -->
-<section class="slide" data-steps="2">
-  <h2>Step 1: The Raw Score (z)</h2>
-  <p class="lead">Before we can calculate a probability, the model calculates a "Confidence Score".</p>
-  
-  <div class="math-board" style="margin-bottom: 30px; padding: 20px;">
-      <div class="formula-main" style="font-size: 50px; color:var(--blue);">
-          z = &theta;<sub>0</sub> + &theta;<sub>1</sub>x<sub>1</sub> + &theta;<sub>2</sub>x<sub>2</sub> ...
-      </div>
-  </div>
-
-  <div class="columns">
-      <div class="info-box reveal" data-step="1" style="border-color:var(--blue);">
-          <span class="badge" style="color:var(--blue); background:rgba(56, 189, 248, 0.15); border-color:rgba(56, 189, 248, 0.3);">What does this mean?</span>
-          <p><strong>z</strong> is simply the output of a standard linear equation. It is the dot product of your data features (<strong>x</strong>) and the model's trained weights (<strong>&theta;</strong>).</p>
-          <p style="margin-top: 15px;">It represents the model's raw, unbounded confidence.</p>
-      </div>
-      
-      <div class="info-box reveal example" data-step="2" style="border-color:var(--amber);">
-          <span class="badge" style="color:var(--amber); background:rgba(251, 191, 36, 0.15); border-color:rgba(251, 191, 36, 0.3);">Example: Spam Filter</span>
-          <p style="font-size:20px;">Imagine we are scoring an email:</p>
-          <ul style="font-size: 20px; color: var(--muted); margin-top: 10px; line-height: 1.6; padding-left: 20px;">
-              <li>Feature x<sub>1</sub>: Contains "Free Money" &rarr; Model Weight: <strong>+4.0</strong></li>
-              <li>Feature x<sub>2</sub>: Contains "Meeting" &rarr; Model Weight: <strong>-2.5</strong></li>
+  <!-- ======================================================================
+       SLIDE 10: Multiclass Classification — One-vs-All
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>Multiclass Classification: One-vs-All</h2>
+    <p class="lead">Extending binary logistic regression to 3 or more categories.</p>
+    <div class="columns">
+      <div>
+        <div class="info-box reveal" data-step="1">
+          <span class="badge">Definition &amp; Notation</span>
+          <p style="font-size:19px;">
+            Multiclass classification handles problems with more than two categories:
+          </p>
+          <ul style="font-size:18px; margin-top:6px;">
+            <li><strong>Email tagging:</strong> work, friends, family, hobby</li>
+            <li><strong>Medical diagnosis:</strong> not ill, cold, flu</li>
+            <li><strong>Weather:</strong> sunny, cloudy, rainy, snow</li>
           </ul>
-          <p style="font-size:20px; margin-top: 15px;">If an email has "Free Money", its <strong>z-score</strong> becomes highly positive. The model is very confident it is spam. But a score of +4.0 isn't a probability!</p>
-      </div>
-  </div>
-</section>
+          <p style="font-size:18px; margin-top:8px;">
+            Instead of y &in; {0, 1}, we have <strong>y &in; {0, 1, ..., n}</strong> (n+1 classes starting at 0, or K classes 1...K).
+          </p>
+        </div>
 
-<!-- Slide 4: The Sigmoid Function -->
-<section class="slide">
-  <h2>Step 2: The Sigmoid Function</h2>
-  <p class="lead">The mathematical engine that transforms the raw score (z) into a probability.</p>
-  <div class="curve-grid" style="grid-template-columns: 1fr 1fr;">
-    <div class="curve-visual">
-        <canvas id="canvas-sigmoid" width="600" height="400"></canvas>
-        <p style="position:absolute; top:30px; left:30px; font-size:24px; color:var(--muted);">Probability &rarr; 1</p>
-        <p style="position:absolute; bottom:30px; right:30px; font-size:24px; color:var(--muted);">Probability &rarr; 0</p>
-    </div>
-    <div class="curve-content" style="background:#111827; border: 1px solid var(--rule); border-radius:12px; padding:30px;">
-      
-      <div class="formula-main fraction-container" style="font-size:55px; color:var(--blue); margin: 20px auto 40px auto;">
-        <div>g(z) = </div><div class="fraction-block"><div class="fraction-top" style="border-color:var(--blue);">1</div><div>1 + e<sup>-z</sup></div></div>
+        <div class="card reveal" data-step="2" style="border-top-color:var(--blue);">
+          <h4 class="blue">How One-vs-All (One-vs-Rest) Works</h4>
+          <p style="font-size:18px;">
+            Train <strong>K separate binary classifiers</strong>: For each class <em>i</em>, treat class <em>i</em> as the positive class (1) and lump all other K&minus;1 classes combined into the negative class (0):
+          </p>
+          <div class="math-board" style="padding:10px; margin:10px 0 6px;">
+            <div class="formula-main" style="font-size:22px;">h<sub>&theta;</sub><sup>(i)</sup>(x) = P(y = i | x; &theta;)</div>
+          </div>
+        </div>
+
+        <div class="card green reveal" data-step="3">
+          <h4 class="green">Making a Final Prediction</h4>
+          <p style="font-size:17px;">
+            Run new input <em>x</em> through all K classifiers and choose the class <em>i</em> that outputs the highest probability score:
+          </p>
+          <div class="formula-main" style="font-size:22px; color:var(--green); text-align:center; margin-top:4px;">
+            prediction = max<sub>i</sub> h<sub><span class="math-sym">&theta;</span></sub><sup>(i)</sup>(x)
+          </div>
+          <div class="calc-box green-border" style="margin-top:8px;">
+            <div class="calc-title" style="color:var(--green);">Concrete 3-Class Calculation Example:</div>
+            <div style="font-size:15px;">
+              Input email <em>x</em> gives:
+              h<sup>(work)</sup> = <strong>0.15</strong>, &ensp;
+              h<sup>(friends)</sup> = <strong>0.78</strong>, &ensp;
+              h<sup>(hobby)</sup> = <strong>0.07</strong>.<br>
+              &rArr; <strong style="color:var(--green);">Pick Class 2 (Friends)</strong> with highest confidence (78%)!
+            </div>
+          </div>
+        </div>
       </div>
-      
-      <div class="info-box">
-        <span class="badge">How it squishes the score</span>
-        <ul style="font-size:22px; line-height:1.6; margin-top:10px; color:var(--muted); padding-left:25px;">
-            <li><strong style="color:var(--blue)">g(z)</strong>: The final predicted probability (0.0 to 1.0).</li>
-            <li><strong style="color:var(--ink)">z</strong>: The raw confidence score we just calculated.</li>
-            <li><strong style="color:var(--amber)">e</strong>: Euler's number (~2.718).</li>
-            <li>Notice the <strong>negative exponent (-z)</strong>. If the spam score (z) is a massive positive number (e.g., +10), e<sup>-10</sup> becomes basically 0. The fraction becomes 1/1, meaning <strong>100% Probability!</strong></li>
+
+      <div class="divider reveal" data-step="2">
+        <h3>One-vs-All Visual Architecture</h3>
+        <div class="curve-visual">
+          <canvas id="canvas-ova" width="560" height="420"></canvas>
+          <div class="canvas-caption">
+            Main 3-class dataset (left) split into 3 binary classifiers separating one class from the rest (right).
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 11: Underfitting vs. Overfitting
+       ====================================================================== -->
+  <section class="slide" data-steps="4">
+    <h2>The Problem of Overfitting &amp; Underfitting</h2>
+    <p class="lead">Finding the sweet spot between a model that is too simple and one that memorizes noise.</p>
+
+    <div class="columns-3">
+      <!-- Underfitting: Visible from Step 0 -->
+      <div class="card" style="border-top-color:var(--blue);">
+        <h4 class="blue">Underfitting (High Bias)</h4>
+        <div class="curve-visual" style="height:190px; padding:4px;">
+          <canvas id="canvas-fit-under" width="360" height="180"></canvas>
+        </div>
+        <div class="calc-box" style="padding:6px 10px; margin-top:8px;">
+          <strong>Model:</strong> y = <span class="math-sym">&theta;</span><sub>0</sub> + <span class="math-sym">&theta;</span><sub>1</sub>x (Linear)<br>
+          <em>Problem:</em> Too simple to capture curvature. High error on both training and test data!
+        </div>
+      </div>
+
+      <!-- Optimal Fit -->
+      <div class="card reveal" data-step="1" style="border-top-color:var(--green);">
+        <h4 class="green">Optimal Fit (Just Right)</h4>
+        <div class="curve-visual" style="height:190px; padding:4px;">
+          <canvas id="canvas-fit-good" width="360" height="180"></canvas>
+        </div>
+        <div class="calc-box green-border" style="padding:6px 10px; margin-top:8px;">
+          <strong>Model:</strong> y = <span class="math-sym">&theta;</span><sub>0</sub> + <span class="math-sym">&theta;</span><sub>1</sub>x + <span class="math-sym">&theta;</span><sub>2</sub>x² (Quadratic)<br>
+          <em>Success:</em> Captures underlying trend smoothly and <strong>generalizes well</strong> to unseen data!
+        </div>
+      </div>
+
+      <!-- Overfitting -->
+      <div class="card reveal" data-step="2" style="border-top-color:var(--pink);">
+        <h4 class="pink">Overfitting (High Variance)</h4>
+        <div class="curve-visual" style="height:190px; padding:4px;">
+          <canvas id="canvas-fit-over" width="360" height="180"></canvas>
+        </div>
+        <div class="calc-box pink-border" style="padding:6px 10px; margin-top:8px;">
+          <strong>Model:</strong> y = &sum;<sub>j=0</sub><sup>5</sup> <span class="math-sym">&theta;</span><sub>j</sub>x<sup>j</sup> (5th-Order)<br>
+          <em>Problem:</em> Fits noise (J &approx; 0), wiggles wildly, and fails completely on new data!
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Panel: 3 Solutions -->
+    <div class="card amber reveal" data-step="4" style="margin-top:20px;">
+      <h4 class="amber">Three Ways to Fix Overfitting</h4>
+      <p style="font-size:18px;">
+        1. <strong>Collect more training data</strong> (harder for a complex curve to overfit when constrained by many points).<br>
+        2. <strong>Reduce the number of features</strong> (manually choose features or use model selection algorithms&mdash;though you risk discarding useful signal).<br>
+        3. <strong>Regularization:</strong> Keep all features, but <strong>reduce the magnitude of parameters &theta;<sub>j</sub></strong>. (Ideal when many features each contribute slightly!).
+      </p>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 12: Regularization Intuition & Formula
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>Regularization: Shrinking Parameters Without Deleting Features</h2>
+    <p class="lead">Adding a penalty term to the cost function forces parameters &theta;₁...&theta;ₙ to stay small.</p>
+
+    <div class="columns">
+      <div>
+        <div class="info-box" style="border-color:var(--amber);">
+          <span class="badge" style="color:var(--amber); background:var(--amberwash);">Intuition Example</span>
+          <p style="font-size:18px;">
+            Suppose a 4th-order polynomial <span class="math-sym">&theta;</span><sub>0</sub> + <span class="math-sym">&theta;</span><sub>1</sub>x + <span class="math-sym">&theta;</span><sub>2</sub>x² + <span class="math-sym">&theta;</span><sub>3</sub>x³ + <span class="math-sym">&theta;</span><sub>4</sub>x⁴ is overfitting, and we want it to behave like a smooth quadratic without manually discarding features:
+          </p>
+          <div class="math-board" style="padding:10px; margin:10px 0 6px;">
+            <div class="formula-main math-flex" style="font-size:20px;">
+              min<sub><span class="math-sym">&theta;</span></sub>
+              <span class="fraction-block"><span class="fraction-top">1</span><span class="fraction-bottom">2m</span></span>
+              &sum; (h - y)² + <strong>1000&middot;<span class="math-sym">&theta;</span><sub>3</sub>²</strong> + <strong>1000&middot;<span class="math-sym">&theta;</span><sub>4</sub>²</strong>
+            </div>
+          </div>
+          <p style="font-size:16px; color:var(--muted);">
+            To minimize this total cost, Gradient Descent is forced to shrink <span class="math-sym">&theta;</span>₃ &approx; 0 and <span class="math-sym">&theta;</span>₄ &approx; 0, flattening out wild oscillations!
+          </p>
+        </div>
+
+        <div class="reveal" data-step="3">
+          <div class="card pink">
+            <h4 class="pink">Warning: What if &lambda; Is Too Large?</h4>
+            <p style="font-size:18px;">
+              If &lambda; is set to a massive value (e.g., &lambda; = 10,000), it crushes all &theta;₁, &theta;₂, ..., &theta;<sub>n</sub> &rarr; 0, leaving:
+            </p>
+            <div class="formula-main" style="font-size:22px; color:var(--pink); text-align:center; margin:8px 0;">
+              h<sub>&theta;</sub>(x) &approx; &theta;<sub>0</sub>
+            </div>
+            <p style="font-size:18px; color:var(--muted);">
+              This produces a flat horizontal line, causing severe <strong>underfitting (high bias)</strong>!
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider reveal" data-step="2">
+        <h3>General Regularized Cost Function</h3>
+        <div class="math-board" style="border-color:var(--blue); padding:18px 24px;">
+          <div class="formula-main math-flex" style="font-size:24px;">
+            min<sub>&theta;</sub>
+            <span class="fraction-block"><span class="fraction-top">1</span><span class="fraction-bottom">2m</span></span>
+            [ &sum;<sub>i=1</sub><sup>m</sup> (h<sub>&theta;</sub>(x<sup>(i)</sup>) &minus; y<sup>(i)</sup>)<sup>2</sup> + 
+            &lambda; &sum;<sub>j=1</sub><sup>n</sup> &theta;<sub>j</sub><sup>2</sup> ]
+          </div>
+        </div>
+
+        <div class="card green" style="margin-top:14px;">
+          <h4 class="green">&lambda; (Lambda &mdash; Regularization Parameter)</h4>
+          <p style="font-size:18px;">
+            Controls the trade-off between two competing goals:<br>
+            1. <strong>Fitting the training data well</strong> (first term).<br>
+            2. <strong>Keeping parameters &theta;<sub>j</sub> small</strong> so the hypothesis stays smooth and simple (second term).
+          </p>
+        </div>
+
+        <div class="card amber" style="margin-top:14px;">
+          <h4 class="amber">Why &sum;<sub>j=1</sub><sup>n</sup> (Excluding &theta;<sub>0</sub>)?</h4>
+          <p style="font-size:18px;">
+            By convention, we do <strong>not</strong> penalize the bias/intercept &theta;<sub>0</sub>! Shifting the baseline height of a function does not cause wavy overfitting.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 13: Regularized Linear & Logistic Regression
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>Regularized Gradient Descent &amp; Weight Decay</h2>
+    <p class="lead">How &lambda; modifies the update equations for both Linear and Logistic Regression.</p>
+
+    <!-- Top: Separated Updates visible from Step 0 -->
+    <div class="columns">
+      <div class="math-board">
+        <h4 style="color:var(--muted); font-size:18px; margin-bottom:6px;">Bias Parameter <span class="math-sym">&theta;</span><sub>0</sub> (Unpenalized)</h4>
+        <div class="formula-main math-flex" style="font-size:22px;">
+          <span class="math-sym">&theta;</span><sub>0</sub> := <span class="math-sym">&theta;</span><sub>0</sub> &minus; &alpha;
+          <span class="fraction-block"><span class="fraction-top">1</span><span class="fraction-bottom">m</span></span>
+          &sum;<sub>i=1</sub><sup>m</sup> (h<sub><span class="math-sym">&theta;</span></sub>(x<sup>(i)</sup>) &minus; y<sup>(i)</sup>) x<sub>0</sub><sup>(i)</sup>
+        </div>
+      </div>
+
+      <div class="math-board" style="border-color:var(--blue);">
+        <h4 style="color:var(--blue); font-size:18px; margin-bottom:6px;">Feature Weights <span class="math-sym">&theta;</span><sub>j</sub> (j &ge; 1)</h4>
+        <div class="formula-main math-flex" style="font-size:21px;">
+          <span class="math-sym">&theta;</span><sub>j</sub> := <span class="math-sym">&theta;</span><sub>j</sub> &minus; &alpha; [ (
+          <span class="fraction-block"><span class="fraction-top">1</span><span class="fraction-bottom">m</span></span>
+          &sum; (h - y) x<sub>j</sub> ) + 
+          <span class="fraction-block"><span class="fraction-top">&lambda;</span><span class="fraction-bottom">m</span></span> <span class="math-sym">&theta;</span><sub>j</sub> ]
+        </div>
+      </div>
+    </div>
+
+    <!-- Weight Decay Form -->
+    <div class="math-board reveal" data-step="2" style="border-color:var(--green); margin-top:14px; padding:16px 24px;">
+      <h4 style="color:var(--green); font-size:18px; margin-bottom:6px;">Weight Decay Form (Factoring Out &theta;<sub>j</sub>)</h4>
+      <div class="formula-main math-flex" style="font-size:23px;">
+        &theta;<sub>j</sub> := &theta;<sub>j</sub> ( 1 &minus; &alpha;
+        <span class="fraction-block"><span class="fraction-top">&lambda;</span><span class="fraction-bottom">m</span></span>
+        ) &minus; &alpha;
+        <span class="fraction-block"><span class="fraction-top">1</span><span class="fraction-bottom">m</span></span>
+        &sum;<sub>i=1</sub><sup>m</sup> (h<sub>&theta;</sub>(x<sup>(i)</sup>) &minus; y<sup>(i)</sup>) x<sub>j</sub><sup>(i)</sup>
+      </div>
+      <p style="font-size:17px; color:var(--muted); margin-top:8px;">
+        Because &alpha;, &lambda;, m &gt; 0, the factor <strong>(1 &minus; &alpha;&lambda;/m) is strictly less than 1</strong> (e.g., 0.99). On every single iteration, &theta;<sub>j</sub> is gently shrunk toward zero before subtracting the error gradient!
+      </p>
+    </div>
+
+    <!-- Regularized Logistic Regression -->
+    <div class="card reveal" data-step="3" style="border-top-color:var(--neon); margin-top:14px;">
+      <h4 class="neon">Regularized Logistic Regression Cost Function</h4>
+      <div class="math-board" style="padding:12px 20px; margin:8px 0;">
+        <div class="formula-main math-flex" style="font-size:22px;">
+          J(&theta;) = &minus;
+          <span class="fraction-block"><span class="fraction-top">1</span><span class="fraction-bottom">m</span></span>
+          &sum;<sub>i=1</sub><sup>m</sup> [ y<sup>(i)</sup> log(h(x<sup>(i)</sup>)) + (1 &minus; y<sup>(i)</sup>) log(1 &minus; h(x<sup>(i)</sup>)) ] + 
+          <span class="fraction-block"><span class="fraction-top">&lambda;</span><span class="fraction-bottom">2m</span></span>
+          &sum;<sub>j=1</sub><sup>n</sup> &theta;<sub>j</sub><sup>2</sup>
+        </div>
+      </div>
+      <p style="font-size:18px;">
+        The regularization sum starts at <strong>j = 1</strong> to exclude &theta;<sub>0</sub> from &theta; = [&theta;₀, &theta;₁, ..., &theta;<sub>n</sub>]<sup>T</sup>. Its Gradient Descent update rule is identical to regularized linear regression above, with <strong>h<sub>&theta;</sub>(x) = 1 / (1 + e<sup>&minus;&theta;<sup>T</sup>x</sup>)</strong>.
+      </p>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 14: Live Trace 3 — Seeing Regularization & Weight Decay in Action
+       ====================================================================== -->
+  <section class="slide live-slide" data-live="reg">
+    <h2>Live Trace: Regularized Cost &amp; Weight Decay</h2>
+    <p class="lead">Comparing unregularized vs. regularized cost and observing one weight decay step (m = 10, &alpha; = 0.1).</p>
+
+    <div class="live-grid">
+      <div class="table-container">
+        <table class="stats-table" id="reg-table">
+          <!-- Dynamically populated -->
+        </table>
+
+        <div class="math-board" style="padding:14px 20px;">
+          <div class="formula-main" id="reg-math-display" style="font-size:22px;">
+            Awaiting regularization calculation...
+          </div>
+        </div>
+      </div>
+
+      <div class="calc-pane">
+        <div class="live-explanation" id="reg-explanation" aria-live="polite">
+          <!-- Step-by-step regularization text -->
+        </div>
+        <div class="card green" id="reg-summary-card" style="margin-top:auto;">
+          <h4 class="green">Optimizer Choice</h4>
+          <p id="reg-summary-text" style="font-size:18px;">
+            Notice how regularized cost penalizes overfit parameters (250.020 vs 1.150)!
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 15: Exam Recap & Thank You
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>Exam Recap &amp; Key Takeaways</h2>
+    <p class="lead">Thank you! Review these three pillars before your exam.</p>
+
+    <div class="columns-3">
+      <!-- Pillar 1: Visible from Step 0 -->
+      <div class="card" style="border-top-color:var(--blue);">
+        <h4 class="blue">1. Binary &amp; Multiclass</h4>
+        <ul style="font-size:18px; margin-top:8px;">
+          <li><strong>Sigmoid:</strong> g(z) = 1 / (1 + e<sup>&minus;z</sup>) bounds predictions to (0, 1) as P(y=1|x;<span class="math-sym">&theta;</span>).</li>
+          <li><strong>Decision Boundary:</strong> <span class="math-sym">&theta;</span><sup>T</sup>x &ge; 0 &rArr; predict y = 1. Linear or curved with polynomials.</li>
+          <li><strong>One-vs-All:</strong> Train K binary classifiers; choose max<sub>i</sub> h<sub><span class="math-sym">&theta;</span></sub><sup>(i)</sup>(x).</li>
+        </ul>
+      </div>
+
+      <!-- Pillar 2 -->
+      <div class="card reveal" data-step="1" style="border-top-color:var(--amber);">
+        <h4 class="amber">2. Convex Log-Loss &amp; GD</h4>
+        <ul style="font-size:18px; margin-top:8px;">
+          <li><strong>Why Not MSE:</strong> Sigmoid in MSE creates wavy local minima.</li>
+          <li><strong>Log-Loss:</strong> &minus;y ln(h) &minus; (1&minus;y) ln(1&minus;h) provides a strictly convex bowl.</li>
+          <li><strong>Update Rule:</strong> Looks identical to Linear Regression, but h<sub><span class="math-sym">&theta;</span></sub>(x) uses the Sigmoid!</li>
+        </ul>
+      </div>
+
+      <!-- Pillar 3 -->
+      <div class="card reveal" data-step="2" style="border-top-color:var(--green);">
+        <h4 class="green">3. Regularization &amp; Fit</h4>
+        <ul style="font-size:18px; margin-top:8px;">
+          <li><strong>Overfitting (High Variance):</strong> Fits training noise closely, fails on new data.</li>
+          <li><strong>Penalty:</strong> Add +(&lambda;/2m) &sum;<sub>j=1</sub><sup>n</sup> <span class="math-sym">&theta;</span><sub>j</sub><sup>2</sup> (never penalize <span class="math-sym">&theta;</span><sub>0</sub>!).</li>
+          <li><strong>Weight Decay:</strong> (1 &minus; &alpha;&lambda;/m) shrinks weights toward zero on every step.</li>
         </ul>
       </div>
     </div>
-  </div>
-</section>
 
-<!-- Slide 5: Live Prediction Trace -->
-<section class="slide live-slide" data-live="prediction">
-  <h2>Live Prediction: Decision Boundary</h2>
-  <p class="lead">How the algorithm translates probabilities into discrete classifications.</p>
-  <div class="live-grid">
-    <div class="table-container" id="pred-table-container"></div>
-    <div class="calc-pane">
-      <div class="live-explanation" id="pred-explanation"></div>
-      <div class="math-board" id="pred-math"></div>
+    <div class="card neon reveal" data-step="3" style="margin-top:30px; text-align:center; padding:22px; border-top-color:var(--neon);">
+      <h3 style="color:var(--neon); font-size:26px;">Thank You! &mdash; Machine Learning &amp; Expert Systems (CS463)</h3>
+      <p style="font-size:19px; color:var(--muted); margin-top:6px;">
+        Course Instructor: Dr. Shafaq Mussadiq &bull; Institute of Computing, Kohat University of Science &amp; Technology
+      </p>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- Slide 6: The Cost Function Graph -->
-<section class="slide">
-  <h2>The Cost Function: Why we use Logarithms</h2>
-  <p class="lead">To train the model, we must calculate its error (Cost). A standard average doesn't work.</p>
-  <div class="curve-grid">
-    <div class="curve-content">
-      <div class="info-box" style="border-color:var(--pink);">
-        <span class="badge" style="color:var(--pink); background:rgba(244,63,94,0.15); border-color:rgba(244,63,94,0.3);">The Problem with MSE</span>
-        <p>If we use Standard Linear Cost (Mean Squared Error) with the Sigmoid function, the error graph becomes "wavy" (Non-Convex) with many fake local minimums. Gradient Descent gets trapped.</p>
-      </div>
-      <div class="info-box" style="border-color:var(--green);">
-        <span class="badge" style="color:var(--green); background:rgba(52,211,153,0.15); border-color:rgba(52,211,153,0.3);">The Logarithmic Fix</span>
-        <p>By using Logarithms, the error graph forms a smooth, perfect bowl (Convex). It mathematically <strong>forces a massive penalty</strong> if the model is highly confident but wrong.</p>
-      </div>
-      <div class="formula-main" style="font-size:35px; margin-top:20px; text-align:center;">
-        <div style="color:var(--ink); margin-bottom:15px;">Cost(Pred, y) = </div>
-        <div style="color:var(--green); margin-bottom:10px;">-log( Pred ) <span style="font-size:22px; color:var(--muted);">if true class y = 1</span></div>
-        <div style="color:var(--pink);">-log( 1 - Pred ) <span style="font-size:22px; color:var(--muted);">if true class y = 0</span></div>
-      </div>
+  <!-- ======================================================================
+       BOTTOM NAVIGATION CONTROLS
+       ====================================================================== -->
+  <div id="nav">
+    <button class="nav-btn" id="btn-prev" aria-label="Previous step or slide">
+      <span>&larr;</span> Previous
+    </button>
+    <div class="nav-center">
+      <div class="slide-number" id="counter" aria-live="polite">1 / 15</div>
+      <div class="step-indicator" id="step-info">Cover</div>
     </div>
-    <div class="curve-visual">
-        <canvas id="canvas-cost" width="550" height="450"></canvas>
-        <p style="font-size:20px; color:var(--muted); margin-top:20px;">X-Axis: Model Prediction (Probability). Y-Axis: Cost (Penalty).</p>
-    </div>
-  </div>
-</section>
-
-<!-- Slide 7: Live Cost Trace -->
-<section class="slide live-slide" data-live="cost">
-  <h2>Live Cost Calculation</h2>
-  <p class="lead">Let's see exactly how logarithms penalize wrong predictions mathematically.</p>
-  <div class="live-grid">
-    <div class="table-container" id="cost-table-container"></div>
-    <div class="calc-pane">
-      <div class="live-explanation" id="cost-explanation"></div>
-      <div class="math-board" id="cost-math"></div>
-    </div>
-  </div>
-</section>
-
-<!-- Slide 8: Overfitting and Regularization -->
-<section class="slide" data-steps="4">
-  <h2>Managing Model Accuracy</h2>
-  <p class="lead">Balancing the complexity of the math to ensure it generalizes to real-world data.</p>
-  
-  <div class="columns" style="gap:20px; margin-top:10px; grid-template-columns: 1fr 1fr 1fr;">
-    <div class="curve-visual reveal" data-step="1" style="height: 280px; padding:10px;">
-        <h4 style="color:var(--amber); margin-bottom:10px; font-size:24px;">Underfitting (High Bias)</h4>
-        <canvas id="canvas-under" width="300" height="180"></canvas>
-        <p style="font-size:16px; color:var(--muted); text-align:center; margin-top:10px;">Model is too simple. Misses the trend.</p>
-    </div>
-    <div class="curve-visual reveal" data-step="2" style="height: 280px; padding:10px;">
-        <h4 style="color:var(--green); margin-bottom:10px; font-size:24px;">Optimal Fit</h4>
-        <canvas id="canvas-optimal" width="300" height="180"></canvas>
-        <p style="font-size:16px; color:var(--muted); text-align:center; margin-top:10px;">Captures the structure nicely.</p>
-    </div>
-    <div class="curve-visual reveal" data-step="3" style="height: 280px; padding:10px;">
-        <h4 style="color:var(--pink); margin-bottom:10px; font-size:24px;">Overfitting (High Variance)</h4>
-        <canvas id="canvas-over" width="300" height="180"></canvas>
-        <p style="font-size:16px; color:var(--muted); text-align:center; margin-top:10px;">Too complex. Memorizes noise.</p>
-    </div>
+    <button class="nav-btn" id="btn-next" aria-label="Next step or slide">
+      Next <span>&rarr;</span>
+    </button>
   </div>
 
-  <div class="reveal rule" data-step="4" style="margin-top:30px;">
-    <h3 class="blue">The Solution: Regularization</h3>
-    <div style="display:flex; gap: 40px; align-items:center; margin-top:20px;">
-        <div style="flex:1;">
-            <p style="font-size: 24px;">We add a penalty parameter <strong>(&lambda; Lambda)</strong> to the Cost Function. It artificially shrinks the model's weights (&theta;), forcing wildly curved boundaries (overfitting) to smooth out.</p>
-        </div>
-        <div class="math-board" style="flex:1.2; padding: 25px;">
-            <div class="formula-main math-flex" style="font-size:40px;">
-                <div>Cost + </div>
-                <div class="fraction-container" style="font-size:35px;">
-                    <div class="fraction-block">
-                        <div class="fraction-top" style="border-color:var(--blue); color:var(--blue);">&lambda;</div>
-                        <div>2m</div>
-                    </div>
-                </div>
-                <div> &sum; &theta;<sub>j</sub><sup>2</sup></div>
-            </div>
-        </div>
-    </div>
-  </div>
-</section>
-
-<div class="slide-number" id="counter" aria-label="Slide number"></div>
 </main>
 
+<!-- ==========================================================================
+     JAVASCRIPT LOGIC: NAVIGATION, LIVE TRACES & CANVAS VISUALS
+     ========================================================================== -->
 <script>
-'use strict';
 const $ = id => document.getElementById(id);
 
-// ==========================================
-// 1. LIVE PREDICTION TRACE LOGIC
-// ==========================================
-const PRED_DATA = [
-  { item: "Email A", z: 3.4 },
-  { item: "Email B", z: -2.1 },
-  { item: "Email C", z: 0.1 }
+// ==========================================================================
+// 1. LIVE TRACE 1: DECISION BOUNDARY & PROBABILITY (SLIDE 6)
+// ==========================================================================
+const BOUNDARY_DATA = [
+  { name: 'Patient A', x1: 3, x2: 2 },
+  { name: 'Patient B', x1: 1, x2: 1 },
+  { name: 'Patient C', x1: 2, x2: 1 }
 ];
 
-function buildPredictionTrace() {
-  let trace = [];
-  
-  trace.push({
-    step: 0, hlRow: -1,
-    exp: `<strong>Step 1: The Raw Input (z)</strong><br><br>Let's process 3 emails. The algorithm multiplied their features by our trained weights to calculate these raw linear scores (<strong>z</strong>).`,
-    math: `<div class="formula-main" style="font-size:45px; color:var(--muted);">z = &theta;<sup>T</sup>x</div>`
-  });
+const BOUNDARY_TRACE = [
+  {
+    step: 0,
+    desc: 'Setup: &theta;₀ = -3, &theta;₁ = 1, &theta;₂ = 1 &bull; Boundary is x₁ + x₂ = 3',
+    math: 'Decision Rule: Predict y = 1 if &theta;ᵀx &ge; 0 (i.e. x₁ + x₂ &ge; 3)',
+    exp: `<strong>Setup: Model &amp; Decision Boundary</strong><br><br>
+          We are evaluating three patients using parameters <strong>&theta; = [&minus;3, 1, 1]<sup>T</sup></strong>.<br>
+          The decision boundary is: <strong>&minus;3 + x₁ + x₂ = 0 &hArr; x₁ + x₂ = 3</strong>.<br><br>
+          Press <strong>Next</strong> to calculate the raw score <strong>z = &theta;<sup>T</sup>x</strong> for Patient A.`,
+    pA: { z: '-', prob: '-', pred: '-' },
+    pB: { z: '-', prob: '-', pred: '-' },
+    pC: { z: '-', prob: '-', pred: '-' }
+  },
+  {
+    step: 1,
+    desc: 'Patient A: Calculate raw score z',
+    math: 'Patient A: z = &minus;3 + (1)(3) + (1)(2) = &minus;3 + 5 = +2',
+    exp: `<strong>Step 1: Patient A Raw Score (x₁ = 3, x₂ = 2)</strong><br><br>
+          Calculate linear score <strong>z = &minus;3 + 3 + 2 = +2</strong>.<br>
+          Since <strong>z = +2 &ge; 0</strong> (and x₁ + x₂ = 5 &ge; 3), Patient A lies well inside the positive class region!`,
+    pA: { z: '+2', prob: '-', pred: '-' },
+    pB: { z: '-', prob: '-', pred: '-' },
+    pC: { z: '-', prob: '-', pred: '-' }
+  },
+  {
+    step: 2,
+    desc: 'Patient B: Calculate raw score z',
+    math: 'Patient B: z = &minus;3 + (1)(1) + (1)(1) = &minus;3 + 2 = &minus;1',
+    exp: `<strong>Step 2: Patient B Raw Score (x₁ = 1, x₂ = 1)</strong><br><br>
+          Calculate linear score <strong>z = &minus;3 + 1 + 1 = &minus;1</strong>.<br>
+          Since <strong>z = &minus;1 &lt; 0</strong> (and x₁ + x₂ = 2 &lt; 3), Patient B lies on the negative class side of the boundary.`,
+    pA: { z: '+2', prob: '-', pred: '-' },
+    pB: { z: '&minus;1', prob: '-', pred: '-' },
+    pC: { z: '-', prob: '-', pred: '-' }
+  },
+  {
+    step: 3,
+    desc: 'Patient C: Calculate raw score z',
+    math: 'Patient C: z = &minus;3 + (1)(2) + (1)(1) = &minus;3 + 3 = 0',
+    exp: `<strong>Step 3: Patient C Raw Score (x₁ = 2, x₂ = 1)</strong><br><br>
+          Calculate linear score <strong>z = &minus;3 + 2 + 1 = 0</strong>.<br>
+          Since <strong>x₁ + x₂ = 3</strong>, Patient C sits <em>exactly on the decision boundary</em>!`,
+    pA: { z: '+2', prob: '-', pred: '-' },
+    pB: { z: '&minus;1', prob: '-', pred: '-' },
+    pC: { z: '0', prob: '-', pred: '-' }
+  },
+  {
+    step: 4,
+    desc: 'Patient A: Sigmoid Probability & Classification',
+    math: 'g(2) = 1 / (1 + e⁻²) &approx; 0.881 &ge; 0.5 &rArr; y = 1',
+    exp: `<strong>Step 4: Patient A Probability g(+2)</strong><br><br>
+          Pass z = +2 through Sigmoid:<br>
+          <strong>h<sub>&theta;</sub>(x) = 1 / (1 + e<sup>&minus;2</sup>) = 0.881</strong>.<br><br>
+          There is an <strong>88.1% probability</strong> of malignancy! Since 0.881 &ge; 0.5, we predict <strong>y = 1 (Malignant)</strong>.`,
+    pA: { z: '+2', prob: '0.881', pred: 'y = 1' },
+    pB: { z: '&minus;1', prob: '-', pred: '-' },
+    pC: { z: '0', prob: '-', pred: '-' }
+  },
+  {
+    step: 5,
+    desc: 'Patient B: Sigmoid Probability & Classification',
+    math: 'g(-1) = 1 / (1 + e¹) &approx; 0.269 < 0.5 &rArr; y = 0',
+    exp: `<strong>Step 5: Patient B Probability g(&minus;1)</strong><br><br>
+          Pass z = &minus;1 through Sigmoid:<br>
+          <strong>h<sub>&theta;</sub>(x) = 1 / (1 + e<sup>1</sup>) = 0.269</strong>.<br><br>
+          Only a <strong>26.9% probability</strong> of malignancy (73.1% benign). Since 0.269 &lt; 0.5, we predict <strong>y = 0 (Benign)</strong>.`,
+    pA: { z: '+2', prob: '0.881', pred: 'y = 1' },
+    pB: { z: '&minus;1', prob: '0.269', pred: 'y = 0' },
+    pC: { z: '0', prob: '-', pred: '-' }
+  },
+  {
+    step: 6,
+    desc: 'Patient C: Sigmoid Probability & Classification',
+    math: 'g(0) = 1 / (1 + e⁰) = 1 / (1 + 1) = 0.500 &ge; 0.5 &rArr; y = 1',
+    exp: `<strong>Step 6: Patient C Probability g(0)</strong><br><br>
+          Pass z = 0 through Sigmoid:<br>
+          <strong>h<sub>&theta;</sub>(x) = 1 / (1 + 1) = 0.500 (50.0%)</strong>.<br><br>
+          Right on the threshold! By convention, <strong>h<sub>&theta;</sub>(x) &ge; 0.5 predicts y = 1</strong>.`,
+    pA: { z: '+2', prob: '0.881', pred: 'y = 1' },
+    pB: { z: '&minus;1', prob: '0.269', pred: 'y = 0' },
+    pC: { z: '0', prob: '0.500', pred: 'y = 1' }
+  }
+];
 
-  PRED_DATA.forEach((row, i) => {
-    let prob = (1 / (1 + Math.exp(-row.z))).toFixed(3);
-    trace.push({
-      step: 1, gRows: i, hlRow: i, hlCol: 'g',
-      exp: `<strong>Step 2: Squishing to Probability</strong><br><br>Applying the Sigmoid function to ${row.item}.<br><br>The raw score <strong>z = ${row.z}</strong> becomes a probability of <strong>${prob}</strong> (${(prob*100).toFixed(1)}%).`,
-      math: `<div class="formula-main math-flex" style="font-size:40px;">
-              <div>g(${row.z}) = </div>
-              <div class="fraction-container">
-                  <div class="fraction-block"><div class="fraction-top" style="border-color:var(--blue);">1</div><div>1 + e<sup>-(${row.z})</sup></div></div>
-              </div>
-              <div> = <span style="color:var(--blue);">${prob}</span></div>
-            </div>`
-    });
-  });
+function renderBoundaryLive(stepIdx) {
+  const t = BOUNDARY_TRACE[stepIdx];
+  let html = `
+    <tr>
+      <th>Patient</th>
+      <th>Features (x₁, x₂)</th>
+      <th>Raw Score z = &minus;3 + x₁ + x₂</th>
+      <th>Probability h<sub>&theta;</sub>(x) = g(z)</th>
+      <th>Prediction</th>
+    </tr>
+    <tr class="${stepIdx === 1 || stepIdx === 4 ? 'hl-row' : ''}">
+      <td>Patient A</td>
+      <td>(3, 2)</td>
+      <td class="${stepIdx >= 1 ? 'hl-cell-blue' : ''}">${t.pA.z}</td>
+      <td class="${stepIdx >= 4 ? 'hl-cell-green' : ''}">${t.pA.prob}</td>
+      <td class="${stepIdx >= 4 ? 'hl-cell-green' : ''}">${t.pA.pred}</td>
+    </tr>
+    <tr class="${stepIdx === 2 || stepIdx === 5 ? 'hl-row' : ''}">
+      <td>Patient B</td>
+      <td>(1, 1)</td>
+      <td class="${stepIdx >= 2 ? 'hl-cell-amber' : ''}">${t.pB.z}</td>
+      <td class="${stepIdx >= 5 ? 'hl-cell-pink' : ''}">${t.pB.prob}</td>
+      <td class="${stepIdx >= 5 ? 'hl-cell-pink' : ''}">${t.pB.pred}</td>
+    </tr>
+    <tr class="${stepIdx === 3 || stepIdx === 6 ? 'hl-row' : ''}">
+      <td>Patient C</td>
+      <td>(2, 1)</td>
+      <td class="${stepIdx >= 3 ? 'hl-cell-neon' : ''}">${t.pC.z}</td>
+      <td class="${stepIdx >= 6 ? 'hl-cell-blue' : ''}">${t.pC.prob}</td>
+      <td class="${stepIdx >= 6 ? 'hl-cell-blue' : ''}">${t.pC.pred}</td>
+    </tr>
+  `;
 
-  trace.push({
-    step: 2, gRows: 2, hlRow: -1,
-    exp: `<strong>Step 3: The Decision Boundary</strong><br><br>Probabilities are great, but the user just wants to know: Is it Spam (1) or Not (0)?<br><br>We apply a threshold boundary. Usually, if the probability is <strong>&ge; 0.5</strong>, we classify it as 1.`,
-    math: `<div class="formula-main" style="font-size:45px;">
-            <div style="color:var(--red);">If g(z) &ge; 0.5 &rarr; y = 1</div>
-            <div style="color:var(--green); margin-top:10px;">If g(z) < 0.5 &rarr; y = 0</div>
-           </div>`
-  });
-
-  PRED_DATA.forEach((row, i) => {
-    let prob = 1 / (1 + Math.exp(-row.z));
-    let classification = prob >= 0.5 ? 1 : 0;
-    let color = classification === 1 ? 'var(--red)' : 'var(--green)';
-    let text = classification === 1 ? 'Spam (1)' : 'Normal (0)';
-    
-    trace.push({
-      step: 3, gRows: 2, cRows: i, hlRow: i, hlCol: 'c',
-      exp: `<strong>Step 4: Classification</strong><br><br>Because the probability is <strong>${prob.toFixed(3)}</strong>, it is ${prob>=0.5?'&ge;':'<'} 0.5.<br><br>Therefore, it crosses the boundary into class <strong>${classification}</strong>.`,
-      math: `<div class="formula-main" style="font-size:55px; color:${color};">${text}</div>`
-    });
-  });
-
-  return trace;
+  $('boundary-table').innerHTML = html;
+  $('boundary-math-display').innerHTML = t.math;
+  $('boundary-explanation').innerHTML = t.exp;
+  $('boundary-summary-text').innerHTML = `Step ${stepIdx} of 6 &bull; ${t.desc}`;
 }
-const PRED_TRACE = buildPredictionTrace();
 
-function renderPredictionLive(step) {
-  const t = PRED_TRACE[step];
-  // Table headers always visible
-  let tableHTML = `<table class="stats-table"><tr><th>Data Item</th><th>Raw Score (z)</th><th>Probability g(z)</th><th>Classification</th></tr>`;
-  
-  PRED_DATA.forEach((r, i) => {
-    let isRowHl = (t.hlRow === i);
-    let gVis = t.step >= 1 && i <= t.gRows;
-    let cVis = t.step >= 3 && i <= t.cRows;
-    let prob = 1 / (1 + Math.exp(-r.z));
-    let cls = prob >= 0.5 ? 1 : 0;
-    
-    let gCellClass = (isRowHl && t.hlCol==='g') ? 'hl-cell-blue' : '';
-    let cCellClass = (isRowHl && t.hlCol==='c') ? (cls===1 ? 'hl-cell-red' : 'hl-cell-green') : '';
-    let cText = cls === 1 ? 'Spam (1)' : 'Normal (0)';
-    
-    // Instead of completely hiding the cell and breaking borders, we just hide the text if not reached yet.
-    tableHTML += `<tr class="${isRowHl ? 'hl-row' : ''}">
-      <td>${r.item}</td>
-      <td>${r.z}</td>
-      <td class="${gCellClass}"><span class="${!gVis ? 'invisible' : ''}">${gVis ? prob.toFixed(3) : '0.000'}</span></td>
-      <td class="${cCellClass}"><span class="${!cVis ? 'invisible' : ''}">${cVis ? cText : 'Pending'}</span></td>
-    </tr>`;
-  });
-  tableHTML += `</table>`;
-  
-  $('pred-table-container').innerHTML = tableHTML;
-  $('pred-explanation').innerHTML = t.exp;
-  $('pred-math').innerHTML = t.math;
-}
-
-// ==========================================
-// 2. LIVE COST CALCULATION LOGIC
-// ==========================================
+// ==========================================================================
+// 2. LIVE TRACE 2: LOG-LOSS COST CALCULATION (SLIDE 9)
+// ==========================================================================
 const COST_DATA = [
-  { item: "Email 1", trueClass: 1, pred: 0.99, scenario: "Confident & Correct" },
-  { item: "Email 2", trueClass: 1, pred: 0.10, scenario: "Confident but Wrong!" },
-  { item: "Email 3", trueClass: 0, pred: 0.80, scenario: "Wrong the other way!" }
+  { item: 'Email 1', y: 1, h: 0.99, desc: 'Confident & Correct' },
+  { item: 'Email 2', y: 1, h: 0.10, desc: 'Confident & Wrong!' },
+  { item: 'Email 3', y: 0, h: 0.80, desc: 'Wrong the Other Way!' }
 ];
 
-function buildCostTrace() {
-  let trace = [];
-  
-  trace.push({
-    hlRow: -1,
-    exp: `<strong>The Setup</strong><br><br>Here we have 3 emails. We know their <strong>True Class (y)</strong>, and we have the probability our model <strong>Predicted</strong>.<br><br>Let's calculate the Cost penalty for each.`,
-    math: `<div class="formula-main" style="font-size:35px; text-align:left; display:inline-block;">
-            <div style="color:var(--green); margin-bottom:10px;">Cost = -log( Pred ) <span style="font-size:20px; color:var(--muted);">if y = 1</span></div>
-            <div style="color:var(--pink);">Cost = -log( 1 - Pred ) <span style="font-size:20px; color:var(--muted);">if y = 0</span></div>
-           </div>`
-  });
+const COST_TRACE = [
+  {
+    step: 0,
+    desc: 'Setup: Formula Cost = &minus;y ln(h) &minus; (1&minus;y) ln(1&minus;h)',
+    math: 'Cost(h, y) = &minus;y ln(h) &minus; (1 &minus; y) ln(1 &minus; h)',
+    exp: `<strong>Setup: Testing the Log-Loss Cost Function</strong><br><br>
+          We will evaluate three predictions on training emails using the single-line Log-Loss equation:<br>
+          <span style="font-family:Georgia,serif; font-size:22px; color:var(--blue);">
+            Cost = &minus;y ln(h<sub>&theta;</sub>(x)) &minus; (1 &minus; y) ln(1 &minus; h<sub>&theta;</sub>(x))
+          </span><br><br>
+          Press <strong>Next</strong> to evaluate Email 1.`,
+    e1: { log1: '-', log0: '-', cost: '-' },
+    e2: { log1: '-', log0: '-', cost: '-' },
+    e3: { log1: '-', log0: '-', cost: '-' },
+    avg: '-'
+  },
+  {
+    step: 1,
+    desc: 'Email 1: y = 1, h = 0.99 (Confident & Correct)',
+    math: 'Cost = &minus;(1) ln(0.99) &minus; (0) ln(0.01) = &minus;(&minus;0.010) = 0.010',
+    exp: `<strong>Step 1: Email 1 (y = 1, h = 0.99)</strong><br><br>
+          Since y = 1, the (1 - y) term drops to 0:<br>
+          <strong>Cost = &minus;ln(0.99) &minus; 0 = &minus;(&minus;0.010) = 0.010</strong>.<br><br>
+          The prediction is confident and correct, resulting in a negligible penalty of just <strong>0.010</strong>.`,
+    e1: { log1: '0.010', log0: '0.000', cost: '0.010' },
+    e2: { log1: '-', log0: '-', cost: '-' },
+    e3: { log1: '-', log0: '-', cost: '-' },
+    avg: '-'
+  },
+  {
+    step: 2,
+    desc: 'Email 2: y = 1, h = 0.10 (Confident & Wrong!)',
+    math: 'Cost = &minus;(1) ln(0.10) &minus; (0) ln(0.90) = &minus;(&minus;2.303) = 2.303',
+    exp: `<strong>Step 2: Email 2 (y = 1, h = 0.10)</strong><br><br>
+          The true label is 1 (Spam), but the model estimated only a 10% chance!<br>
+          <strong>Cost = &minus;ln(0.10) = &minus;(&minus;2.303) = 2.303</strong>.<br><br>
+          The logarithm heavily penalizes this confident wrong prediction with a massive cost of <strong>2.303</strong>!`,
+    e1: { log1: '0.010', log0: '0.000', cost: '0.010' },
+    e2: { log1: '2.303', log0: '0.000', cost: '2.303' },
+    e3: { log1: '-', log0: '-', cost: '-' },
+    avg: '-'
+  },
+  {
+    step: 3,
+    desc: 'Email 3: y = 0, h = 0.80 (Wrong the Other Way!)',
+    math: 'Cost = &minus;(0) ln(0.80) &minus; (1) ln(1 - 0.80) = &minus;ln(0.20) = 1.609',
+    exp: `<strong>Step 3: Email 3 (y = 0, h = 0.80)</strong><br><br>
+          The true label is 0 (Not Spam), but the model estimated 80% spam probability.<br>
+          Since y = 0, the first term zeros out:<br>
+          <strong>Cost = &minus;ln(1 &minus; 0.80) = &minus;ln(0.20) = 1.609</strong>.<br><br>
+          Another heavy penalty of <strong>1.609</strong> for predicting high spam probability on a normal email.`,
+    e1: { log1: '0.010', log0: '0.000', cost: '0.010' },
+    e2: { log1: '2.303', log0: '0.000', cost: '2.303' },
+    e3: { log1: '0.000', log0: '1.609', cost: '1.609' },
+    avg: '-'
+  },
+  {
+    step: 4,
+    desc: 'Step 4: Average Cost across all 3 examples',
+    math: 'J(&theta;) = (0.010 + 2.303 + 1.609) / 3 = 3.922 / 3 = 1.307',
+    exp: `<strong>Step 4: Total Cost J(&theta;)</strong><br><br>
+          Sum the three individual costs and divide by m = 3:<br>
+          <span style="font-family:Georgia,serif; font-size:24px; color:var(--blue);">
+            J(&theta;) = (0.010 + 2.303 + 1.609) / 3 = <strong>1.307</strong>
+          </span><br><br>
+          <strong>Key Takeaway:</strong> Email 2 alone contributed over 58% of the total cost! This steep gradient forces Gradient Descent to aggressively correct confident mistakes.`,
+    e1: { log1: '0.010', log0: '0.000', cost: '0.010' },
+    e2: { log1: '2.303', log0: '0.000', cost: '2.303' },
+    e3: { log1: '0.000', log0: '1.609', cost: '1.609' },
+    avg: '1.307'
+  }
+];
 
-  COST_DATA.forEach((row, i) => {
-    let costVal = row.trueClass === 1 ? -Math.log(row.pred) : -Math.log(1 - row.pred);
-    let formulaStr = row.trueClass === 1 ? `-log(${row.pred})` : `-log(1 - ${row.pred})`;
-    let colorClass = row.trueClass === 1 ? 'var(--green)' : 'var(--pink)';
-    
-    let explanation = `<strong>${row.scenario}</strong><br><br>Because the True Class is <strong>${row.trueClass}</strong>, we use the <span style="color:${colorClass}; font-weight:bold;">${row.trueClass===1?'Top':'Bottom'}</span> formula.<br><br>`;
-    
-    if (i === 0) {
-        explanation += `The model predicted 0.99 (99% sure it's 1). Since it's right, the math outputs a Cost near <strong>0</strong>. No penalty!`;
-    } else if (i === 1) {
-        explanation += `The model predicted 0.10 (only 10% sure it's 1). It was very wrong! The logarithm skyrockets, generating a massive <strong>${costVal.toFixed(2)}</strong> penalty.`;
-    } else {
-        explanation += `The true class is 0, but the model predicted 0.80. Since it's wrong, we do -log(1 - 0.80) = -log(0.20), generating a high penalty.`;
-    }
+function renderCostLive(stepIdx) {
+  const t = COST_TRACE[stepIdx];
+  let html = `
+    <tr>
+      <th>Email</th>
+      <th>Label y</th>
+      <th>Pred h<sub>&theta;</sub>(x)</th>
+      <th>&minus;y ln(h)</th>
+      <th>&minus;(1&minus;y) ln(1&minus;h)</th>
+      <th>Cost</th>
+    </tr>
+    <tr class="${stepIdx === 1 ? 'hl-row' : ''}">
+      <td>Email 1 (${COST_DATA[0].desc})</td>
+      <td class="hl-cell-amber">1</td>
+      <td>0.99</td>
+      <td class="${stepIdx >= 1 ? 'hl-cell-green' : ''}">${t.e1.log1}</td>
+      <td>${t.e1.log0}</td>
+      <td class="${stepIdx >= 1 ? 'hl-cell-green' : ''}">${t.e1.cost}</td>
+    </tr>
+    <tr class="${stepIdx === 2 ? 'hl-row' : ''}">
+      <td>Email 2 (${COST_DATA[1].desc})</td>
+      <td class="hl-cell-amber">1</td>
+      <td>0.10</td>
+      <td class="${stepIdx >= 2 ? 'hl-cell-red' : ''}">${t.e2.log1}</td>
+      <td>${t.e2.log0}</td>
+      <td class="${stepIdx >= 2 ? 'hl-cell-red' : ''}">${t.e2.cost}</td>
+    </tr>
+    <tr class="${stepIdx === 3 ? 'hl-row' : ''}">
+      <td>Email 3 (${COST_DATA[2].desc})</td>
+      <td class="hl-cell-amber">0</td>
+      <td>0.80</td>
+      <td>${t.e3.log1}</td>
+      <td class="${stepIdx >= 3 ? 'hl-cell-pink' : ''}">${t.e3.log0}</td>
+      <td class="${stepIdx >= 3 ? 'hl-cell-pink' : ''}">${t.e3.cost}</td>
+    </tr>
+  `;
 
-    trace.push({
-      cRows: i, hlRow: i, hlCol: 'cost',
-      exp: explanation,
-      math: `<div class="formula-main" style="font-size:45px; color:${colorClass};">
-              Cost = ${formulaStr}<br><br>Cost = <span style="color:var(--ink); font-weight:bold; font-size:60px;">${costVal.toFixed(2)}</span>
-             </div>`
-    });
-  });
+  if (stepIdx >= 4) {
+    html += `
+      <tr style="background:#111827; font-weight:bold;">
+        <td colspan="5" style="text-align:right; color:var(--neon);">Total Average Cost J(&theta;) = (0.010 + 2.303 + 1.609) / 3 =</td>
+        <td class="hl-cell-blue">${t.avg}</td>
+      </tr>
+    `;
+  }
 
-  return trace;
-}
-const COST_TRACE = buildCostTrace();
-
-function renderCostLive(step) {
-  const t = COST_TRACE[step];
-  let tableHTML = `<table class="stats-table"><tr><th>Item</th><th>True (y)</th><th>Prediction</th><th>Calculated Cost</th></tr>`;
-  
-  COST_DATA.forEach((r, i) => {
-    let isRowHl = (t.hlRow === i);
-    let cVis = t.cRows !== undefined && i <= t.cRows;
-    let costVal = r.trueClass === 1 ? -Math.log(r.pred) : -Math.log(1 - r.pred);
-    let cellClass = (isRowHl && t.hlCol==='cost') ? (costVal < 0.1 ? 'hl-cell-green' : 'hl-cell-red') : '';
-    
-    tableHTML += `<tr class="${isRowHl ? 'hl-row' : ''}">
-      <td>${r.item}</td>
-      <td style="font-weight:bold; color:${r.trueClass===1?'var(--green)':'var(--pink)'};">${r.trueClass}</td>
-      <td>${r.pred.toFixed(2)}</td>
-      <td class="${cellClass}"><span class="${!cVis ? 'invisible' : ''}">${cVis ? costVal.toFixed(3) : '0.000'}</span></td>
-    </tr>`;
-  });
-  tableHTML += `</table>`;
-  
-  $('cost-table-container').innerHTML = tableHTML;
+  $('cost-table').innerHTML = html;
+  $('cost-math-display').innerHTML = t.math;
   $('cost-explanation').innerHTML = t.exp;
-  $('cost-math').innerHTML = t.math;
+  $('cost-summary-text').innerHTML = stepIdx === 4
+    ? 'Average Cost J(&theta;) = 1.307. Email 2 drives most of the penalty!'
+    : `Step ${stepIdx} of 4 &bull; ${t.desc}`;
 }
 
+// ==========================================================================
+// 3. LIVE TRACE 3: REGULARIZATION & WEIGHT DECAY (SLIDE 14)
+// ==========================================================================
+const REG_TRACE = [
+  {
+    step: 0,
+    desc: 'Setup: m = 10, &alpha; = 0.1 &bull; Formula: Total Cost = Data Cost + (&lambda;/2m) &sum; &theta;ⱼ²',
+    math: 'Total Cost = Data Cost + (&lambda; / 2m) &middot; (&theta;₁² + &theta;₂²)',
+    exp: `<strong>Setup: Testing Regularization Penalties</strong><br><br>
+          We compare three models on a dataset of <strong>m = 10</strong> examples with learning rate <strong>&alpha; = 0.1</strong>:<br>
+          &bull; <strong>Case 1:</strong> Unregularized (&lambda; = 0) with small weights (&theta;₁ = 1, &theta;₂ = 1)<br>
+          &bull; <strong>Case 2:</strong> Regularized (&lambda; = 10) with large overfit weights (&theta;₁ = 10, &theta;₂ = 20)<br>
+          &bull; <strong>Case 3:</strong> Regularized (&lambda; = 10) with small smooth weights (&theta;₁ = 1, &theta;₂ = 1)<br><br>
+          Press <strong>Next</strong> to evaluate Case 1.`,
+    c1: { pen: '-', tot: '-' },
+    c2: { pen: '-', tot: '-' },
+    c3: { pen: '-', tot: '-' },
+    decay: '-'
+  },
+  {
+    step: 1,
+    desc: 'Case 1: Unregularized (&lambda; = 0)',
+    math: 'Penalty = (0 / 20)(1² + 1²) = 0.000 &rArr; Total = 0.150 + 0 = 0.150',
+    exp: `<strong>Step 1: Case 1 (&lambda; = 0, &theta; = [1, 1])</strong><br><br>
+          With &lambda; = 0, there is zero penalty on parameter sizes:<br>
+          <strong>Penalty = 0.000</strong><br>
+          <strong>Total Cost = Data Cost = 0.150</strong>.`,
+    c1: { pen: '0.000', tot: '0.150' },
+    c2: { pen: '-', tot: '-' },
+    c3: { pen: '-', tot: '-' },
+    decay: '-'
+  },
+  {
+    step: 2,
+    desc: 'Case 2: Regularized with Large Overfit Weights (&theta; = [10, 20])',
+    math: 'Penalty = (10 / 20)(10² + 20²) = 0.5 &times; 500 = 250.000 &rArr; Total = 250.020',
+    exp: `<strong>Step 2: Case 2 (&lambda; = 10, &theta; = [10, 20])</strong><br><br>
+          Even though the raw Data MSE is tiny (0.020), the large weights create an immense penalty:<br>
+          &bull; &sum; &theta;<sub>j</sub>² = 10² + 20² = 100 + 400 = <strong>500</strong><br>
+          &bull; Penalty = (&lambda; / 2m) &times; 500 = (10 / 20) &times; 500 = <strong>250.000</strong>!<br><br>
+          <strong>Total Cost = 0.020 + 250.000 = 250.020</strong>! The optimizer severely penalizes this overfit model.`,
+    c1: { pen: '0.000', tot: '0.150' },
+    c2: { pen: '250.000', tot: '250.020' },
+    c3: { pen: '-', tot: '-' },
+    decay: '-'
+  },
+  {
+    step: 3,
+    desc: 'Case 3: Regularized with Small Smooth Weights (&theta; = [1, 1])',
+    math: 'Penalty = (10 / 20)(1² + 1²) = 0.5 &times; 2 = 1.000 &rArr; Total = 0.150 + 1.000 = 1.150',
+    exp: `<strong>Step 3: Case 3 (&lambda; = 10, &theta; = [1, 1])</strong><br><br>
+          Now test the smooth model with small parameters:<br>
+          &bull; &sum; &theta;<sub>j</sub>² = 1² + 1² = <strong>2</strong><br>
+          &bull; Penalty = (10 / 20) &times; 2 = <strong>1.000</strong><br><br>
+          <strong>Total Cost = 0.150 + 1.000 = 1.150</strong>.<br>
+          Since <strong>1.150 &ll; 250.020</strong>, the optimizer will strongly prefer the smooth, generalizable model!`,
+    c1: { pen: '0.000', tot: '0.150' },
+    c2: { pen: '250.000', tot: '250.020' },
+    c3: { pen: '1.000', tot: '1.150' },
+    decay: '-'
+  },
+  {
+    step: 4,
+    desc: 'Step 4: Weight Decay in Action',
+    math: 'Decay Factor = 1 - &alpha;(&lambda;/m) = 1 - 0.1(10/10) = 0.90 &rArr; &theta;₁: 10 &rarr; 9.0',
+    exp: `<strong>Step 4: Weight Decay Mechanism</strong><br><br>
+          In Gradient Descent, &theta;<sub>j</sub> is updated via:<br>
+          <span style="font-family:Georgia,serif; font-size:22px; color:var(--green);">
+            &theta;<sub>j</sub> := &theta;<sub>j</sub> (1 &minus; &alpha;&lambda;/m) &minus; &alpha; (gradient)
+          </span><br><br>
+          Here, <strong>1 &minus; &alpha;&lambda;/m = 1 &minus; 0.1(10/10) = 0.90</strong>.<br>
+          The parameter &theta;₁ = 10 immediately decays to <strong>10 &times; 0.90 = 9.0</strong> on this single step, shrinking large weights automatically!`,
+    c1: { pen: '0.000', tot: '0.150' },
+    c2: { pen: '250.000', tot: '250.020' },
+    c3: { pen: '1.000', tot: '1.150' },
+    decay: '0.90 (&theta;₁: 10 &rarr; 9.0)'
+  }
+];
 
-// ==========================================
-// CANVAS DRAWING LOGIC
-// ==========================================
+function renderRegLive(stepIdx) {
+  const t = REG_TRACE[stepIdx];
+  let html = `
+    <tr>
+      <th>Model Case</th>
+      <th>&lambda;</th>
+      <th>Weights (&theta;₁, &theta;₂)</th>
+      <th>Data Cost</th>
+      <th>Penalty (&lambda;/2m)&sum;&theta;ⱼ²</th>
+      <th>Total Cost</th>
+    </tr>
+    <tr class="${stepIdx === 1 ? 'hl-row' : ''}">
+      <td>Case 1 (Unregularized)</td>
+      <td>0</td>
+      <td>[1, 1]</td>
+      <td>0.150</td>
+      <td class="${stepIdx >= 1 ? 'hl-cell-green' : ''}">${t.c1.pen}</td>
+      <td class="${stepIdx >= 1 ? 'hl-cell-green' : ''}">${t.c1.tot}</td>
+    </tr>
+    <tr class="${stepIdx === 2 ? 'hl-row' : ''}">
+      <td>Case 2 (Overfit Weights)</td>
+      <td>10</td>
+      <td>[10, 20]</td>
+      <td>0.020</td>
+      <td class="${stepIdx >= 2 ? 'hl-cell-red' : ''}">${t.c2.pen}</td>
+      <td class="${stepIdx >= 2 ? 'hl-cell-red' : ''}">${t.c2.tot}</td>
+    </tr>
+    <tr class="${stepIdx === 3 ? 'hl-row' : ''}">
+      <td>Case 3 (Smooth Weights)</td>
+      <td>10</td>
+      <td>[1, 1]</td>
+      <td>0.150</td>
+      <td class="${stepIdx >= 3 ? 'hl-cell-blue' : ''}">${t.c3.pen}</td>
+      <td class="${stepIdx >= 3 ? 'hl-cell-blue' : ''}">${t.c3.tot}</td>
+    </tr>
+  `;
 
-// Sigmoid Curve
-function drawSigmoid() {
-  const canvas = $('canvas-sigmoid');
-  if(!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width, h = canvas.height;
-  ctx.clearRect(0,0,w,h);
-  
+  if (stepIdx >= 4) {
+    html += `
+      <tr style="background:#111827; font-weight:bold;">
+        <td colspan="4" style="text-align:right; color:var(--neon);">Weight Decay Factor (1 &minus; &alpha;&lambda;/m):</td>
+        <td colspan="2" class="hl-cell-green">${t.decay}</td>
+      </tr>
+    `;
+  }
+
+  $('reg-table').innerHTML = html;
+  $('reg-math-display').innerHTML = t.math;
+  $('reg-explanation').innerHTML = t.exp;
+  $('reg-summary-text').innerHTML = stepIdx === 4
+    ? 'Success! Weight decay shrinks &theta;₁ from 10 &rarr; 9.0 before gradient step.'
+    : `Step ${stepIdx} of 4 &bull; ${t.desc}`;
+}
+
+// ==========================================================================
+// 4. CANVAS DRAWING ROUTINES
+// ==========================================================================
+function drawCanvasLinFail() {
+  const c = $('canvas-lin-fail'); if (!c) return;
+  const ctx = c.getContext('2d');
+  const w = c.width, h = c.height;
+  ctx.clearRect(0, 0, w, h);
+
+  const ml = 65, mr = 25, mt = 40, mb = 65;
+  const pw = w - ml - mr, ph = h - mt - mb;
+
   // Axes
   ctx.strokeStyle = '#334155'; ctx.lineWidth = 2;
-  ctx.beginPath(); 
-  ctx.moveTo(0, h/2); ctx.lineTo(w, h/2); // X axis
-  ctx.moveTo(w/2, 0); ctx.lineTo(w/2, h); // Y axis
+  ctx.beginPath();
+  ctx.moveTo(ml, mt); ctx.lineTo(ml, h - mb); ctx.lineTo(w - mr, h - mb);
   ctx.stroke();
 
-  // Bounds
-  ctx.setLineDash([5, 5]);
-  ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1;
+  // Y-axis labels 0, 0.5, 1
+  ctx.font = '12px sans-serif'; ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'right';
+  ctx.fillText('1 (Yes)', ml - 10, mt + 10);
+  ctx.fillText('0.5', ml - 10, mt + ph / 2 + 4);
+  ctx.fillText('0 (No)', ml - 10, h - mb);
+
+  // X-axis label (Comfortably below axis at bottom)
+  ctx.fillStyle = '#f8fafc'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('Tumor Size (x) →', ml + pw / 2, h - 8);
+
+  // 0.5 threshold line (Dashed Pink)
+  ctx.strokeStyle = 'rgba(244, 63, 94, 0.45)'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
   ctx.beginPath();
-  ctx.moveTo(0, 40); ctx.lineTo(w, 40); // y=1
-  ctx.moveTo(0, h-40); ctx.lineTo(w, h-40); // y=0
+  ctx.moveTo(ml, mt + ph / 2); ctx.lineTo(w - mr, mt + ph / 2);
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // Curve
-  ctx.shadowColor = '#38bdf8'; ctx.shadowBlur = 15;
-  ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 5;
+  ctx.fillStyle = 'rgba(244, 63, 94, 0.85)'; ctx.font = '11px sans-serif'; ctx.textAlign = 'left';
+  ctx.fillText('Threshold h(x) = 0.5', ml + 8, mt + ph / 2 - 6);
+
+  // Data Points: 4 at y = 0 (left)
+  const pts0 = [0.12, 0.20, 0.28, 0.36];
+  // 4 at y = 1 (middle right)
+  const pts1 = [0.52, 0.60, 0.68, 0.76];
+
+  ctx.strokeStyle = '#f87171'; ctx.lineWidth = 2.5;
+  pts0.forEach(nx => {
+    const x = ml + nx * pw, y = h - mb;
+    ctx.beginPath();
+    ctx.moveTo(x - 5, y - 5); ctx.lineTo(x + 5, y + 5);
+    ctx.moveTo(x + 5, y - 5); ctx.lineTo(x - 5, y + 5);
+    ctx.stroke();
+  });
+  pts1.forEach(nx => {
+    const x = ml + nx * pw, y = mt + 10;
+    ctx.beginPath();
+    ctx.moveTo(x - 5, y - 5); ctx.lineTo(x + 5, y + 5);
+    ctx.moveTo(x + 5, y - 5); ctx.lineTo(x - 5, y + 5);
+    ctx.stroke();
+  });
+
+  // Steep Purple Line (Original Fit without outlier)
+  ctx.strokeStyle = '#c084fc'; ctx.lineWidth = 3;
   ctx.beginPath();
-  for(let x = 0; x <= w; x++) {
-      let mapX = ((x / w) * 12) - 6;
-      let mapY = 1 / (1 + Math.exp(-mapX));
-      let canvasY = (h-40) - (mapY * (h-80));
-      if(x===0) ctx.moveTo(x, canvasY);
-      else ctx.lineTo(x, canvasY);
-  }
+  ctx.moveTo(ml + 0.15 * pw, h - mb);
+  ctx.lineTo(ml + 0.75 * pw, mt + 5);
   ctx.stroke();
-  ctx.shadowBlur = 0;
+
+  // Vertical boundary for original fit at x = 0.45
+  const origThreshX = ml + 0.45 * pw;
+  ctx.strokeStyle = '#c084fc'; ctx.lineWidth = 1.5; ctx.setLineDash([3, 3]);
+  ctx.beginPath(); ctx.moveTo(origThreshX, mt + ph / 2); ctx.lineTo(origThreshX, h - mb); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Outlier Far Right (x = 0.95, y = 1)
+  const outX = ml + 0.95 * pw, outY = mt + 10;
+  ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(outX - 6, outY - 6); ctx.lineTo(outX + 6, outY + 6);
+  ctx.moveTo(outX + 6, outY - 6); ctx.lineTo(outX - 6, outY + 6);
+  ctx.stroke();
+
+  // Outlier label
+  ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'right';
+  ctx.fillText('★ Far Outlier', outX - 12, outY - 12);
+
+  // Flatter Tilted Blue Line (Pulled by outlier)
+  ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(ml + 0.05 * pw, h - mb + 15);
+  ctx.lineTo(ml + 0.98 * pw, mt + 8);
+  ctx.stroke();
+
+  // New Shifted Threshold at x = 0.62
+  const newThreshX = ml + 0.62 * pw;
+  ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.moveTo(newThreshX, mt + ph / 2); ctx.lineTo(newThreshX, h - mb); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Labels for boundaries
+  ctx.font = 'bold 11px sans-serif';
+  ctx.fillStyle = '#c084fc'; ctx.textAlign = 'center';
+  ctx.fillText('Old: x = 0.45', origThreshX, h - mb + 18);
+
+  ctx.fillStyle = '#38bdf8'; ctx.textAlign = 'center';
+  ctx.fillText('New: x = 0.62', newThreshX, h - mb + 18);
+
+  // Arrow connecting the boundary shift from old threshold to new threshold
+  ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(origThreshX + 15, h - mb + 34);
+  ctx.lineTo(newThreshX - 15, h - mb + 34);
+  ctx.stroke();
+  // Arrow head
+  ctx.beginPath();
+  ctx.moveTo(newThreshX - 20, h - mb + 31);
+  ctx.lineTo(newThreshX - 14, h - mb + 34);
+  ctx.lineTo(newThreshX - 20, h - mb + 37);
+  ctx.fillStyle = '#38bdf8';
+  ctx.fill();
+
+  ctx.font = '10px sans-serif'; ctx.fillStyle = '#38bdf8'; ctx.textAlign = 'center';
+  ctx.fillText('Shifted →', (origThreshX + newThreshX) / 2, h - mb + 46);
+
+  // Highlight Box & Arrow for Misclassified Points (0.52 and 0.60)
+  const misX1 = ml + 0.52 * pw, misX2 = ml + 0.60 * pw;
+  ctx.strokeStyle = '#f43f5e'; ctx.lineWidth = 1.5; ctx.setLineDash([3, 3]);
+  ctx.strokeRect(misX1 - 12, mt - 4, (misX2 - misX1) + 24, 28);
+  ctx.setLineDash([]);
+
+  // Callout text with arrow
+  ctx.font = 'bold 12px sans-serif'; ctx.fillStyle = '#f43f5e'; ctx.textAlign = 'left';
+  ctx.fillText('• Misclassified as y=0!', ml + 0.18 * pw, mt + 45);
+  ctx.font = '11px sans-serif'; ctx.fillStyle = '#fda4af';
+  ctx.fillText('(Tumor size falls below shifted 0.5 threshold)', ml + 0.18 * pw, mt + 60);
+
+  // Curved arrow from callout to highlight box
+  ctx.strokeStyle = '#f43f5e'; ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(ml + 0.18 * pw + 180, mt + 40);
+  ctx.quadraticCurveTo(misX1 - 30, mt + 30, misX1 - 15, mt + 10);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(misX1 - 22, mt + 16);
+  ctx.lineTo(misX1 - 14, mt + 10);
+  ctx.lineTo(misX1 - 18, mt + 3);
+  ctx.fillStyle = '#f43f5e';
+  ctx.fill();
 }
 
-// Cost Function Curve
-function drawCostFunction() {
-  const canvas = $('canvas-cost');
-  if(!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width, h = canvas.height;
-  ctx.clearRect(0,0,w,h);
-  
+function drawCanvasSigmoid() {
+  const c = $('canvas-sigmoid'); if (!c) return;
+  const ctx = c.getContext('2d');
+  const w = c.width, h = c.height;
+  ctx.clearRect(0, 0, w, h);
+
+  const ml = 60, mr = 30, mt = 40, mb = 55;
+  const pw = w - ml - mr, ph = h - mt - mb;
+
   // Axes
   ctx.strokeStyle = '#334155'; ctx.lineWidth = 2;
-  ctx.beginPath(); 
-  ctx.moveTo(40, h-40); ctx.lineTo(w-20, h-40); 
-  ctx.moveTo(40, 20); ctx.lineTo(40, h-40); 
+  ctx.beginPath();
+  ctx.moveTo(ml, mt); ctx.lineTo(ml, h - mb); ctx.lineTo(w - mr, h - mb);
   ctx.stroke();
 
-  // Draw -log(x) [y=1 cost] (Green)
-  ctx.shadowColor = '#34d399'; ctx.shadowBlur = 12;
-  ctx.strokeStyle = '#34d399'; ctx.lineWidth = 4;
+  // Reference lines at y = 1 and y = 0.5
+  ctx.strokeStyle = 'rgba(51, 65, 85, 0.4)'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
   ctx.beginPath();
-  let first = true;
-  for(let x = 41; x <= w-40; x++) { 
-      let p = (x - 40) / (w - 80);
-      let cost = -Math.log(p);
-      let canvasY = (h-40) - (cost * 80);
-      if(canvasY < 20) continue; 
-      if(first) { ctx.moveTo(x, canvasY); first = false; }
-      else ctx.lineTo(x, canvasY);
-  }
+  ctx.moveTo(ml, mt + 10); ctx.lineTo(w - mr, mt + 10);
+  ctx.moveTo(ml, mt + ph / 2); ctx.lineTo(w - mr, mt + ph / 2);
   ctx.stroke();
+  ctx.setLineDash([]);
 
-  // Draw -log(1-x) [y=0 cost] (Pink)
-  ctx.shadowColor = '#f43f5e'; ctx.shadowBlur = 12;
-  ctx.strokeStyle = '#f43f5e'; ctx.lineWidth = 4;
+  // Ticks on Y
+  ctx.font = '12px sans-serif'; ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'right';
+  ctx.fillText('1.0', ml - 8, mt + 14);
+  ctx.fillText('0.5', ml - 8, mt + ph / 2 + 4);
+  ctx.fillText('0.0', ml - 8, h - mb);
+
+  // Ticks on X (z from -6 to +6)
+  ctx.textAlign = 'center';
+  [-6, -4, -2, 0, 2, 4, 6].forEach(zv => {
+    const x = ml + ((zv + 7.5) / 15) * pw;
+    ctx.fillText(zv.toString(), x, h - mb + 18);
+  });
+
+  ctx.fillStyle = '#f8fafc'; ctx.font = 'bold 13px sans-serif';
+  ctx.fillText('z = θᵀx →', ml + pw / 2, h - 14);
+
+  // Plot Sigmoid S-curve
+  ctx.strokeStyle = '#00f3ff'; ctx.lineWidth = 3.5;
+  ctx.shadowColor = '#00f3ff'; ctx.shadowBlur = 10;
   ctx.beginPath();
-  first = true;
-  for(let x = 41; x <= w-40; x++) {
-      let p = (x - 40) / (w - 80);
-      let cost = -Math.log(1-p);
-      let canvasY = (h-40) - (cost * 80); 
-      if(canvasY < 20) continue; 
-      if(first) { ctx.moveTo(x, canvasY); first = false; }
-      else ctx.lineTo(x, canvasY);
+  for (let zv = -7.5; zv <= 7.5; zv += 0.1) {
+    const gz = 1 / (1 + Math.exp(-zv));
+    const px = ml + ((zv + 7.5) / 15) * pw;
+    const py = (h - mb) - gz * (ph - 10);
+    if (zv === -7.5) ctx.moveTo(px, py); else ctx.lineTo(px, py);
   }
   ctx.stroke();
   ctx.shadowBlur = 0;
-  
-  // Labels
-  ctx.fillStyle = '#34d399'; ctx.font = "20px Arial"; ctx.fillText("y = 1", w - 90, h - 50);
-  ctx.fillStyle = '#f43f5e'; ctx.font = "20px Arial"; ctx.fillText("y = 0", 50, 40);
+
+  // Glowing center point at (0, 0.5)
+  const cx = ml + (7.5 / 15) * pw;
+  const cy = (h - mb) - 0.5 * (ph - 10);
+  ctx.fillStyle = '#fbbf24'; ctx.beginPath(); ctx.arc(cx, cy, 6, 0, Math.PI*2); ctx.fill();
+
+  // Asymptotic annotations
+  ctx.font = 'bold 12px sans-serif';
+  ctx.fillStyle = '#34d399'; ctx.textAlign = 'right';
+  ctx.fillText('g(z) → 1 as z → +∞', w - mr - 10, mt + 28);
+
+  ctx.fillStyle = '#f43f5e'; ctx.textAlign = 'left';
+  ctx.fillText('g(z) → 0 as z → −∞', ml + 15, h - mb - 25);
+
+  ctx.fillStyle = '#fbbf24'; ctx.textAlign = 'left';
+  ctx.fillText('(0, 0.5)', cx + 10, cy - 8);
 }
 
-// Overfitting Examples
-function drawScatterAndLine(canvasId, type) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const w = canvas.width, h = canvas.height;
-    ctx.clearRect(0,0,w,h);
+function drawCanvasDBDiag() {
+  const c = $('canvas-db-diag'); if (!c) return;
+  const ctx = c.getContext('2d');
+  const w = c.width, h = c.height;
+  ctx.clearRect(0, 0, w, h);
 
-    const points = [
-        {x: 40, y: 130, c: '#f43f5e'}, {x: 80, y: 150, c: '#f43f5e'}, {x: 100, y: 110, c: '#f43f5e'}, {x: 60, y: 90, c: '#f43f5e'},
-        {x: 140, y: 120, c: '#f43f5e'}, {x: 120, y: 160, c: '#f43f5e'},
-        {x: 200, y: 60, c: '#34d399'}, {x: 240, y: 40, c: '#34d399'}, {x: 260, y: 80, c: '#34d399'}, {x: 220, y: 20, c: '#34d399'},
-        {x: 170, y: 70, c: '#34d399'}, {x: 280, y: 50, c: '#34d399'},
-        {x: 180, y: 140, c: '#34d399'} // Outlier
-    ];
+  const ml = 35, mr = 15, mt = 15, mb = 35;
+  const pw = w - ml - mr, ph = h - mt - mb;
 
-    points.forEach(p => {
-        ctx.fillStyle = p.c;
-        ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, Math.PI*2); ctx.fill();
-    });
+  // Axes (x1, x2 from 0 to 5)
+  ctx.strokeStyle = '#334155'; ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(ml, mt); ctx.lineTo(ml, h - mb); ctx.lineTo(w - mr, h - mb);
+  ctx.stroke();
 
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = '#00f3ff';
-    ctx.shadowColor = '#00f3ff'; ctx.shadowBlur = 8;
+  // Diagonal line x1 + x2 = 3 (passes (0,3) and (3,0))
+  const p1x = ml + (0 / 5) * pw, p1y = (h - mb) - (3 / 5) * ph;
+  const p2x = ml + (3 / 5) * pw, p2y = (h - mb) - (0 / 5) * ph;
+
+  ctx.strokeStyle = '#f43f5e'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(p1x, p1y); ctx.lineTo(p2x, p2y); ctx.stroke();
+
+  // Points 'o' below line (y = 0)
+  ctx.fillStyle = '#38bdf8';
+  [{x:0.8,y:0.8}, {x:1.5,y:0.6}, {x:0.5,y:1.8}].forEach(p => {
     ctx.beginPath();
+    ctx.arc(ml + (p.x/5)*pw, (h - mb) - (p.y/5)*ph, 4, 0, Math.PI*2);
+    ctx.fill();
+  });
 
-    if (type === 'under') {
-        ctx.moveTo(30, 30); ctx.lineTo(260, 180);
-    } else if (type === 'optimal') {
-        ctx.moveTo(30, 180); ctx.bezierCurveTo(150, 160, 120, 40, 280, 15);
-    } else if (type === 'over') {
-        ctx.moveTo(20, 180); ctx.lineTo(80, 90); ctx.lineTo(140, 100); ctx.lineTo(160, 160); 
-        ctx.lineTo(200, 110); ctx.lineTo(250, 10);
+  // Points 'x' above line (y = 1)
+  ctx.strokeStyle = '#34d399'; ctx.lineWidth = 2;
+  [{x:2.5,y:2.5}, {x:3.8,y:1.8}, {x:2.0,y:3.5}, {x:3.2,y:3.0}].forEach(p => {
+    const px = ml + (p.x/5)*pw, py = (h - mb) - (p.y/5)*ph;
+    ctx.beginPath();
+    ctx.moveTo(px-4, py-4); ctx.lineTo(px+4, py+4);
+    ctx.moveTo(px+4, py-4); ctx.lineTo(px-4, py+4);
+    ctx.stroke();
+  });
+
+  ctx.font = 'bold 11px sans-serif'; ctx.fillStyle = '#f43f5e'; ctx.textAlign = 'right';
+  ctx.fillText('x₁ + x₂ = 3', w - mr - 8, mt + 20);
+}
+
+function drawCanvasDBVert() {
+  const c = $('canvas-db-vert'); if (!c) return;
+  const ctx = c.getContext('2d');
+  const w = c.width, h = c.height;
+  ctx.clearRect(0, 0, w, h);
+
+  const ml = 35, mr = 15, mt = 15, mb = 35;
+  const pw = w - ml - mr, ph = h - mt - mb;
+
+  // Axes
+  ctx.strokeStyle = '#334155'; ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(ml, mt); ctx.lineTo(ml, h - mb); ctx.lineTo(w - mr, h - mb);
+  ctx.stroke();
+
+  // Shaded region x1 <= 5 (Blue) vs x1 > 5 (Pink)
+  const sepX = ml + (5 / 9) * pw;
+  ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
+  ctx.fillRect(ml, mt, sepX - ml, ph);
+
+  ctx.fillStyle = 'rgba(244, 63, 94, 0.15)';
+  ctx.fillRect(sepX, mt, (w - mr) - sepX, ph);
+
+  // Vertical line at x1 = 5
+  ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(sepX, mt); ctx.lineTo(sepX, h - mb); ctx.stroke();
+
+  ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillStyle = '#38bdf8'; ctx.fillText('Class 1 (x₁ ≤ 5)', ml + (sepX - ml)/2, h - mb - 20);
+  ctx.fillStyle = '#f43f5e'; ctx.fillText('Class 0 (x₁ > 5)', sepX + (w - mr - sepX)/2, h - mb - 20);
+}
+
+function drawCanvasDBCircle() {
+  const c = $('canvas-db-circle'); if (!c) return;
+  const ctx = c.getContext('2d');
+  const w = c.width, h = c.height;
+  ctx.clearRect(0, 0, w, h);
+
+  const cx = w / 2, cy = h / 2, r = 58;
+
+  // Circle boundary
+  ctx.strokeStyle = '#00f3ff'; ctx.lineWidth = 3;
+  ctx.shadowColor = '#00f3ff'; ctx.shadowBlur = 8;
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // Points 'o' inside (y = 0)
+  ctx.fillStyle = '#fbbf24';
+  [{dx:-20,dy:10}, {dx:15,dy:-15}, {dx:0,dy:20}, {dx:-10,dy:-20}].forEach(p => {
+    ctx.beginPath(); ctx.arc(cx + p.dx, cy + p.dy, 4, 0, Math.PI*2); ctx.fill();
+  });
+
+  // Points 'x' outside (y = 1)
+  ctx.strokeStyle = '#34d399'; ctx.lineWidth = 2;
+  [{dx:-75,dy:-40}, {dx:80,dy:30}, {dx:40,dy:-75}, {dx:-60,dy:65}, {dx:85,dy:-45}].forEach(p => {
+    const px = cx + p.dx, py = cy + p.dy;
+    ctx.beginPath();
+    ctx.moveTo(px-4, py-4); ctx.lineTo(px+4, py+4);
+    ctx.moveTo(px+4, py-4); ctx.lineTo(px-4, py+4);
+    ctx.stroke();
+  });
+
+  ctx.font = 'bold 11px sans-serif'; ctx.fillStyle = '#00f3ff'; ctx.textAlign = 'center';
+  ctx.fillText('x₁² + x₂² = 1', cx, cy - r - 8);
+}
+
+function drawCostCanvases() {
+  // y = 1 canvas: -log(h)
+  const c1 = $('canvas-cost-y1');
+  if (c1) {
+    const ctx = c1.getContext('2d');
+    const w = c1.width, h = c1.height;
+    ctx.clearRect(0, 0, w, h);
+
+    const ml = 55, mr = 25, mt = 20, mb = 40;
+    const pw = w - ml - mr, ph = h - mt - mb;
+
+    ctx.strokeStyle = '#334155'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(ml, mt); ctx.lineTo(ml, h - mb); ctx.lineTo(w - mr, h - mb); ctx.stroke();
+
+    ctx.strokeStyle = '#34d399'; ctx.lineWidth = 3;
+    ctx.beginPath();
+    for (let p = 0.04; p <= 1.0; p += 0.02) {
+      const cost = -Math.log(p);
+      const px = ml + p * pw;
+      const py = (h - mb) - (cost / 3.2) * ph;
+      if (p === 0.04) ctx.moveTo(px, Math.max(mt, py));
+      else ctx.lineTo(px, Math.max(mt, py));
     }
     ctx.stroke();
-    ctx.shadowBlur = 0;
+
+    ctx.font = 'bold 12px sans-serif'; ctx.fillStyle = '#34d399'; ctx.textAlign = 'left';
+    ctx.fillText('Cost(h, y) = −ln(h)   [If y = 1]', ml + 15, mt + 18);
+    ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
+    ctx.fillText('h → 1 (Cost = 0)', ml + pw - 25, h - mb + 18);
+    ctx.fillText('h → 0 (Cost → ∞)', ml + 35, h - mb + 18);
+  }
+
+  // y = 0 canvas: -log(1 - h)
+  const c0 = $('canvas-cost-y0');
+  if (c0) {
+    const ctx = c0.getContext('2d');
+    const w = c0.width, h = c0.height;
+    ctx.clearRect(0, 0, w, h);
+
+    const ml = 55, mr = 25, mt = 20, mb = 40;
+    const pw = w - ml - mr, ph = h - mt - mb;
+
+    ctx.strokeStyle = '#334155'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(ml, mt); ctx.lineTo(ml, h - mb); ctx.lineTo(w - mr, h - mb); ctx.stroke();
+
+    ctx.strokeStyle = '#f43f5e'; ctx.lineWidth = 3;
+    ctx.beginPath();
+    for (let p = 0.0; p <= 0.96; p += 0.02) {
+      const cost = -Math.log(1 - p);
+      const px = ml + p * pw;
+      const py = (h - mb) - (cost / 3.2) * ph;
+      if (p === 0.0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, Math.max(mt, py));
+    }
+    ctx.stroke();
+
+    ctx.font = 'bold 12px sans-serif'; ctx.fillStyle = '#f43f5e'; ctx.textAlign = 'left';
+    ctx.fillText('Cost(h, y) = −ln(1 − h)   [If y = 0]', ml + 15, mt + 18);
+    ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
+    ctx.fillText('h → 0 (Cost = 0)', ml + 35, h - mb + 18);
+    ctx.fillText('h → 1 (Cost → ∞)', ml + pw - 25, h - mb + 18);
+  }
 }
 
+function drawCanvasOVA() {
+  const c = $('canvas-ova'); if (!c) return;
+  const ctx = c.getContext('2d');
+  const w = c.width, h = c.height;
+  ctx.clearRect(0, 0, w, h);
 
-// ==========================================
-// NAVIGATION ENGINE
-// ==========================================
+  // Left side: Main 3-class plot (width 260)
+  ctx.strokeStyle = '#334155'; ctx.lineWidth = 1.5;
+  ctx.strokeRect(20, 20, 240, 360);
+
+  ctx.font = 'bold 13px sans-serif'; ctx.fillStyle = '#f8fafc'; ctx.textAlign = 'center';
+  ctx.fillText('Multi-Class Dataset (3 Classes)', 140, 45);
+
+  // Draw Class 1 (Green Triangles)
+  ctx.fillStyle = '#34d399';
+  [{x:70,y:100}, {x:100,y:80}, {x:80,y:130}, {x:110,y:120}].forEach(p => {
+    ctx.beginPath(); ctx.moveTo(p.x, p.y-5); ctx.lineTo(p.x+5, p.y+5); ctx.lineTo(p.x-5, p.y+5); ctx.fill();
+  });
+
+  // Draw Class 2 (Blue Squares)
+  ctx.fillStyle = '#38bdf8';
+  [{x:180,y:100}, {x:210,y:120}, {x:190,y:150}, {x:220,y:80}].forEach(p => {
+    ctx.fillRect(p.x-4, p.y-4, 8, 8);
+  });
+
+  // Draw Class 3 (Red Crosses)
+  ctx.strokeStyle = '#f87171'; ctx.lineWidth = 2.5;
+  [{x:130,y:270}, {x:160,y:250}, {x:140,y:300}, {x:170,y:290}].forEach(p => {
+    ctx.beginPath();
+    ctx.moveTo(p.x-4, p.y-4); ctx.lineTo(p.x+4, p.y+4);
+    ctx.moveTo(p.x+4, p.y-4); ctx.lineTo(p.x-4, p.y+4);
+    ctx.stroke();
+  });
+
+  // Connecting Arrows to 3 Right Mini Plots
+  ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5;
+  [80, 200, 320].forEach(y => {
+    ctx.beginPath(); ctx.moveTo(270, y); ctx.lineTo(310, y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(305, y-4); ctx.lineTo(311, y); ctx.lineTo(305, y+4); ctx.fill();
+  });
+
+  // Right Mini Plots (3 binary classifiers)
+  const miniW = 210, miniH = 100;
+  // Classifier 1: Triangles vs rest
+  ctx.strokeRect(320, 30, miniW, miniH);
+  ctx.fillStyle = '#34d399'; ctx.textAlign = 'left'; ctx.font = 'bold 11px sans-serif';
+  ctx.fillText('Classifier 1: h(θ)¹ → ▲ vs Rest', 330, 48);
+  ctx.strokeStyle = '#34d399'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(330, 110); ctx.lineTo(430, 40); ctx.stroke();
+
+  // Classifier 2: Squares vs rest
+  ctx.strokeRect(320, 150, miniW, miniH);
+  ctx.fillStyle = '#38bdf8';
+  ctx.fillText('Classifier 2: h(θ)² → ■ vs Rest', 330, 168);
+  ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(420, 160); ctx.lineTo(510, 230); ctx.stroke();
+
+  // Classifier 3: Crosses vs rest
+  ctx.strokeRect(320, 270, miniW, miniH);
+  ctx.fillStyle = '#f87171';
+  ctx.fillText('Classifier 3: h(θ)³ → ✕ vs Rest', 330, 288);
+  ctx.strokeStyle = '#f87171'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(330, 310); ctx.lineTo(510, 310); ctx.stroke();
+}
+
+function drawFittingCanvases() {
+  const pts = [
+    {x: 0.10, y: 0.20}, {x: 0.25, y: 0.40}, {x: 0.45, y: 0.58},
+    {x: 0.65, y: 0.70}, {x: 0.85, y: 0.76}
+  ];
+
+  // 1. Underfitting
+  const c1 = $('canvas-fit-under');
+  if (c1) {
+    const ctx = c1.getContext('2d');
+    const w = c1.width, h = c1.height;
+    ctx.clearRect(0, 0, w, h);
+    ctx.strokeStyle = '#334155'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(25, 15); ctx.lineTo(25, h - 25); ctx.lineTo(w - 15, h - 25); ctx.stroke();
+
+    // Straight Line (Misses curve)
+    ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(25, h - 45); ctx.lineTo(w - 20, 35); ctx.stroke();
+
+    // Points
+    ctx.strokeStyle = '#f87171'; ctx.lineWidth = 2;
+    pts.forEach(p => {
+      const px = 25 + p.x * (w - 40), py = (h - 25) - p.y * (h - 40);
+      ctx.beginPath(); ctx.moveTo(px-3, py-3); ctx.lineTo(px+3, py+3); ctx.moveTo(px+3, py-3); ctx.lineTo(px-3, py+3); ctx.stroke();
+    });
+  }
+
+  // 2. Optimal Fit
+  const c2 = $('canvas-fit-good');
+  if (c2) {
+    const ctx = c2.getContext('2d');
+    const w = c2.width, h = c2.height;
+    ctx.clearRect(0, 0, w, h);
+    ctx.strokeStyle = '#334155'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(25, 15); ctx.lineTo(25, h - 25); ctx.lineTo(w - 15, h - 25); ctx.stroke();
+
+    // Smooth Quadratic
+    ctx.strokeStyle = '#34d399'; ctx.lineWidth = 3;
+    ctx.beginPath();
+    for (let x = 0; x <= 1.0; x += 0.05) {
+      const y = 0.12 + 1.25 * x - 0.55 * (x * x);
+      const px = 25 + x * (w - 40), py = (h - 25) - y * (h - 40);
+      if (x === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    ctx.strokeStyle = '#f87171'; ctx.lineWidth = 2;
+    pts.forEach(p => {
+      const px = 25 + p.x * (w - 40), py = (h - 25) - p.y * (h - 40);
+      ctx.beginPath(); ctx.moveTo(px-3, py-3); ctx.lineTo(px+3, py+3); ctx.moveTo(px+3, py-3); ctx.lineTo(px-3, py+3); ctx.stroke();
+    });
+  }
+
+  // 3. Overfitting
+  const c3 = $('canvas-fit-over');
+  if (c3) {
+    const ctx = c3.getContext('2d');
+    const w = c3.width, h = c3.height;
+    ctx.clearRect(0, 0, w, h);
+    ctx.strokeStyle = '#334155'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(25, 15); ctx.lineTo(25, h - 25); ctx.lineTo(w - 15, h - 25); ctx.stroke();
+
+    // Wavy 5th-order Polynomial hitting points
+    ctx.strokeStyle = '#f43f5e'; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    for (let x = 0; x <= 1.0; x += 0.02) {
+      const y = 0.15 + 1.1 * x + 0.3 * Math.sin(x * 14) * (x * 1.5);
+      const px = 25 + x * (w - 40), py = (h - 25) - y * (h - 40);
+      if (x === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    ctx.strokeStyle = '#f87171'; ctx.lineWidth = 2;
+    pts.forEach(p => {
+      const px = 25 + p.x * (w - 40), py = (h - 25) - p.y * (h - 40);
+      ctx.beginPath(); ctx.moveTo(px-3, py-3); ctx.lineTo(px+3, py+3); ctx.moveTo(px+3, py-3); ctx.lineTo(px-3, py+3); ctx.stroke();
+    });
+  }
+}
+
+// ==========================================================================
+// 5. NAVIGATION & SLIDE PROGRESSION ENGINE
+// ==========================================================================
 const slides = [...document.querySelectorAll('section.slide')];
-let index = 0, step = 0;
-let traceIndexes = { prediction: 0, cost: 0 };
+let slideIndex = 0;
+let stepIndex = 0;
+let traceIndexes = { boundary: 0, cost: 0, reg: 0 };
 
 function maxSteps(slide) {
-  if (slide.dataset.live === 'prediction') return PRED_TRACE.length - 1;
+  if (slide.dataset.live === 'boundary') return BOUNDARY_TRACE.length - 1;
   if (slide.dataset.live === 'cost') return COST_TRACE.length - 1;
+  if (slide.dataset.live === 'reg') return REG_TRACE.length - 1;
   return Number(slide.dataset.steps || 0);
 }
 
-function renderSlide() {
-  const slide = slides[index];
-  slide.querySelectorAll('.reveal').forEach(el => el.classList.toggle('shown', Number(el.dataset.step) <= step));
-  
-  if (slide.dataset.live === 'prediction') renderPredictionLive(traceIndexes.prediction);
-  if (slide.dataset.live === 'cost') renderCostLive(traceIndexes.cost);
-  
-  $('counter').textContent = `${index + 1} / ${slides.length}`;
-}
+function updateNavUI() {
+  $('counter').textContent = `${slideIndex + 1} / ${slides.length}`;
+  $('btn-prev').disabled = (slideIndex === 0 && stepIndex === 0);
 
-function showSlide(n, end = false) {
-  index = Math.max(0, Math.min(slides.length - 1, n));
-  if (slides[index].dataset.live) {
-    let type = slides[index].dataset.live;
-    traceIndexes[type] = end ? maxSteps(slides[index]) : 0;
+  const cur = slides[slideIndex];
+  if (cur.dataset.live) {
+    const type = cur.dataset.live;
+    $('step-info').textContent = `Live Trace Step ${traceIndexes[type]} / ${maxSteps(cur)}`;
+  } else if (cur.dataset.steps) {
+    $('step-info').textContent = `Step ${stepIndex} / ${maxSteps(cur)}`;
   } else {
-    step = end ? maxSteps(slides[index]) : 0;
+    $('step-info').textContent = 'Overview';
   }
-  slides.forEach((s, i) => s.classList.toggle('active', i === index));
-  renderSlide();
 }
 
-function traceStep(delta, type) {
-  let trc = type === 'prediction' ? PRED_TRACE : COST_TRACE;
-  traceIndexes[type] = Math.max(0, Math.min(trc.length - 1, traceIndexes[type] + delta));
-  renderSlide();
+function renderActiveSlide() {
+  const slide = slides[slideIndex];
+  slide.querySelectorAll('.reveal').forEach(el => {
+    el.classList.toggle('shown', Number(el.dataset.step) <= stepIndex);
+  });
+
+  if (slide.dataset.live === 'boundary') renderBoundaryLive(traceIndexes.boundary);
+  if (slide.dataset.live === 'cost') renderCostLive(traceIndexes.cost);
+  if (slide.dataset.live === 'reg') renderRegLive(traceIndexes.reg);
+
+  // Trigger Slide Canvas Drawings
+  if (slideIndex === 2) drawCanvasLinFail();
+  if (slideIndex === 3) drawCanvasSigmoid();
+  if (slideIndex === 4) { drawCanvasDBDiag(); drawCanvasDBVert(); drawCanvasDBCircle(); }
+  if (slideIndex === 6) drawCostCanvases();
+  if (slideIndex === 9) drawCanvasOVA();
+  if (slideIndex === 10) drawFittingCanvases();
+
+  updateNavUI();
+}
+
+function showSlide(n, atEnd = false) {
+  slideIndex = Math.max(0, Math.min(slides.length - 1, n));
+  const cur = slides[slideIndex];
+  if (cur.dataset.live) {
+    const type = cur.dataset.live;
+    traceIndexes[type] = atEnd ? maxSteps(cur) : 0;
+  } else {
+    stepIndex = atEnd ? maxSteps(cur) : 0;
+  }
+
+  slides.forEach((s, idx) => s.classList.toggle('active', idx === slideIndex));
+  renderActiveSlide();
 }
 
 function next() {
-  let type = slides[index].dataset.live;
-  if (type) {
-    let max = (type === 'prediction' ? PRED_TRACE.length : COST_TRACE.length) - 1;
-    if (traceIndexes[type] < max) { traceStep(1, type); return; }
-  } else {
-    if (step < maxSteps(slides[index])) { step++; renderSlide(); return; }
+  const cur = slides[slideIndex];
+  if (cur.dataset.live) {
+    const type = cur.dataset.live;
+    if (traceIndexes[type] < maxSteps(cur)) {
+      traceIndexes[type]++;
+      renderActiveSlide();
+      return;
+    }
+  } else if (cur.dataset.steps) {
+    if (stepIndex < maxSteps(cur)) {
+      stepIndex++;
+      renderActiveSlide();
+      return;
+    }
   }
-  if (index < slides.length - 1) showSlide(index + 1);
+
+  if (slideIndex < slides.length - 1) {
+    showSlide(slideIndex + 1, false);
+  }
 }
 
 function previous() {
-  let type = slides[index].dataset.live;
-  if (type) {
-    if (traceIndexes[type] > 0) { traceStep(-1, type); return; }
-  } else {
-    if (step > 0) { step--; renderSlide(); return; }
+  const cur = slides[slideIndex];
+  if (cur.dataset.live) {
+    const type = cur.dataset.live;
+    if (traceIndexes[type] > 0) {
+      traceIndexes[type]--;
+      renderActiveSlide();
+      return;
+    }
+  } else if (cur.dataset.steps) {
+    if (stepIndex > 0) {
+      stepIndex--;
+      renderActiveSlide();
+      return;
+    }
   }
-  if (index > 0) showSlide(index - 1, true);
+
+  if (slideIndex > 0) {
+    showSlide(slideIndex - 1, true);
+  }
 }
 
-function fit() { document.documentElement.style.setProperty('--scale', Math.min(innerWidth / 1600, innerHeight / 900)); }
+function fit() {
+  const scale = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
+  document.documentElement.style.setProperty('--scale', scale);
+}
 
-function setup() {
-  addEventListener('resize', fit);
-  addEventListener('keydown', e => {
-    if(['ArrowRight','PageDown',' ','Enter'].includes(e.key)) { e.preventDefault(); next(); }
-    else if(['ArrowLeft','PageUp','Backspace'].includes(e.key)) { e.preventDefault(); previous(); }
-    else if(e.key === 'Home') { e.preventDefault(); showSlide(0); }
-    else if(e.key === 'End') { e.preventDefault(); showSlide(slides.length - 1); }
-  });
-  
-  // Render Canvas items once
-  drawSigmoid();
-  drawCostFunction();
-  drawScatterAndLine('canvas-under', 'under');
-  drawScatterAndLine('canvas-optimal', 'optimal');
-  drawScatterAndLine('canvas-over', 'over');
+// Touch swipe support
+let touchStartX = 0;
+window.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
+window.addEventListener('touchend', e => {
+  const touchEndX = e.changedTouches[0].screenX;
+  if (touchEndX < touchStartX - 50) next();
+  else if (touchEndX > touchStartX + 50) previous();
+}, {passive: true});
 
+// Keyboard controls
+window.addEventListener('keydown', e => {
+  if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(e.key)) {
+    e.preventDefault(); next();
+  } else if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) {
+    e.preventDefault(); previous();
+  } else if (e.key === 'Home') {
+    e.preventDefault(); showSlide(0);
+  } else if (e.key === 'End') {
+    e.preventDefault(); showSlide(slides.length - 1, true);
+  }
+});
+
+$('btn-prev').addEventListener('click', previous);
+$('btn-next').addEventListener('click', next);
+window.addEventListener('resize', fit);
+
+// Boot sequence
+window.addEventListener('load', () => {
   fit();
   showSlide(0);
-}
-setup();
+});
 </script>
 </body>
 </html>
