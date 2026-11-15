@@ -1,0 +1,2398 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CS463: Lecture 2 - Linear & Polynomial Regression</title>
+<style>
+/* ==========================================================================
+   1. VISUAL DESIGN SYSTEM: DARK STAGE & PALETTE
+   ========================================================================== */
+:root {
+  --paper: #0f172a;
+  --ink: #f8fafc;
+  --muted: #94a3b8;
+  --rule: #334155;
+  --soft: #1e293b;
+  --blue: #38bdf8;
+  --bluewash: rgba(56, 189, 248, 0.15);
+  --amber: #fbbf24;
+  --amberwash: rgba(251, 191, 36, 0.15);
+  --green: #34d399;
+  --greenwash: rgba(52, 211, 153, 0.15);
+  --red: #f87171;
+  --redwash: rgba(248, 113, 113, 0.15);
+  --pink: #f43f5e;
+  --pinkwash: rgba(244, 63, 94, 0.15);
+  --neon: #00f3ff;
+  --neonwash: rgba(0, 243, 255, 0.15);
+  --scale: 1;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+body {
+  background: #020617;
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+/* ==========================================================================
+   2. STAGE & RESPONSIVE SCALING ARCHITECTURE (1600 x 900)
+   ========================================================================== */
+#stage {
+  width: 1600px;
+  height: 900px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: -450px 0 0 -800px;
+  transform: scale(var(--scale));
+  transform-origin: center center;
+  background: var(--paper);
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 0 65px rgba(0, 0, 0, 0.85);
+  border: 1px solid var(--rule);
+}
+
+section.slide {
+  display: none;
+  position: absolute;
+  inset: 0;
+  padding: 56px 76px 95px;
+  overflow-y: auto;
+  background: var(--paper);
+}
+section.slide::-webkit-scrollbar { width: 7px; }
+section.slide::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 4px; }
+section.slide.active {
+  display: block;
+  animation: arrive 0.22s ease-out;
+}
+@keyframes arrive {
+  from { opacity: 0.35; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Dedicated Cover Slide Layout */
+section.slide.cover-slide.active {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 60px 100px;
+}
+
+/* ==========================================================================
+   3. TYPOGRAPHY & CARD COMPONENTS
+   ========================================================================== */
+h1, h2, h3, h4, p, ul, li { margin: 0; }
+h1 { font-size: 74px; line-height: 1.05; letter-spacing: -2px; font-weight: 700; margin-bottom: 18px; }
+h2 { font-size: 44px; line-height: 1.15; letter-spacing: -1.2px; font-weight: 700; margin-bottom: 12px; color: var(--blue); }
+h3 { font-size: 26px; line-height: 1.25; font-weight: 650; margin-bottom: 10px; }
+h4 { font-size: 22px; line-height: 1.3; font-weight: 650; margin-bottom: 8px; }
+p, li { font-size: 21px; line-height: 1.5; color: var(--ink); }
+ul { padding-left: 28px; margin-bottom: 12px; }
+
+.lead { font-size: 23px; color: var(--muted); margin-bottom: 22px; max-width: 1450px; line-height: 1.4; }
+.label { font-size: 17px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; color: var(--muted); margin-bottom: 10px; }
+
+.blue { color: var(--blue); }
+.amber { color: var(--amber); }
+.green { color: var(--green); }
+.red { color: var(--red); }
+.pink { color: var(--pink); }
+.neon { color: var(--neon); }
+
+/* Layout Grids */
+.columns { display: grid; grid-template-columns: 1fr 1fr; gap: 38px; margin-top: 14px; }
+.columns-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 26px; margin-top: 14px; }
+.divider { border-left: 1.5px solid var(--rule); padding-left: 36px; }
+
+/* Progressive Reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(9px);
+  visibility: hidden;
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+.reveal.shown {
+  opacity: 1;
+  transform: none;
+  visibility: visible;
+}
+
+/* Info Cards & Boxes */
+.card {
+  background: var(--soft);
+  padding: 20px 24px;
+  border-radius: 10px;
+  border-top: 4px solid var(--blue);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+  margin-bottom: 18px;
+}
+.card h4 { font-size: 22px; margin-bottom: 10px; color: var(--ink); }
+.card p { font-size: 19px; color: var(--muted); }
+.card.amber { border-color: var(--amber); }
+.card.green { border-color: var(--green); }
+.card.pink { border-color: var(--pink); }
+
+.info-box {
+  background: var(--soft);
+  padding: 18px 22px;
+  border-radius: 8px;
+  border-left: 4px solid var(--neon);
+  margin-bottom: 18px;
+}
+.info-box .badge {
+  display: inline-block;
+  background: var(--neonwash);
+  color: var(--neon);
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+/* Math Boards & Custom CSS Fractions */
+.math-board {
+  background: #111827;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 18px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 18px;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+}
+.formula-main {
+  font-family: "Georgia", "Times New Roman", serif;
+  font-size: 30px;
+  color: var(--blue);
+  letter-spacing: 0.5px;
+  line-height: 1.4;
+}
+
+.math-flex {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  vertical-align: middle;
+}
+.fraction-block {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+  text-align: center;
+  margin: 0 4px;
+  line-height: 1.1;
+}
+.fraction-top {
+  border-bottom: 2px solid currentColor;
+  padding: 0 4px 2px;
+}
+.fraction-bottom {
+  padding: 2px 4px 0;
+}
+
+/* Flow Visual Card (Slide 4) */
+.flow-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: #111827;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 18px 24px;
+  margin-bottom: 20px;
+}
+.flow-box {
+  background: var(--soft);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 12px 20px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 19px;
+}
+.flow-arrow {
+  color: var(--blue);
+  font-size: 26px;
+  font-weight: bold;
+}
+
+/* ==========================================================================
+   4. LIVE INTERACTIVE TRACE SLIDES
+   ========================================================================== */
+.live-slide { padding-top: 45px !important; }
+.live-grid {
+  display: grid;
+  grid-template-columns: 820px 1fr;
+  gap: 36px;
+  margin-top: 10px;
+  height: 670px;
+  align-items: stretch;
+}
+.table-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.calc-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  justify-content: flex-start;
+}
+.live-explanation {
+  font-size: 21px;
+  line-height: 1.5;
+  padding: 22px 24px;
+  background: var(--soft);
+  border-radius: 10px;
+  border-left: 5px solid var(--blue);
+  min-height: 190px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
+}
+.live-explanation strong { color: var(--blue); }
+
+/* Tables */
+table.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 19px;
+  text-align: center;
+  background: var(--soft);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+table.stats-table th {
+  background: #111827;
+  color: var(--muted);
+  padding: 12px 14px;
+  border-bottom: 2px solid var(--rule);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+table.stats-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink);
+}
+.hl-row { background: var(--bluewash); }
+.hl-cell-blue { font-weight: bold; color: var(--blue); background: var(--bluewash); }
+.hl-cell-amber { font-weight: bold; color: var(--amber); background: var(--amberwash); }
+.hl-cell-green { font-weight: bold; color: var(--green); background: var(--greenwash); }
+.hl-cell-red { font-weight: bold; color: var(--red); background: var(--redwash); }
+.invisible { opacity: 0; visibility: hidden; }
+
+/* Canvas Visual Container */
+.curve-visual {
+  background: #111827;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  width: 100%;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+canvas { max-width: 100%; height: auto; display: block; }
+.canvas-caption { font-size: 15px; color: var(--muted); margin-top: 8px; text-align: center; }
+
+/* ==========================================================================
+   5. NAVIGATION BAR & CONTROLS
+   ========================================================================== */
+#nav {
+  position: absolute;
+  left: 76px;
+  right: 76px;
+  bottom: 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 50;
+  height: 48px;
+}
+.nav-btn {
+  background: var(--soft);
+  border: 1px solid var(--rule);
+  color: var(--ink);
+  padding: 9px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+.nav-btn:hover:not(:disabled) {
+  background: var(--blue);
+  color: #020617;
+  border-color: var(--blue);
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.45);
+}
+.nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.nav-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.slide-number {
+  font-size: 18px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+.step-indicator {
+  font-size: 13px;
+  color: var(--blue);
+  letter-spacing: 1px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+</style>
+</head>
+<body>
+
+<main id="stage" aria-label="CS463 Linear & Polynomial Regression Presentation">
+
+  <!-- ======================================================================
+       SLIDE 1: Cover Slide
+       ====================================================================== -->
+  <section class="slide active cover-slide">
+    <p class="label">Machine Learning & Expert Systems (CS463) • Kohat University of Science & Technology (KUST)</p>
+    <h1 class="blue">Linear &amp; Polynomial Regression</h1>
+    <p class="lead" style="font-size:28px; max-width:1100px;">
+      Supervised Learning, Cost Functions, Gradient Descent, Multivariable Models &amp; Feature Engineering
+    </p>
+    <div class="card" style="margin-top:30px; padding:18px 36px; border-top-color:var(--neon);">
+      <p style="font-size:22px; color:var(--ink);">
+        Course Instructor: <strong>Dr. Shafaq Mussadiq</strong> • Institute of Computing (IOC)
+      </p>
+    </div>
+    <p style="color:var(--muted); margin-top:30px; font-size:18px;">
+      Use Left/Right Arrows, Spacebar, or the navigation buttons below to step through the lecture.
+    </p>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 2: Supervised Learning & The Regression Problem
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>What is Supervised Regression?</h2>
+    <p class="lead">Predicting continuous numerical outputs from labeled training data.</p>
+    <div class="columns">
+      <div>
+        <div class="info-box reveal" data-step="1">
+          <span class="badge">Definition — Supervised Regression</span>
+          <p>
+            Supervised learning teaches a model from a <strong>labeled dataset</strong> where we already know the correct answers. <strong>Regression</strong> specifically predicts a <strong>continuous numerical value</strong> (like price, temperature, or age), unlike classification which predicts discrete categories (0 or 1).
+          </p>
+          <p style="margin-top:10px;">
+            <strong>Variables:</strong> One variable is the <strong>independent (predictor) variable (<span class="neon">X</span>)</strong>—our input—and the other is the <strong>dependent (outcome) variable (<span class="neon">Y</span>)</strong>—what we want to predict.
+          </p>
+        </div>
+
+        <div class="card pink reveal" data-step="2">
+          <h4 class="pink">Why Modeling Choice Matters (Housing Price Example)</h4>
+          <p>
+            Suppose we want to predict the price of a <strong>750 ft²</strong> house:
+          </p>
+          <ul style="margin-top:8px; font-size:19px;">
+            <li>A <strong>straight line</strong> (pink) predicts roughly <strong>$150k</strong>.</li>
+            <li>A <strong>curved polynomial</strong> (blue) fits the flattening trend better and predicts roughly <strong>$200k</strong>.</li>
+          </ul>
+          <p style="margin-top:8px;">
+            How we choose our hypothesis shape directly changes our predictions!
+          </p>
+        </div>
+      </div>
+
+      <div class="divider reveal" data-step="3">
+        <h3>Housing Price Prediction Visual</h3>
+        <div class="curve-visual">
+          <canvas id="canvas-housing-intro" width="560" height="400"></canvas>
+          <div class="canvas-caption">
+            Size (feet²) vs Price ($ in 1000's). Dashed projection at x = 750 shows 150k vs 200k.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 3: Training Set & Standard Notation
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>The Training Set &amp; Mathematical Notation</h2>
+    <p class="lead">Before writing equations, we standardize the symbols used across all of machine learning.</p>
+    <div class="columns">
+      <div class="reveal" data-step="1">
+        <h3>Portland, OR Housing Dataset</h3>
+        <table class="stats-table" style="margin-top:14px;">
+          <tr>
+            <th>Index (i)</th>
+            <th>Size in feet² (x)</th>
+            <th>Price ($) in 1000's (y)</th>
+          </tr>
+          <tr><td>1</td><td class="hl-cell-blue">2104</td><td class="hl-cell-amber">460</td></tr>
+          <tr><td>2</td><td>1416</td><td>232</td></tr>
+          <tr><td>3</td><td>1534</td><td>315</td></tr>
+          <tr><td>4</td><td>852</td><td>178</td></tr>
+          <tr style="color:var(--muted);"><td>...</td><td>...</td><td>...</td></tr>
+        </table>
+        <div class="info-box" style="margin-top:20px; border-color:var(--blue);">
+          <span class="badge" style="color:var(--blue); background:var(--bluewash);">Ground Truth</span>
+          <p>Each row represents a historical house sale where the true sale price is known.</p>
+        </div>
+      </div>
+
+      <div class="divider">
+        <div class="reveal" data-step="2">
+          <h3>Core Symbols (Term-by-Term)</h3>
+          <ul>
+            <li><strong>m</strong>: Total number of training examples (rows in our dataset).</li>
+            <li><strong>x</strong>: The "input" variable / feature (e.g., living area in feet²).</li>
+            <li><strong>y</strong>: The "output" variable / "target" variable we want to predict (price in $1000's).</li>
+          </ul>
+        </div>
+
+        <div class="card green reveal" data-step="3" style="margin-top:20px;">
+          <h4 class="green">Indexing Specific Examples</h4>
+          <p><strong>(x, y)</strong>: A single training example.</p>
+          <p style="margin-top:8px;">
+            <strong>(x<sup>(i)</sup>, y<sup>(i)</sup>)</strong>: The <strong>i<sup>th</sup> training example</strong>.
+          </p>
+          <p style="font-size:18px; color:var(--muted); margin-top:8px;">
+            ⚠️ <em>Note:</em> The superscript <strong>(i)</strong> is <strong>not</strong> an exponent! It is simply an index into the i<sup>th</sup> row of the table. For example, x<sup>(1)</sup> = 2104 and y<sup>(1)</sup> = 460.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 4: Univariate Linear Regression & The Hypothesis
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>Linear Regression with One Variable</h2>
+    <p class="lead">How a learning algorithm turns training data into a predictive function h(x).</p>
+
+    <!-- Flow Visual -->
+    <div class="flow-container reveal" data-step="1">
+      <div class="flow-box" style="border-color:var(--amber);">Training Set (x, y)</div>
+      <div class="flow-arrow">➔</div>
+      <div class="flow-box" style="border-color:var(--neon); color:var(--neon);">Learning Algorithm</div>
+      <div class="flow-arrow">➔</div>
+      <div class="flow-box" style="border-color:var(--blue); color:var(--blue);">Hypothesis Function h</div>
+      <div style="margin-left:20px; font-size:18px; color:var(--muted);">
+        x (living area) ➔ [ <strong style="color:var(--blue);">h</strong> ] ➔ predicted y (price)
+      </div>
+    </div>
+
+    <div class="columns">
+      <div class="reveal" data-step="2">
+        <div class="math-board">
+          <div class="formula-main">h<sub>&theta;</sub>(x) = &theta;<sub>0</sub> + &theta;<sub>1</sub>x</div>
+        </div>
+        <div class="info-box" style="border-color:var(--blue);">
+          <span class="badge" style="color:var(--blue); background:var(--bluewash);">Why "Linear"?</span>
+          <p>
+            Because this equation draws a <strong>straight line</strong> relating one input feature <em>x</em> to a predicted output <em>h<sub>&theta;</sub>(x)</em>. Also called <em>Univariate Linear Regression</em> (single input variable).
+          </p>
+        </div>
+      </div>
+
+      <div class="divider reveal" data-step="3">
+        <h3>Breaking Down Every Term</h3>
+        <ul>
+          <li><strong>h<sub>&theta;</sub>(x)</strong>: The <strong>hypothesis</strong>—our model's predicted value <em>ŷ</em> for input <em>x</em>, parameterized by &theta;.</li>
+          <li><strong>&theta;<sub>0</sub> (Theta-zero)</strong>: The <strong>bias / y-intercept</strong>—the baseline predicted price when x = 0.</li>
+          <li><strong>&theta;<sub>1</sub> (Theta-one)</strong>: The <strong>weight / slope</strong>—how much the predicted price changes for every 1-unit increase in x.</li>
+        </ul>
+        <div class="card amber" style="margin-top:16px;">
+          <h4 class="amber">Key Question</h4>
+          <p>How do we choose the best &theta;<sub>0</sub> and &theta;<sub>1</sub> so our line fits the data?</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 5: Intuition of Parameters θ₀ and θ₁
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>How Parameters &theta;<sub>0</sub> and &theta;<sub>1</sub> Shape the Line</h2>
+    <p class="lead">Changing &theta;<sub>0</sub> shifts the line up or down; changing &theta;<sub>1</sub> tilts its steepness.</p>
+
+    <div class="columns-3">
+      <!-- Card 1 -->
+      <div class="card reveal" data-step="1" style="border-top-color:var(--green);">
+        <h4 class="green">Case 1: Zero Slope</h4>
+        <div class="curve-visual" style="height:220px; padding:6px;">
+          <canvas id="canvas-theta-1" width="360" height="200"></canvas>
+        </div>
+        <div class="math-board" style="padding:10px; margin:12px 0 8px;">
+          <div class="formula-main" style="font-size:21px;">&theta;<sub>0</sub> = 1.5, &theta;<sub>1</sub> = 0</div>
+          <div style="font-size:17px; color:var(--muted); margin-top:4px;">h<sub>&theta;</sub>(x) = 1.5 + 0·x = 1.5</div>
+        </div>
+        <p style="font-size:17px;">
+          <strong>Zero Slope (&theta;<sub>1</sub> = 0):</strong> Input <em>x</em> has zero effect; the prediction is always fixed at the intercept 1.5.
+        </p>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="card reveal" data-step="2" style="border-top-color:var(--blue);">
+        <h4 class="blue">Case 2: Zero Intercept</h4>
+        <div class="curve-visual" style="height:220px; padding:6px;">
+          <canvas id="canvas-theta-2" width="360" height="200"></canvas>
+        </div>
+        <div class="math-board" style="padding:10px; margin:12px 0 8px;">
+          <div class="formula-main" style="font-size:21px;">&theta;<sub>0</sub> = 0, &theta;<sub>1</sub> = 0.5</div>
+          <div style="font-size:17px; color:var(--muted); margin-top:4px;">h<sub>&theta;</sub>(x) = 0 + 0.5x = 0.5x</div>
+        </div>
+        <p style="font-size:17px;">
+          <strong>Zero Intercept (&theta;<sub>0</sub> = 0):</strong> Passes strictly through the origin (0,0) and rises by 0.5 for every +1 in x.
+        </p>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="card reveal" data-step="3" style="border-top-color:var(--amber);">
+        <h4 class="amber">Case 3: Both Non-Zero</h4>
+        <div class="curve-visual" style="height:220px; padding:6px;">
+          <canvas id="canvas-theta-3" width="360" height="200"></canvas>
+        </div>
+        <div class="math-board" style="padding:10px; margin:12px 0 8px;">
+          <div class="formula-main" style="font-size:21px;">&theta;<sub>0</sub> = 1, &theta;<sub>1</sub> = 0.5</div>
+          <div style="font-size:17px; color:var(--muted); margin-top:4px;">h<sub>&theta;</sub>(x) = 1 + 0.5x</div>
+        </div>
+        <p style="font-size:17px;">
+          <strong>Both Non-Zero:</strong> Starts at y = 1 when x = 0 and rises at slope 0.5. Adjusting &theta;<sub>0</sub> and &theta;<sub>1</sub> lets us position a line anywhere on the plane.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 6: The Cost Function — Squared Error / MSE
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>The Cost Function: Measuring Model Error</h2>
+    <p class="lead">To choose the best &theta;<sub>0</sub> and &theta;<sub>1</sub>, we need a mathematical score telling us how wrong our line is.</p>
+
+    <!-- Top Board -->
+    <div class="math-board reveal" data-step="1" style="padding:16px 28px;">
+      <div class="formula-main math-flex" style="font-size:28px;">
+        J(&theta;<sub>0</sub>, &theta;<sub>1</sub>) = 
+        <span class="fraction-block">
+          <span class="fraction-top">1</span>
+          <span class="fraction-bottom">2m</span>
+        </span>
+        &sum;<sub>i=1</sub><sup>m</sup> (ŷ<sub>i</sub> - y<sub>i</sub>)<sup>2</sup> = 
+        <span class="fraction-block">
+          <span class="fraction-top">1</span>
+          <span class="fraction-bottom">2m</span>
+        </span>
+        &sum;<sub>i=1</sub><sup>m</sup> (h<sub>&theta;</sub>(x<sup>(i)</sup>) - y<sup>(i)</sup>)<sup>2</sup>
+      </div>
+      <div style="margin-top:10px; font-size:20px; color:var(--neon);">
+        Optimization Goal: <strong>minimize<sub>&theta;<sub>0</sub>, &theta;<sub>1</sub></sub> J(&theta;<sub>0</sub>, &theta;<sub>1</sub>)</strong>
+      </div>
+      <p style="font-size:16px; color:var(--muted); margin-top:4px;">
+        Also known as the <em>Squared Error Function</em> or <em>Mean Squared Error (MSE)</em> (literally &frac12; x̄, half the mean of squared errors).
+      </p>
+    </div>
+
+    <div class="columns">
+      <div class="reveal" data-step="2">
+        <h3>Term-by-Term Breakdown &amp; "Why?" Questions</h3>
+        <ul style="font-size:19px;">
+          <li><strong>h<sub>&theta;</sub>(x<sup>(i)</sup>) - y<sup>(i)</sup> (Residual Error):</strong> Predicted value minus actual value for house <em>i</em>.</li>
+          <li>
+            <strong>Why Square It (···)²?</strong><br>
+            (1) Without squaring, positive errors (+50) and negative errors (-50) cancel out to zero!<br>
+            (2) Squaring makes all errors non-negative and penalizes large mistakes much more heavily than small ones.
+          </li>
+          <li>
+            <strong>Why <span class="math-flex"><span class="fraction-block"><span class="fraction-top">1</span><span class="fraction-bottom">m</span></span></span> &sum;?</strong> Averages the total squared error across all <em>m</em> examples so dataset size doesn't artificially inflate the cost.
+          </li>
+          <li>
+            <strong>Why the extra &frac12;?</strong> Pure mathematical convenience! When we take the derivative of (···)² during Gradient Descent, the exponent 2 drops down and cancels &frac12; (2 &middot; &frac12; = 1).
+          </li>
+        </ul>
+      </div>
+
+      <div class="divider reveal" data-step="3">
+        <h3>Vertical Residual Gaps</h3>
+        <div class="curve-visual">
+          <canvas id="canvas-bestfit" width="560" height="300"></canvas>
+          <div class="canvas-caption">
+            Vertical amber dashed segments represent (h<sub>&theta;</sub>(x<sup>(i)</sup>) - y<sup>(i)</sup>). Goal: Choose &theta;<sub>0</sub> and &theta;<sub>1</sub> so total squared vertical gaps are as small as possible.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 7: Live Trace 1 — Computing the Cost Function J(θ₀, θ₁)
+       ====================================================================== -->
+  <section class="slide live-slide" data-live="cost">
+    <h2>Live Calculation: Evaluating the Cost Function</h2>
+    <p class="lead">Let's test parameters &theta;<sub>0</sub> = 0 and &theta;<sub>1</sub> = 1 on three simple data points (m = 3) to see how J(&theta;<sub>0</sub>, &theta;<sub>1</sub>) is computed.</p>
+
+    <div class="live-grid">
+      <div class="table-container">
+        <table class="stats-table" id="cost-table">
+          <!-- Dynamically populated -->
+        </table>
+        <div class="math-board" style="padding:14px 20px;">
+          <div class="formula-main math-flex" style="font-size:24px;">
+            J(&theta;<sub>0</sub>, &theta;<sub>1</sub>) = 
+            <span class="fraction-block">
+              <span class="fraction-top">1</span>
+              <span class="fraction-bottom">2 &middot; 3</span>
+            </span>
+            &sum; (h<sub>&theta;</sub>(x<sup>(i)</sup>) - y<sup>(i)</sup>)<sup>2</sup>
+          </div>
+          <div id="cost-formula-eval" style="font-size:22px; color:var(--neon); margin-top:8px;">
+            Ready to evaluate...
+          </div>
+        </div>
+      </div>
+
+      <div class="calc-pane">
+        <div class="live-explanation" id="cost-explanation" aria-live="polite">
+          <!-- Live step-by-step teacher text -->
+        </div>
+        <div class="card amber" id="cost-comparison-card" style="margin-top:auto;">
+          <h4 class="amber">Comparison Insight</h4>
+          <p id="cost-comparison-text" style="font-size:18px;">
+            Advance steps using Next or Spacebar to reveal the calculation.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 8: Gradient Descent — Definition & Algorithm
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>Gradient Descent: Finding the Minimum Automatically</h2>
+    <p class="lead">Instead of guessing &theta; values by hand, Gradient Descent walks downhill on the cost surface.</p>
+
+    <div class="columns">
+      <div>
+        <div class="info-box reveal" data-step="1">
+          <span class="badge">Definition &amp; Why We Use It</span>
+          <p>
+            <strong>Gradient Descent</strong> is an iterative optimization algorithm that repeatedly adjusts model parameters (&theta;<sub>0</sub>, &theta;<sub>1</sub>, ...) in the direction that decreases the cost function J(&theta;) until it reaches a minimum.
+          </p>
+          <p style="margin-top:10px;">
+            <strong>Why is it preferred?</strong> For <strong>large datasets</strong> and <strong>high-dimensional data</strong> (thousands of features), solving for &theta; algebraically in one shot is computationally slow and memory-heavy. Gradient Descent scales efficiently with minimal memory.
+          </p>
+        </div>
+
+        <div class="math-board reveal" data-step="2">
+          <div style="font-size:18px; color:var(--muted); margin-bottom:8px;">repeat until convergence {</div>
+          <div class="formula-main math-flex" style="font-size:26px;">
+            &theta;<sub>j</sub> := &theta;<sub>j</sub> - &alpha;
+            <span class="fraction-block">
+              <span class="fraction-top">&part;</span>
+              <span class="fraction-bottom">&part;&theta;<sub>j</sub></span>
+            </span>
+            J(&theta;<sub>0</sub>, &theta;<sub>1</sub>)
+          </div>
+          <div style="font-size:17px; color:var(--neon); margin-top:8px;">(simultaneously update for j = 0 and j = 1)</div>
+          <div style="font-size:18px; color:var(--muted); margin-top:8px;">}</div>
+        </div>
+      </div>
+
+      <div class="divider reveal" data-step="3">
+        <h3>Term-by-Term Breakdown &amp; "How/Why"</h3>
+        <ul style="font-size:19px;">
+          <li><strong>:= (Assignment):</strong> Overwrite the old parameter value with the newly updated value.</li>
+          <li><strong>&alpha; (Alpha — Learning Rate):</strong> A small positive constant (e.g., 0.01 or 0.001) controlling <strong>how big a step</strong> we take downhill on each iteration.</li>
+          <li>
+            <strong><span class="math-flex"><span class="fraction-block"><span class="fraction-top">&part;</span><span class="fraction-bottom">&part;&theta;<sub>j</sub></span></span></span> J(&theta;<sub>0</sub>, &theta;<sub>1</sub>) (Partial Derivative / Slope):</strong> Measures the slope of the cost bowl at our current position.
+            <div style="margin-top:6px; color:var(--muted);">
+              <em>Why the minus sign?</em> If the slope is <strong>positive</strong> (uphill to the right), subtracting a positive number moves &theta;<sub>j</sub> <strong>left</strong> (downhill). If the slope is <strong>negative</strong>, subtracting a negative adds to &theta;<sub>j</sub>, moving it <strong>right</strong> (downhill)!
+            </div>
+          </li>
+        </ul>
+
+        <div class="card pink" style="margin-top:16px;">
+          <h4 class="pink">Simultaneous Update Rule (Crucial!)</h4>
+          <p style="font-size:18px;">
+            Always compute both new values <code>temp0</code> and <code>temp1</code> using the <em>old</em> &theta;<sub>0</sub>, &theta;<sub>1</sub> before overwriting either. Updating &theta;<sub>0</sub> first would corrupt the &theta;<sub>1</sub> calculation!
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 9: How Learning Rate α Controls Convergence
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>Choosing &alpha; &amp; Why Fixed &alpha; Still Converges</h2>
+    <p class="lead">The learning rate &alpha; decides whether gradient descent crawls, converges smoothly, or explodes.</p>
+
+    <div class="columns-3">
+      <!-- Card 1 -->
+      <div class="card reveal" data-step="1" style="border-top-color:var(--blue);">
+        <h4 class="blue">If &alpha; is Too Small</h4>
+        <div class="curve-visual" style="height:230px; padding:6px;">
+          <canvas id="canvas-alpha-small" width="360" height="210"></canvas>
+        </div>
+        <p style="font-size:18px; margin-top:14px;">
+          Takes tiny steps; <strong>guaranteed to go downhill</strong>, but convergence can be painfully <strong>slow</strong> (requiring thousands of unnecessary iterations).
+        </p>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="card reveal" data-step="2" style="border-top-color:var(--red);">
+        <h4 class="red">If &alpha; is Too Large</h4>
+        <div class="curve-visual" style="height:230px; padding:6px;">
+          <canvas id="canvas-alpha-large" width="360" height="210"></canvas>
+        </div>
+        <p style="font-size:18px; margin-top:14px;">
+          Steps <strong>overshoot the minimum</strong>, bouncing to the opposite wall even higher up. It may <strong>fail to converge, or even diverge</strong>!
+        </p>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="card reveal" data-step="3" style="border-top-color:var(--green);">
+        <h4 class="green">Why Fixed &alpha; Converges</h4>
+        <div class="curve-visual" style="height:230px; padding:6px;">
+          <canvas id="canvas-alpha-converge" width="360" height="210"></canvas>
+        </div>
+        <p style="font-size:18px; margin-top:14px;">
+          <strong>You do NOT need to decrease &alpha; over time!</strong> Why? As gradient descent approaches a minimum, the slope gets flatter (closer to 0). Multiplying fixed &alpha; by a smaller slope <strong>automatically produces smaller steps</strong> until it settles at the minimum (slope = 0).
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 10: Linear Regression Gradient Descent Equations
+       ====================================================================== -->
+  <section class="slide" data-steps="2">
+    <h2>Gradient Descent Applied to Linear Regression</h2>
+    <p class="lead">Substituting the Mean Squared Error cost function into the partial derivatives.</p>
+
+    <!-- Top Board -->
+    <div class="columns reveal" data-step="1">
+      <div class="math-board">
+        <h4 style="color:var(--muted); font-size:18px; margin-bottom:8px;">Model &amp; Cost Function</h4>
+        <div class="formula-main" style="font-size:24px;">h<sub>&theta;</sub>(x) = &theta;<sub>0</sub> + &theta;<sub>1</sub>x</div>
+        <div class="formula-main math-flex" style="font-size:22px; margin-top:10px;">
+          J(&theta;<sub>0</sub>, &theta;<sub>1</sub>) = 
+          <span class="fraction-block"><span class="fraction-top">1</span><span class="fraction-bottom">2m</span></span>
+          &sum;<sub>i=1</sub><sup>m</sup> (h<sub>&theta;</sub>(x<sup>(i)</sup>) - y<sup>(i)</sup>)<sup>2</sup>
+        </div>
+      </div>
+
+      <div class="math-board" style="border-color:var(--blue);">
+        <h4 style="color:var(--neon); font-size:18px; margin-bottom:8px;">Derived Update Rules (Simultaneous)</h4>
+        <div class="formula-main math-flex" style="font-size:23px;">
+          &theta;<sub>0</sub> := &theta;<sub>0</sub> - &alpha;
+          <span class="fraction-block"><span class="fraction-top">1</span><span class="fraction-bottom">m</span></span>
+          &sum;<sub>i=1</sub><sup>m</sup> (h<sub>&theta;</sub>(x<sup>(i)</sup>) - y<sup>(i)</sup>)
+        </div>
+        <div class="formula-main math-flex" style="font-size:23px; margin-top:12px;">
+          &theta;<sub>1</sub> := &theta;<sub>1</sub> - &alpha;
+          <span class="fraction-block"><span class="fraction-top">1</span><span class="fraction-bottom">m</span></span>
+          &sum;<sub>i=1</sub><sup>m</sup> (h<sub>&theta;</sub>(x<sup>(i)</sup>) - y<sup>(i)</sup>) &middot; x<sup>(i)</sup>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Explanation -->
+    <div class="card reveal" data-step="2" style="margin-top:20px;">
+      <h4 class="blue">How the Calculus Works (Why the 2 Disappears &amp; Where x<sup>(i)</sup> Comes From)</h4>
+      <p style="font-size:19px; line-height:1.6;">
+        By the chain rule:
+        <span class="math-flex" style="font-family:Georgia,serif; font-size:20px; color:var(--amber);">
+          <span class="fraction-block"><span class="fraction-top">&part;</span><span class="fraction-bottom">&part;&theta;<sub>j</sub></span></span>
+          <span class="fraction-block"><span class="fraction-top">1</span><span class="fraction-bottom">2m</span></span> (h<sub>&theta;</sub>(x) - y)<sup>2</sup> =
+          <span class="fraction-block"><span class="fraction-top">1</span><span class="fraction-bottom">2m</span></span> &middot; 2(h<sub>&theta;</sub>(x) - y) &middot;
+          <span class="fraction-block"><span class="fraction-top">&part;</span><span class="fraction-bottom">&part;&theta;<sub>j</sub></span></span> (&theta;<sub>0</sub> + &theta;<sub>1</sub>x - y)
+        </span>
+      </p>
+      <ul style="font-size:19px; margin-top:10px;">
+        <li>The <strong>2 cancels &frac12;</strong>!</li>
+        <li>For <strong>&theta;<sub>0</sub></strong>, the inner derivative with respect to &theta;<sub>0</sub> is <strong>1</strong>, leaving just the error term.</li>
+        <li>For <strong>&theta;<sub>1</sub></strong>, the inner derivative with respect to &theta;<sub>1</sub> is <strong>x<sup>(i)</sup></strong>, multiplying the error by x<sup>(i)</sup>.</li>
+        <li><em>Bonus property:</em> Because J(&theta;<sub>0</sub>, &theta;<sub>1</sub>) for Linear Regression is always a <strong>convex bowl</strong>, there are no fake local minima—Gradient Descent always finds the single global minimum!</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 11: Live Trace 2 — Gradient Descent Step-by-Step
+       ====================================================================== -->
+  <section class="slide live-slide" data-live="gd">
+    <h2>Live Trace: One Simultaneous Gradient Descent Update</h2>
+    <p class="lead">Watch &theta;<sub>0</sub> and &theta;<sub>1</sub> update on points (1, 2) and (2, 4) starting from &theta;<sub>0</sub> = 0, &theta;<sub>1</sub> = 0 with &alpha; = 0.1.</p>
+
+    <div class="live-grid">
+      <div class="table-container">
+        <table class="stats-table" id="gd-table">
+          <!-- Dynamically populated -->
+        </table>
+
+        <div class="math-board" style="padding:14px 20px;">
+          <div class="formula-main" id="gd-math-display" style="font-size:22px;">
+            Initializing update calculations...
+          </div>
+        </div>
+      </div>
+
+      <div class="calc-pane">
+        <div class="live-explanation" id="gd-explanation" aria-live="polite">
+          <!-- Step-by-step trace explanation -->
+        </div>
+        <div class="card green" id="gd-summary-card" style="margin-top:auto;">
+          <h4 class="green">Progress Summary</h4>
+          <p id="gd-summary-text" style="font-size:18px;">
+            Target line is y = 2x (&theta;<sub>0</sub> = 0, &theta;<sub>1</sub> = 2).
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 12: Multiple Linear Regression & Multivariable Notation
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>Multiple Regression (Multiple Input Features)</h2>
+    <p class="lead">Real-world predictions depend on many factors, not just house size.</p>
+
+    <div class="reveal" data-step="1">
+      <div class="info-box">
+        <span class="badge">Definition &amp; Objective</span>
+        <p>
+          <strong>Multiple Regression</strong> models the relationship between a <strong>single dependent variable (y)</strong> and <strong>several independent variables (x<sub>1</sub>, x<sub>2</sub>, ..., x<sub>n</sub>)</strong>, using all known feature values together to make a more accurate prediction.
+        </p>
+      </div>
+    </div>
+
+    <div class="columns">
+      <div class="reveal" data-step="2">
+        <h3>Multi-Feature Housing Table</h3>
+        <table class="stats-table" style="font-size:18px; margin-top:10px;">
+          <tr>
+            <th>Size (ft²) x₁</th>
+            <th>Bedrooms x₂</th>
+            <th>Floors x₃</th>
+            <th>Age (yrs) x₄</th>
+            <th>Price ($1000) y</th>
+          </tr>
+          <tr><td>2104</td><td>5</td><td>1</td><td>45</td><td class="hl-cell-amber">460</td></tr>
+          <tr class="hl-row"><td class="hl-cell-blue">1416</td><td>3</td><td class="hl-cell-green">2</td><td>40</td><td>232</td></tr>
+          <tr><td>1534</td><td>3</td><td>2</td><td>30</td><td>315</td></tr>
+          <tr><td>852</td><td>2</td><td>1</td><td>36</td><td>178</td></tr>
+        </table>
+      </div>
+
+      <div class="divider reveal" data-step="3">
+        <h3>New Notation (Explained with Examples)</h3>
+        <ul style="font-size:19px;">
+          <li><strong>n</strong>: Number of features (in this dataset, <strong>n = 4</strong>).</li>
+          <li><strong>m</strong>: Number of training examples (rows in the table).</li>
+          <li>
+            <strong>x<sup>(i)</sup></strong>: The entire input <strong>feature vector</strong> of the i<sup>th</sup> training example.<br>
+            <span style="color:var(--blue); font-family:Georgia,serif;">E.g., x<sup>(2)</sup> = [1416, 3, 2, 40]<sup>T</sup></span>
+          </li>
+          <li>
+            <strong>x<sub>j</sub><sup>(i)</sup></strong>: Value of feature <strong>j</strong> in the <strong>i<sup>th</sup></strong> training example.<br>
+            <span style="color:var(--green); font-family:Georgia,serif;">E.g., x<sub>3</sub><sup>(2)</sup> = 2 (floors in house 2)</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 13: Multivariable Hypothesis & Vectorization
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>Multivariable Hypothesis &amp; Matrix Form</h2>
+    <p class="lead">From long sums to a clean, single dot product &theta;<sup>T</sup>x.</p>
+
+    <div class="columns">
+      <div>
+        <div class="reveal" data-step="1">
+          <div class="math-board">
+            <h4 style="color:var(--muted); font-size:18px; margin-bottom:8px;">Expanded Hypothesis</h4>
+            <div class="formula-main" style="font-size:24px;">
+              h<sub>&theta;</sub>(x) = &theta;<sub>0</sub> + &theta;<sub>1</sub>x<sub>1</sub> + &theta;<sub>2</sub>x<sub>2</sub> + &theta;<sub>3</sub>x<sub>3</sub> + &theta;<sub>4</sub>x<sub>4</sub>
+            </div>
+          </div>
+          <div class="info-box" style="border-color:var(--blue);">
+            <span class="badge" style="color:var(--blue); background:var(--bluewash);">Real-World Intuition</span>
+            <ul style="font-size:18px; margin-top:6px;">
+              <li><strong>&theta;<sub>0</sub></strong> = Base price of any house ($80k).</li>
+              <li><strong>&theta;<sub>1</sub></strong> = Value added per square foot ($0.1k/ft²).</li>
+              <li><strong>&theta;<sub>2</sub></strong> = Value added per bedroom ($15k).</li>
+              <li><strong>&theta;<sub>3</sub></strong> = Value added per floor ($20k).</li>
+              <li><strong>&theta;<sub>4</sub></strong> = Depreciation per year of age (likely <strong>negative</strong>!).</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="math-board reveal" data-step="2" style="border-color:var(--green);">
+          <h4 style="color:var(--green); font-size:18px; margin-bottom:8px;">Vectorized Matrix Form</h4>
+          <div class="formula-main" style="font-size:26px;">
+            h<sub>&theta;</sub>(x) = [&theta;<sub>0</sub> &theta;<sub>1</sub> ... &theta;<sub>n</sub>]
+            <span style="display:inline-block; vertical-align:middle; font-size:20px; line-height:1.2;">
+              &lceil; x<sub>0</sub> &rceil;<br>
+              | x<sub>1</sub> |<br>
+              | &vellip; |<br>
+              &lfloor; x<sub>n</sub> &rfloor;
+            </span>
+            = &theta;<sup>T</sup>x
+          </div>
+        </div>
+      </div>
+
+      <div class="divider reveal" data-step="3">
+        <h3>Why Do We Assume x<sub>0</sub><sup>(i)</sup> = 1?</h3>
+        <div class="card amber">
+          <h4 class="amber">The Dimension Mismatch Problem</h4>
+          <p style="font-size:18px;">
+            Notice that &theta; has <strong>n + 1</strong> parameters (&theta;<sub>0</sub> through &theta;<sub>n</sub>), whereas our dataset only has <strong>n</strong> features (x<sub>1</sub> through x<sub>n</sub>).
+          </p>
+        </div>
+        <div class="card green" style="margin-top:14px;">
+          <h4 class="green">The Elegant Solution</h4>
+          <p style="font-size:18px;">
+            By prepending a dummy feature <strong>x<sub>0</sub><sup>(i)</sup> = 1</strong> to every training example, the feature vector x<sup>(i)</sup> also contains <strong>n + 1</strong> elements:
+          </p>
+          <div class="formula-main" style="font-size:22px; text-align:center; margin:10px 0;">
+            &theta;<sub>0</sub> &middot; x<sub>0</sub> = &theta;<sub>0</sub> &middot; 1 = &theta;<sub>0</sub>
+          </div>
+          <p style="font-size:18px; color:var(--muted);">
+            Both vectors now match element-wise, letting us compute the entire hypothesis with a single, ultra-fast vector dot product <strong>&theta;<sup>T</sup>x</strong>!
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 14: Gradient Descent for Multiple Variables
+       ====================================================================== -->
+  <section class="slide" data-steps="2">
+    <h2>Gradient Descent for n &ge; 1 Variables</h2>
+    <p class="lead">Generalizing the update rule to any number of features.</p>
+
+    <div class="columns">
+      <div class="reveal" data-step="1">
+        <h3>From n = 1 to n &ge; 1</h3>
+        <div class="info-box" style="border-color:var(--muted);">
+          <span class="badge" style="color:var(--muted); background:rgba(148,163,184,0.15);">Previously (n = 1)</span>
+          <p style="font-size:18px; font-family:Georgia,serif;">
+            &theta;<sub>0</sub> := &theta;<sub>0</sub> - &alpha; <span class="fraction-block"><span class="fraction-top">1</span><span class="fraction-bottom">m</span></span> &sum; (h<sub>&theta;</sub>(x<sup>(i)</sup>) - y<sup>(i)</sup>)<br>
+            &theta;<sub>1</sub> := &theta;<sub>1</sub> - &alpha; <span class="fraction-block"><span class="fraction-top">1</span><span class="fraction-bottom">m</span></span> &sum; (h<sub>&theta;</sub>(x<sup>(i)</sup>) - y<sup>(i)</sup>) x<sup>(i)</sup>
+          </p>
+        </div>
+
+        <div class="math-board" style="border-color:var(--blue); margin-top:16px;">
+          <h4 style="color:var(--blue); font-size:18px; margin-bottom:8px;">Generalized Update (n &ge; 1)</h4>
+          <div style="font-size:16px; color:var(--muted); margin-bottom:6px;">repeat until convergence {</div>
+          <div class="formula-main math-flex" style="font-size:24px;">
+            &theta;<sub>j</sub> := &theta;<sub>j</sub> - &alpha;
+            <span class="fraction-block"><span class="fraction-top">1</span><span class="fraction-bottom">m</span></span>
+            &sum;<sub>i=1</sub><sup>m</sup> (h<sub>&theta;</sub>(x<sup>(i)</sup>) - y<sup>(i)</sup>) &middot; x<sub>j</sub><sup>(i)</sup>
+          </div>
+          <div style="font-size:16px; color:var(--neon); margin-top:8px;">(simultaneously update for j = 0, 1, ..., n)</div>
+          <div style="font-size:16px; color:var(--muted); margin-top:6px;">}</div>
+        </div>
+      </div>
+
+      <div class="divider reveal" data-step="2">
+        <h3>Expanded View &amp; Why It Works</h3>
+        <ul style="font-size:19px; line-height:1.7;">
+          <li>
+            <strong>For j = 0:</strong><br>
+            &theta;<sub>0</sub> := &theta;<sub>0</sub> - &alpha; <span class="fraction-block"><span class="fraction-top">1</span><span class="fraction-bottom">m</span></span> &sum; (h(x<sup>(i)</sup>) - y<sup>(i)</sup>) <strong>x<sub>0</sub><sup>(i)</sup></strong><br>
+            <span style="color:var(--muted); font-size:17px;">(Since x<sub>0</sub><sup>(i)</sup> = 1, this is 100% identical to the old &theta;<sub>0</sub> rule!)</span>
+          </li>
+          <li>
+            <strong>For j = 1:</strong><br>
+            &theta;<sub>1</sub> := &theta;<sub>1</sub> - &alpha; <span class="fraction-block"><span class="fraction-top">1</span><span class="fraction-bottom">m</span></span> &sum; (h(x<sup>(i)</sup>) - y<sup>(i)</sup>) <strong>x<sub>1</sub><sup>(i)</sup></strong>
+          </li>
+          <li>
+            <strong>For j = 2:</strong><br>
+            &theta;<sub>2</sub> := &theta;<sub>2</sub> - &alpha; <span class="fraction-block"><span class="fraction-top">1</span><span class="fraction-bottom">m</span></span> &sum; (h(x<sup>(i)</sup>) - y<sup>(i)</sup>) <strong>x<sub>2</sub><sup>(i)</sup></strong>
+          </li>
+        </ul>
+        <div class="card green" style="margin-top:14px;">
+          <h4 class="green">Intuition</h4>
+          <p style="font-size:18px;">
+            Every parameter &theta;<sub>j</sub> is nudged in proportion to how strongly its corresponding feature x<sub>j</sub> contributed to the prediction error.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 15: Tips for Gradient Descent — Feature Scaling & Mean Normalization
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>Tip 1: Feature Scaling &amp; Mean Normalization</h2>
+    <p class="lead">Speeding up gradient descent by putting all input features on roughly the same numerical scale.</p>
+
+    <div class="columns">
+      <div>
+        <div class="info-box reveal" data-step="1">
+          <span class="badge">Why Uneven Ranges Hurt Gradient Descent</span>
+          <p style="font-size:19px;">
+            Suppose <strong>x<sub>1</sub> = size (0 to 2000 ft²)</strong> and <strong>x<sub>2</sub> = bedrooms (1 to 5)</strong>.
+          </p>
+          <p style="font-size:19px; margin-top:8px;">
+            Because of the huge scale gap, &theta; <strong>descends quickly on small ranges</strong> and <strong>slowly on large ranges</strong>, creating elongated cost contours where gradient descent <strong>oscillates inefficiently</strong> back and forth on its way to the minimum.
+          </p>
+          <p style="font-size:19px; color:var(--neon); margin-top:8px;">
+            <strong>Goal:</strong> Scale every feature into roughly <strong>-1 &le; x<sub>i</sub> &le; 1</strong> (or -0.5 &le; x<sub>i</sub> &le; 0.5).
+          </p>
+        </div>
+
+        <div class="card reveal" data-step="2" style="border-top-color:var(--amber);">
+          <h4 class="amber">Two Complementary Techniques</h4>
+          <p style="font-size:18px;">
+            <strong>1. Feature Scaling:</strong> Divide each input by its range (max - min), giving a new span of width 1.<br>
+            <strong>2. Mean Normalization:</strong> Subtract the average (&mu;<sub>i</sub>) from each value so the feature is centered at a <strong>new mean of 0</strong>.
+          </p>
+        </div>
+      </div>
+
+      <div class="divider reveal" data-step="3">
+        <div class="math-board">
+          <h4 style="color:var(--blue); font-size:18px; margin-bottom:8px;">Combined Scaling Formula</h4>
+          <div class="formula-main math-flex" style="font-size:28px;">
+            x<sub>i</sub> := 
+            <span class="fraction-block">
+              <span class="fraction-top">x<sub>i</sub> - &mu;<sub>i</sub></span>
+              <span class="fraction-bottom">s<sub>i</sub></span>
+            </span>
+          </div>
+          <div style="font-size:16px; color:var(--muted); margin-top:8px;">
+            &mu;<sub>i</sub> = Average of feature x<sub>i</sub> &bull; s<sub>i</sub> = Range (max - min) or standard deviation
+          </div>
+        </div>
+
+        <div class="curve-visual" style="margin-top:14px;">
+          <canvas id="canvas-contours" width="560" height="260"></canvas>
+          <div class="canvas-caption">
+            Unscaled: Skinny oscillating contours vs Scaled: Circular direct path straight to the minimum!
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 16: Live Trace 3 — Applying Mean Normalization & Feature Scaling
+       ====================================================================== -->
+  <section class="slide live-slide" data-live="scaling">
+    <h2>Live Trace: Scaling Portland House Sizes</h2>
+    <p class="lead">Transforming raw house sizes [2104, 1416, 1534, 852] into centered, small numbers.</p>
+
+    <div class="live-grid">
+      <div class="table-container">
+        <table class="stats-table" id="scale-table">
+          <!-- Dynamically populated -->
+        </table>
+
+        <div class="math-board" style="padding:14px 20px;">
+          <div class="formula-main math-flex" style="font-size:22px;">
+            x<sub>1</sub> := 
+            <span class="fraction-block">
+              <span class="fraction-top">x<sub>1</sub> - 1476.5</span>
+              <span class="fraction-bottom">1252</span>
+            </span>
+          </div>
+          <div id="scale-formula-eval" style="font-size:19px; color:var(--neon); margin-top:8px;">
+            Awaiting calculation steps...
+          </div>
+        </div>
+      </div>
+
+      <div class="calc-pane">
+        <div class="live-explanation" id="scale-explanation" aria-live="polite">
+          <!-- Live step-by-step scaling text -->
+        </div>
+        <div class="card green" id="scale-summary-card" style="margin-top:auto;">
+          <h4 class="green">Resulting Benefit</h4>
+          <p id="scale-summary-text" style="font-size:18px;">
+            Advance steps to watch the transformation unfold.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 17: Tip 2 — Debugging Gradient Descent & Choosing α
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>Tip 2: Debugging Gradient Descent</h2>
+    <p class="lead">How to verify gradient descent is working properly by plotting J(&theta;) against iteration count.</p>
+
+    <div class="columns-3">
+      <!-- Plot 1 -->
+      <div class="card reveal" data-step="1" style="border-top-color:var(--green);">
+        <h4 class="green">Healthy Behavior</h4>
+        <div class="curve-visual" style="height:230px; padding:6px;">
+          <canvas id="canvas-gd-good" width="360" height="210"></canvas>
+        </div>
+        <p style="font-size:17px; margin-top:12px;">
+          <strong>Plot J(&theta;) vs Iterations:</strong> Cost drops steadily on every iteration and flattens out around 300–400 iterations once converged.
+        </p>
+      </div>
+
+      <!-- Plot 2 -->
+      <div class="card reveal" data-step="2" style="border-top-color:var(--red);">
+        <h4 class="red">Warning Signs (Not Working)</h4>
+        <div class="curve-visual" style="height:230px; padding:6px;">
+          <canvas id="canvas-gd-bad" width="360" height="210"></canvas>
+        </div>
+        <p style="font-size:17px; margin-top:12px;">
+          If J(&theta;) is <strong>increasing</strong> or <strong>oscillating</strong> like waves: <strong>&alpha; is too large!</strong> You are overshooting the bowl. <em>Fix: Use a smaller &alpha;.</em>
+        </p>
+      </div>
+
+      <!-- Plot 3 -->
+      <div class="card reveal" data-step="3" style="border-top-color:var(--blue);">
+        <h4 class="blue">Summary &amp; Guarantees</h4>
+        <div class="info-box" style="border-color:var(--neon); padding:14px; margin-bottom:12px;">
+          <span class="badge">Proven Guarantee</span>
+          <p style="font-size:16px;">
+            For a <strong>sufficiently small &alpha;</strong>, J(&theta;) is guaranteed to decrease on <strong>every single iteration</strong>.
+          </p>
+        </div>
+        <ul style="font-size:17px;">
+          <li><strong>&alpha; too small:</strong> Slow convergence (takes too many iterations).</li>
+          <li><strong>&alpha; too large:</strong> J(&theta;) may fail to decrease and diverge.</li>
+          <li>Rule of thumb: Try ... 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1 ...</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 18: Feature Engineering — Combining Features
+       ====================================================================== -->
+  <section class="slide" data-steps="2">
+    <h2>Feature Engineering: Creating Better Inputs</h2>
+    <p class="lead">Sometimes combining two raw features creates a stronger predictor than keeping them separate.</p>
+
+    <div class="columns">
+      <div class="reveal" data-step="1">
+        <h3>Housing Land Area Example</h3>
+        <p style="font-size:19px;">
+          Suppose your dataset gives <strong>frontage (x<sub>1</sub>)</strong> and <strong>depth (x<sub>2</sub>)</strong> of a plot of land:
+        </p>
+        <div class="math-board" style="margin:14px 0; padding:12px;">
+          <div class="formula-main" style="font-size:22px;">
+            h<sub>&theta;</sub>(x) = &theta;<sub>0</sub> + &theta;<sub>1</sub>(frontage) + &theta;<sub>2</sub>(depth)
+          </div>
+        </div>
+
+        <div class="card amber">
+          <h4 class="amber">Why Combine Them?</h4>
+          <p style="font-size:18px;">
+            Home buyers don't care about frontage and depth separately—they care about total <strong>land area</strong>!
+          </p>
+          <div class="math-board" style="margin:12px 0; border-color:var(--green); padding:10px;">
+            <div class="formula-main" style="font-size:22px; color:var(--green);">
+              x = x<sub>1</sub> &times; x<sub>2</sub> = frontage &times; depth
+            </div>
+          </div>
+          <p style="font-size:18px;">
+            Simplified model: <strong>h<sub>&theta;</sub>(x) = &theta;<sub>0</sub> + &theta;<sub>1</sub>x</strong> (fewer parameters, cleaner domain intuition, more accurate predictions).
+          </p>
+        </div>
+      </div>
+
+      <div class="divider reveal" data-step="2">
+        <h3>Visualizing Feature Combination</h3>
+        <div class="curve-visual">
+          <canvas id="canvas-land-area" width="560" height="340"></canvas>
+          <div class="canvas-caption">
+            Frontage (x₁) &times; Depth (x₂) combines into a single meaningful predictor: Area (x).
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 19: Polynomial Regression & Feature Scaling Warning
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>Polynomial Regression &amp; Choice of Features</h2>
+    <p class="lead">Fitting curved, non-linear trends while still using the exact same Linear Regression machinery.</p>
+
+    <div class="columns">
+      <div class="reveal" data-step="1">
+        <div class="curve-visual">
+          <canvas id="canvas-poly" width="560" height="340"></canvas>
+          <div class="canvas-caption">
+            Quadratic (blue) curves back down; Cubic (green) curves up; Square Root (magenta) rises and flattens.
+          </div>
+        </div>
+      </div>
+
+      <div class="divider">
+        <div class="reveal" data-step="1">
+          <h3>Quadratic vs Cubic vs Square Root</h3>
+          <ul style="font-size:18px;">
+            <li><strong>Quadratic:</strong> h(&theta;) = &theta;<sub>0</sub> + &theta;<sub>1</sub>(size) + &theta;<sub>2</sub>(size)<sup>2</sup>. <em>Problem:</em> Parabola eventually curves back <strong>down</strong>, implying huge houses get cheaper!</li>
+            <li><strong>Cubic:</strong> ... + &theta;<sub>3</sub>(size)<sup>3</sup>. Avoids curving downward on the right.</li>
+            <li><strong>Square Root:</strong> h(&theta;) = &theta;<sub>0</sub> + &theta;<sub>1</sub>(size) + &theta;<sub>2</sub>&radic;size. Rises steadily and flattens naturally, matching real housing prices!</li>
+          </ul>
+        </div>
+
+        <div class="card reveal" data-step="2" style="border-top-color:var(--blue); margin-top:14px;">
+          <h4 class="blue">How Linear Regression Fits Curves</h4>
+          <p style="font-size:18px;">
+            Simply treat powers as new features: <strong>x<sub>1</sub> = (size)</strong>, <strong>x<sub>2</sub> = (size)²</strong>, <strong>x<sub>3</sub> = (size)³</strong>.<br>
+            Then <strong>h<sub>&theta;</sub>(x) = &theta;<sub>0</sub> + &theta;<sub>1</sub>x<sub>1</sub> + &theta;<sub>2</sub>x<sub>2</sub> + &theta;<sub>3</sub>x<sub>3</sub></strong> is <strong>linear in &theta;</strong>, so Gradient Descent works identically!
+          </p>
+        </div>
+
+        <div class="card pink reveal" data-step="3" style="margin-top:14px;">
+          <h4 class="pink">CRITICAL Warning — Feature Scaling Explodes Here!</h4>
+          <p style="font-size:17px;">
+            If x<sub>1</sub> = size has range <strong>1 to 1,000</strong>, then:<br>
+            &bull; x<sub>2</sub> = (size)² has range <strong>1 to 1,000,000</strong> (10<sup>6</sup>)<br>
+            &bull; x<sub>3</sub> = (size)³ has range <strong>1 to 1,000,000,000</strong> (10<sup>9</sup>)!<br>
+            Without <strong>feature scaling</strong>, Gradient Descent will oscillate wildly across these 10<sup>9</sup>-scale differences.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 20: Exam Quick-Review Summary & Thank You
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>Exam Recap: The Complete Regression Pipeline</h2>
+    <p class="lead">Everything connects into one unified workflow.</p>
+
+    <div class="columns-3">
+      <div class="card reveal" data-step="1" style="border-top-color:var(--blue);">
+        <h4 class="blue">1. The Model (h<sub>&theta;</sub>)</h4>
+        <ul style="font-size:18px; margin-top:8px;">
+          <li><strong>Univariate:</strong> h(x) = &theta;<sub>0</sub> + &theta;<sub>1</sub>x</li>
+          <li><strong>Multivariable:</strong> h(x) = &theta;<sup>T</sup>x (with x<sub>0</sub> = 1)</li>
+          <li><strong>Polynomial:</strong> Create powers (x, x², &radic;x) as new linear features</li>
+        </ul>
+      </div>
+
+      <div class="card reveal" data-step="2" style="border-top-color:var(--amber);">
+        <h4 class="amber">2. Cost &amp; Optimization</h4>
+        <ul style="font-size:18px; margin-top:8px;">
+          <li><strong>Cost Function:</strong> MSE J(&theta;) = <span class="fraction-block"><span class="fraction-top">1</span><span class="fraction-bottom">2m</span></span> &sum; (h(x<sup>(i)</sup>) - y<sup>(i)</sup>)²</li>
+          <li><strong>Convex Bowl:</strong> Guaranteed global minimum!</li>
+          <li><strong>Gradient Descent:</strong> Simultaneously update &theta;<sub>j</sub> := &theta;<sub>j</sub> - &alpha; <span class="fraction-block"><span class="fraction-top">1</span><span class="fraction-bottom">m</span></span> &sum; (h - y)x<sub>j</sub></li>
+        </ul>
+      </div>
+
+      <div class="card reveal" data-step="3" style="border-top-color:var(--green);">
+        <h4 class="green">3. Make It Fast &amp; Accurate</h4>
+        <ul style="font-size:18px; margin-top:8px;">
+          <li><strong>Feature Scaling:</strong> x<sub>i</sub> := (x<sub>i</sub> - &mu;<sub>i</sub>) / s<sub>i</sub> avoids elongated contours</li>
+          <li><strong>Debug with Plots:</strong> J(&theta;) vs Iterations verifies monotonic decrease</li>
+          <li><strong>Feature Engineering:</strong> Combine raw features (frontage &times; depth) for intuitive models</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card neon reveal" data-step="3" style="margin-top:30px; text-align:center; padding:22px; border-top-color:var(--neon);">
+      <h3 style="color:var(--neon); font-size:26px;">Thank You! — Machine Learning &amp; Expert Systems (CS463)</h3>
+      <p style="font-size:19px; color:var(--muted); margin-top:6px;">
+        Course Instructor: Dr. Shafaq Mussadiq &bull; Institute of Computing, Kohat University of Science &amp; Technology
+      </p>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       BOTTOM NAVIGATION CONTROLS
+       ====================================================================== -->
+  <div id="nav">
+    <button class="nav-btn" id="btn-prev" aria-label="Previous step or slide">
+      <span>&larr;</span> Previous
+    </button>
+    <div class="nav-center">
+      <div class="slide-number" id="counter" aria-live="polite">1 / 20</div>
+      <div class="step-indicator" id="step-info">Cover</div>
+    </div>
+    <button class="nav-btn" id="btn-next" aria-label="Next step or slide">
+      Next <span>&rarr;</span>
+    </button>
+  </div>
+
+</main>
+
+<!-- ==========================================================================
+     JAVASCRIPT LOGIC: NAVIGATION, LIVE TRACES & CANVAS VISUALS
+     ========================================================================== -->
+<script>
+const $ = id => document.getElementById(id);
+
+// ==========================================================================
+// 1. LIVE TRACE 1: COST FUNCTION CALCULATION (SLIDE 7)
+// ==========================================================================
+const COST_DATA = [
+  { i: 1, x: 1, y: 1 },
+  { i: 2, x: 2, y: 2 },
+  { i: 3, x: 3, y: 4 }
+];
+
+const COST_TRACE = [
+  {
+    step: 0,
+    pred: [null, null, null],
+    err: [null, null, null],
+    sqErr: [null, null, null],
+    evalMath: 'Formula: J(0, 1) = &frac12;m &sum; (h(x) - y)²',
+    exp: `<strong>Setup: Testing &theta;<sub>0</sub> = 0, &theta;<sub>1</sub> = 1</strong><br><br>
+          We have 3 training data points (m = 3): (1, 1), (2, 2), and (3, 4).<br>
+          Our test hypothesis is <strong>h<sub>&theta;</sub>(x) = 0 + 1&middot;x = x</strong>.<br><br>
+          We want to calculate a single number, <strong>J(0, 1)</strong>, measuring the total error of this line. Press <strong>Next</strong> to evaluate Point 1.`,
+    comp: 'Testing candidate line h(x) = x against ground truth points.'
+  },
+  {
+    step: 1,
+    pred: [1, null, null],
+    err: [0, null, null],
+    sqErr: [0, null, null],
+    evalMath: 'Point 1: h(1) = 1 &rarr; Error = 0 &rarr; Sq = 0',
+    exp: `<strong>Step 1: Evaluate Point 1 (x = 1, y = 1)</strong><br><br>
+          &bull; Model prediction: <strong>h(1) = 0 + 1(1) = 1</strong><br>
+          &bull; Prediction error: <strong>h(x<sup>(1)</sup>) - y<sup>(1)</sup> = 1 - 1 = 0</strong><br>
+          &bull; Squared error: <strong>(0)² = 0</strong><br><br>
+          The line passes directly through Point 1! Error for this point is zero.`,
+    comp: 'Point 1 has 0 residual error.'
+  },
+  {
+    step: 2,
+    pred: [1, 2, null],
+    err: [0, 0, null],
+    sqErr: [0, 0, null],
+    evalMath: 'Point 2: h(2) = 2 &rarr; Error = 0 &rarr; Sq = 0',
+    exp: `<strong>Step 2: Evaluate Point 2 (x = 2, y = 2)</strong><br><br>
+          &bull; Model prediction: <strong>h(2) = 0 + 1(2) = 2</strong><br>
+          &bull; Prediction error: <strong>h(x<sup>(2)</sup>) - y<sup>(2)</sup> = 2 - 2 = 0</strong><br>
+          &bull; Squared error: <strong>(0)² = 0</strong><br><br>
+          Another perfect prediction! The line passes right through Point 2.`,
+    comp: 'Point 2 also has 0 residual error.'
+  },
+  {
+    step: 3,
+    pred: [1, 2, 3],
+    err: [0, 0, -1],
+    sqErr: [0, 0, 1],
+    evalMath: 'Point 3: h(3) = 3 &rarr; Error = -1 &rarr; Sq = (-1)² = +1',
+    exp: `<strong>Step 3: Evaluate Point 3 (x = 3, y = 4)</strong><br><br>
+          &bull; Model prediction: <strong>h(3) = 0 + 1(3) = 3</strong><br>
+          &bull; Prediction error: <strong>h(x<sup>(3)</sup>) - y<sup>(3)</sup> = 3 - 4 = -1</strong><br>
+          &bull; Squared error: <strong>(-1)² = +1</strong><br><br>
+          <strong>Crucial Insight:</strong> Because we square the error, the negative sign disappears! Under-predicting by 1 adds positive cost (+1), preventing errors from canceling out.`,
+    comp: 'Notice (-1)² = +1 adds positive error to the total.'
+  },
+  {
+    step: 4,
+    pred: [1, 2, 3],
+    err: [0, 0, -1],
+    sqErr: [0, 0, 1],
+    evalMath: 'J(0, 1) = &frac16; &middot; (0 + 0 + 1) = 1/6 &approx; 0.167',
+    exp: `<strong>Step 4: Sum and Average Across All 3 Points</strong><br><br>
+          &bull; Sum of squared errors = <strong>0 + 0 + 1 = 1</strong><br>
+          &bull; Multiply by <span class="fraction-block"><span class="fraction-top">1</span><span class="fraction-bottom">2m</span></span> = <span class="fraction-block"><span class="fraction-top">1</span><span class="fraction-bottom">2(3)</span></span> = <strong>&frac16;</strong><br><br>
+          <strong>Final Cost: J(0, 1) = &frac16; &approx; 0.167</strong>. This is a very low error score, confirming h(x) = x fits the points well!`,
+    comp: 'Final Cost for &theta;₁ = 1 is J(0, 1) = 0.167.'
+  },
+  {
+    step: 5,
+    pred: [1, 2, 3],
+    err: [0, 0, -1],
+    sqErr: [0, 0, 1],
+    evalMath: 'Comparison: J(0, 1) = 0.167 vs J(0, 0.5) = 1.250',
+    exp: `<strong>Step 5: What if we tested &theta;<sub>0</sub> = 0, &theta;<sub>1</sub> = 0.5?</strong><br><br>
+          If we tested slope &theta;<sub>1</sub> = 0.5:<br>
+          &bull; Predictions: [0.5, 1.0, 1.5]<br>
+          &bull; Errors: [-0.5, -1.0, -2.5]<br>
+          &bull; Squared errors: [0.25, 1.00, 6.25] &rarr; Sum = 7.50<br>
+          &bull; <strong>J(0, 0.5) = 7.50 / 6 = 1.250</strong><br><br>
+          Since <strong>0.167 &lt; 1.250</strong>, the cost function mathematically proves &theta;<sub>1</sub> = 1 is a much better fit!`,
+    comp: 'Cost comparison: 0.167 < 1.250 confirms &theta;₁=1 is superior. But how do we find the absolute minimum automatically? Gradient Descent!'
+  }
+];
+
+function renderCostLive(stepIdx) {
+  const t = COST_TRACE[stepIdx];
+  let html = `
+    <tr>
+      <th>Point (i)</th>
+      <th>Input x<sup>(i)</sup></th>
+      <th>Actual y<sup>(i)</sup></th>
+      <th>Pred h(x)</th>
+      <th>Error (h - y)</th>
+      <th>Squared Error</th>
+    </tr>
+  `;
+
+  COST_DATA.forEach((pt, idx) => {
+    const isCur = (stepIdx === idx + 1);
+    const p = t.pred[idx] !== null ? t.pred[idx] : '<span class="invisible">-</span>';
+    const e = t.err[idx] !== null ? t.err[idx] : '<span class="invisible">-</span>';
+    const sq = t.sqErr[idx] !== null ? t.sqErr[idx] : '<span class="invisible">-</span>';
+
+    html += `
+      <tr class="${isCur ? 'hl-row' : ''}">
+        <td>${pt.i}</td>
+        <td>${pt.x}</td>
+        <td class="hl-cell-amber">${pt.y}</td>
+        <td class="${isCur ? 'hl-cell-blue' : ''}">${p}</td>
+        <td class="${isCur && e < 0 ? 'hl-cell-red' : ''}">${e}</td>
+        <td class="${isCur ? 'hl-cell-green' : ''}">${sq}</td>
+      </tr>
+    `;
+  });
+
+  if (stepIdx >= 4) {
+    html += `
+      <tr style="background:#111827; font-weight:bold;">
+        <td colspan="5" style="text-align:right; color:var(--muted);">Sum of Squared Errors:</td>
+        <td class="hl-cell-green">1.00</td>
+      </tr>
+      <tr style="background:#111827; font-weight:bold;">
+        <td colspan="5" style="text-align:right; color:var(--neon);">Cost J(0, 1) = &frac12;(3) &middot; 1.00 =</td>
+        <td class="hl-cell-blue">0.167</td>
+      </tr>
+    `;
+  }
+
+  $('cost-table').innerHTML = html;
+  $('cost-formula-eval').innerHTML = t.evalMath;
+  $('cost-explanation').innerHTML = t.exp;
+  $('cost-comparison-text').innerHTML = t.comp;
+}
+
+// ==========================================================================
+// 2. LIVE TRACE 2: ONE GRADIENT DESCENT UPDATE (SLIDE 11)
+// ==========================================================================
+const GD_DATA = [
+  { i: 1, x: 1, y: 2 },
+  { i: 2, x: 2, y: 4 }
+];
+
+const GD_TRACE = [
+  {
+    step: 0,
+    desc: 'Initial State: &theta;₀ = 0, &theta;₁ = 0 &bull; &alpha; = 0.1 &bull; m = 2',
+    math: 'Current Model: h(x) = 0 + 0&middot;x = 0',
+    exp: `<strong>Step 0: Setup &amp; Initial Model State</strong><br><br>
+          We want to fit the line to Points (1, 2) and (2, 4). The true line is y = 2x.<br><br>
+          We initialize parameters at <strong>&theta;<sub>0</sub> = 0</strong> and <strong>&theta;<sub>1</sub> = 0</strong> with learning rate <strong>&alpha; = 0.1</strong>.<br>
+          At this start, our model predicts <strong>h(x) = 0</strong> for every house! Current Cost J is high (5.00).`,
+    p1: { pred: 0, err: '-', errX: '-' },
+    p2: { pred: 0, err: '-', errX: '-' },
+    grad0: '-', grad1: '-', new0: '-', new1: '-'
+  },
+  {
+    step: 1,
+    desc: 'Step 1: Forward Pass & Residual Errors',
+    math: 'Error = (h(x) - y) &bull; For x=1: (0 - 2) = -2 &bull; For x=2: (0 - 4) = -4',
+    exp: `<strong>Step 1: Calculate Prediction Errors</strong><br><br>
+          &bull; <strong>Point 1 (x=1, y=2):</strong> Prediction h(1) = 0 &rarr; Error = <strong>0 - 2 = -2</strong><br>
+          &bull; <strong>Point 2 (x=2, y=4):</strong> Prediction h(2) = 0 &rarr; Error = <strong>0 - 4 = -4</strong><br><br>
+          Both errors are negative because our model is severely under-predicting the true targets.`,
+    p1: { pred: 0, err: -2, errX: '-' },
+    p2: { pred: 0, err: -4, errX: '-' },
+    grad0: '-', grad1: '-', new0: '-', new1: '-'
+  },
+  {
+    step: 2,
+    desc: 'Step 2: Gradient with respect to &theta;₀',
+    math: '&part;J/&part;&theta;₀ = &frac12; [ (-2) + (-4) ] = &frac12;(-6) = -3.0',
+    exp: `<strong>Step 2: Compute Gradient for &theta;<sub>0</sub></strong><br><br>
+          The gradient formula for &theta;<sub>0</sub> is the average of the raw errors:<br>
+          <span style="font-family:Georgia,serif; font-size:22px; color:var(--blue);">
+            &part;J/&part;&theta;<sub>0</sub> = &frac12; [ (-2) + (-4) ] = &frac12;(-6) = <strong>-3.0</strong>
+          </span><br><br>
+          The negative gradient indicates that increasing &theta;<sub>0</sub> will move downhill toward lower error.`,
+    p1: { pred: 0, err: -2, errX: '-' },
+    p2: { pred: 0, err: -4, errX: '-' },
+    grad0: -3.0, grad1: '-', new0: '-', new1: '-'
+  },
+  {
+    step: 3,
+    desc: 'Step 3: Gradient with respect to &theta;₁ (Multiply by x)',
+    math: '&part;J/&part;&theta;₁ = &frac12; [ (-2)(1) + (-4)(2) ] = &frac12;(-10) = -5.0',
+    exp: `<strong>Step 3: Compute Gradient for &theta;<sub>1</sub></strong><br><br>
+          For &theta;<sub>1</sub>, each error is weighted by its input <strong>x<sup>(i)</sup></strong>:<br>
+          &bull; Point 1: (-2) &middot; (1) = -2<br>
+          &bull; Point 2: (-4) &middot; (2) = -8<br>
+          Sum = -10 &rarr; <span style="font-family:Georgia,serif; font-size:22px; color:var(--green);">
+            &part;J/&part;&theta;<sub>1</sub> = &frac12;(-10) = <strong>-5.0</strong>
+          </span>`,
+    p1: { pred: 0, err: -2, errX: -2 },
+    p2: { pred: 0, err: -4, errX: -8 },
+    grad0: -3.0, grad1: -5.0, new0: '-', new1: '-'
+  },
+  {
+    step: 4,
+    desc: 'Step 4: Simultaneous Parameter Update',
+    math: '&theta;₀ := 0 - 0.1(-3) = +0.30 &bull; &theta;₁ := 0 - 0.1(-5) = +0.50',
+    exp: `<strong>Step 4: Simultaneous Update with &alpha; = 0.1</strong><br><br>
+          Now update both parameters simultaneously:<br>
+          &bull; <strong>temp<sub>0</sub></strong> = 0 - 0.1(-3.0) = <strong>+0.30</strong><br>
+          &bull; <strong>temp<sub>1</sub></strong> = 0 - 0.1(-5.0) = <strong>+0.50</strong><br><br>
+          Assign &theta;<sub>0</sub> := 0.30 and &theta;<sub>1</sub> := 0.50.<br>
+          Both moved closer to the true line (y = 2x), dropping the cost J from <strong>5.00 down to 2.38</strong>! In just 1 step, the model made immense progress.`,
+    p1: { pred: 0, err: -2, errX: -2 },
+    p2: { pred: 0, err: -4, errX: -8 },
+    grad0: -3.0, grad1: -5.0, new0: '+0.30', new1: '+0.50'
+  }
+];
+
+function renderGDLive(stepIdx) {
+  const t = GD_TRACE[stepIdx];
+  let html = `
+    <tr>
+      <th>Example (i)</th>
+      <th>Input (x)</th>
+      <th>Target (y)</th>
+      <th>Pred h(x)</th>
+      <th>Error (h - y)</th>
+      <th>Error &middot; x</th>
+    </tr>
+    <tr class="${stepIdx >= 1 ? 'hl-row' : ''}">
+      <td>1</td>
+      <td>1</td>
+      <td class="hl-cell-amber">2</td>
+      <td>${t.p1.pred}</td>
+      <td class="${stepIdx >= 1 ? 'hl-cell-red' : ''}">${t.p1.err}</td>
+      <td>${t.p1.errX}</td>
+    </tr>
+    <tr class="${stepIdx >= 1 ? 'hl-row' : ''}">
+      <td>2</td>
+      <td>2</td>
+      <td class="hl-cell-amber">4</td>
+      <td>${t.p2.pred}</td>
+      <td class="${stepIdx >= 1 ? 'hl-cell-red' : ''}">${t.p2.err}</td>
+      <td>${t.p2.errX}</td>
+    </tr>
+    <tr style="background:#111827;">
+      <td colspan="4" style="text-align:right; color:var(--muted); font-weight:bold;">Gradients (&part;J/&part;&theta;):</td>
+      <td class="hl-cell-blue" style="font-weight:bold;">&part;J/&part;&theta;₀ = ${t.grad0}</td>
+      <td class="hl-cell-green" style="font-weight:bold;">&part;J/&part;&theta;₁ = ${t.grad1}</td>
+    </tr>
+    <tr style="background:#111827;">
+      <td colspan="4" style="text-align:right; color:var(--neon); font-weight:bold;">Updated Parameters (&alpha; = 0.1):</td>
+      <td class="hl-cell-blue" style="font-weight:bold;">&theta;₀ := ${t.new0}</td>
+      <td class="hl-cell-green" style="font-weight:bold;">&theta;₁ := ${t.new1}</td>
+    </tr>
+  `;
+
+  $('gd-table').innerHTML = html;
+  $('gd-math-display').innerHTML = t.math;
+  $('gd-explanation').innerHTML = t.exp;
+  $('gd-summary-text').innerHTML = `Current Iteration: ${stepIdx} / 4 &bull; Target: &theta;₀=0, &theta;₁=2. Cost drops from 5.00 &rarr; 2.38.`;
+}
+
+// ==========================================================================
+// 3. LIVE TRACE 3: FEATURE SCALING & MEAN NORMALIZATION (SLIDE 16)
+// ==========================================================================
+const SCALE_DATA = [2104, 1416, 1534, 852];
+const S_MEAN = 1476.5;
+const S_RANGE = 1252; // 2104 - 852
+
+const SCALE_TRACE = [
+  {
+    step: 0,
+    exp: `<strong>Step 0: Raw Unscaled House Sizes</strong><br><br>
+          We have raw living areas for 4 Portland houses: [2104, 1416, 1534, 852] ft².<br><br>
+          Notice how values span into the thousands! If combined with bedrooms (1–5), gradient descent will oscillate violently.<br>
+          We will apply <strong>Mean Normalization &amp; Feature Scaling</strong>:
+          <span style="color:var(--neon); font-family:Georgia,serif;">x<sub>1</sub> := (x<sub>1</sub> - &mu;<sub>1</sub>) / s<sub>1</sub></span>.`,
+    evalMath: 'Raw Data: [2104, 1416, 1534, 852]',
+    showMean: false, showRange: false, revealedRows: 0
+  },
+  {
+    step: 1,
+    exp: `<strong>Step 1: Compute Feature Mean (&mu;<sub>1</sub>)</strong><br><br>
+          Sum of all 4 house sizes = 2104 + 1416 + 1534 + 852 = <strong>5906</strong>.<br><br>
+          Divide by count (4):<br>
+          <span style="font-family:Georgia,serif; font-size:24px; color:var(--blue);">
+            &mu;<sub>1</sub> = 5906 / 4 = <strong>1476.5 ft²</strong>
+          </span><br><br>
+          Subtracting 1476.5 from each value will center our dataset at mean 0.`,
+    evalMath: '&mu;₁ = (2104 + 1416 + 1534 + 852) / 4 = 1476.5',
+    showMean: true, showRange: false, revealedRows: 0
+  },
+  {
+    step: 2,
+    exp: `<strong>Step 2: Compute Range (s<sub>1</sub> = max - min)</strong><br><br>
+          Identify the extremes in the dataset:<br>
+          &bull; Maximum size = <strong>2104</strong><br>
+          &bull; Minimum size = <strong>852</strong><br><br>
+          <span style="font-family:Georgia,serif; font-size:24px; color:var(--green);">
+            s<sub>1</sub> = 2104 - 852 = <strong>1252 ft²</strong>
+          </span><br><br>
+          Dividing by 1252 will rescale the width of the feature distribution to ~1.`,
+    evalMath: 'Range s₁ = max - min = 2104 - 852 = 1252',
+    showMean: true, showRange: true, revealedRows: 0
+  },
+  {
+    step: 3,
+    exp: `<strong>Step 3: Transform House 1 (2104 ft²)</strong><br><br>
+          &bull; Centering: 2104 - 1476.5 = <strong>+627.5</strong><br>
+          &bull; Rescaling: +627.5 / 1252 = <strong>+0.501</strong><br><br>
+          Notice how the largest house is now positioned neatly at +0.50!`,
+    evalMath: 'House 1: (2104 - 1476.5) / 1252 = +0.501',
+    showMean: true, showRange: true, revealedRows: 1
+  },
+  {
+    step: 4,
+    exp: `<strong>Step 4: Transform House 2 (1416 ft²)</strong><br><br>
+          &bull; Centering: 1416 - 1476.5 = <strong>-60.5</strong><br>
+          &bull; Rescaling: -60.5 / 1252 = <strong>-0.048</strong><br><br>
+          Because 1416 is very close to the average, its normalized score sits close to zero (-0.05).`,
+    evalMath: 'House 2: (1416 - 1476.5) / 1252 = -0.048',
+    showMean: true, showRange: true, revealedRows: 2
+  },
+  {
+    step: 5,
+    exp: `<strong>Step 5: Transform House 3 (1534 ft²)</strong><br><br>
+          &bull; Centering: 1534 - 1476.5 = <strong>+57.5</strong><br>
+          &bull; Rescaling: +57.5 / 1252 = <strong>+0.046</strong><br><br>
+          Sits slightly above the mean at +0.05.`,
+    evalMath: 'House 3: (1534 - 1476.5) / 1252 = +0.046',
+    showMean: true, showRange: true, revealedRows: 3
+  },
+  {
+    step: 6,
+    exp: `<strong>Step 6: Transform House 4 (852 ft²)</strong><br><br>
+          &bull; Centering: 852 - 1476.5 = <strong>-624.5</strong><br>
+          &bull; Rescaling: -624.5 / 1252 = <strong>-0.499</strong><br><br>
+          <strong>All 4 values now lie neatly inside [-0.50, +0.50] with mean 0!</strong><br>
+          Gradient descent can now take direct, fast steps toward the minimum without oscillating.`,
+    evalMath: 'House 4: (852 - 1476.5) / 1252 = -0.499',
+    showMean: true, showRange: true, revealedRows: 4
+  }
+];
+
+function renderScaleLive(stepIdx) {
+  const t = SCALE_TRACE[stepIdx];
+  let html = `
+    <tr>
+      <th>House (i)</th>
+      <th>Raw Size (x₁)</th>
+      <th>Centered (x₁ - &mu;₁)</th>
+      <th>Normalized x₁' = (x₁ - &mu;₁) / s₁</th>
+    </tr>
+  `;
+
+  SCALE_DATA.forEach((val, idx) => {
+    const isRev = (idx < t.revealedRows);
+    const isCur = (idx === t.revealedRows - 1 && t.revealedRows > 0);
+    const diff = (val - S_MEAN).toFixed(1);
+    const norm = ((val - S_MEAN) / S_RANGE).toFixed(3);
+
+    html += `
+      <tr class="${isCur ? 'hl-row' : ''}">
+        <td>${idx + 1}</td>
+        <td>${val} ft²</td>
+        <td>${isRev ? (diff > 0 ? '+' + diff : diff) : '<span class="invisible">-</span>'}</td>
+        <td class="${isRev ? 'hl-cell-green' : ''}">
+          ${isRev ? (norm > 0 ? '+' + norm : norm) : '<span class="invisible">-</span>'}
+        </td>
+      </tr>
+    `;
+  });
+
+  html += `
+    <tr style="background:#111827; font-weight:bold;">
+      <td colspan="2" style="text-align:right; color:var(--blue);">Mean &mu;₁:</td>
+      <td colspan="2" class="hl-cell-blue">${t.showMean ? '1476.5 ft²' : '<span class="invisible">-</span>'}</td>
+    </tr>
+    <tr style="background:#111827; font-weight:bold;">
+      <td colspan="2" style="text-align:right; color:var(--green);">Range s₁ (max - min):</td>
+      <td colspan="2" class="hl-cell-green">${t.showRange ? '1252 ft² (2104 - 852)' : '<span class="invisible">-</span>'}</td>
+    </tr>
+  `;
+
+  $('scale-table').innerHTML = html;
+  $('scale-formula-eval').innerHTML = t.evalMath;
+  $('scale-explanation').innerHTML = t.exp;
+  $('scale-summary-text').innerHTML = t.revealedRows === 4 
+    ? 'Success! All features transformed into [-0.50, +0.50] with mean 0.'
+    : 'Step ' + stepIdx + ' of 6 &bull; Preprocessing features prior to Gradient Descent.';
+}
+
+// ==========================================================================
+// 4. CANVAS DRAWING ROUTINES
+// ==========================================================================
+function drawCanvasHousingIntro() {
+  const c = $('canvas-housing-intro'); if (!c) return;
+  const ctx = c.getContext('2d');
+  const w = c.width, h = c.height;
+  ctx.clearRect(0, 0, w, h);
+
+  // Axes
+  const ml = 65, mr = 30, mt = 30, mb = 55;
+  const pw = w - ml - mr, ph = h - mt - mb;
+
+  ctx.strokeStyle = '#334155'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(ml, mt); ctx.lineTo(ml, h - mb); ctx.lineTo(w - mr, h - mb);
+  ctx.stroke();
+
+  // Gridlines & Ticks
+  ctx.font = '12px sans-serif'; ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
+  [0, 500, 1000, 1500, 2000, 2500].forEach(val => {
+    const x = ml + (val / 2500) * pw;
+    ctx.fillText(val, x, h - mb + 18);
+    ctx.strokeStyle = 'rgba(51, 65, 85, 0.3)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x, mt); ctx.lineTo(x, h - mb); ctx.stroke();
+  });
+
+  ctx.textAlign = 'right';
+  [0, 100, 200, 300, 400].forEach(val => {
+    const y = (h - mb) - (val / 400) * ph;
+    ctx.fillText(val, ml - 10, y + 4);
+    ctx.strokeStyle = 'rgba(51, 65, 85, 0.3)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(ml, y); ctx.lineTo(w - mr, y); ctx.stroke();
+  });
+
+  // Axis Titles
+  ctx.fillStyle = '#f8fafc'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('Size (feet²)', ml + pw / 2, h - 14);
+  ctx.save();
+  ctx.translate(18, mt + ph / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText('Price ($1000)', 0, 0);
+  ctx.restore();
+
+  // Data Points (Red Crosses)
+  const pts = [
+    {x: 500, y: 110}, {x: 700, y: 170}, {x: 850, y: 178}, {x: 1100, y: 220},
+    {x: 1400, y: 240}, {x: 1600, y: 315}, {x: 1900, y: 310}, {x: 2100, y: 330}, {x: 2350, y: 340}
+  ];
+
+  ctx.strokeStyle = '#f87171'; ctx.lineWidth = 2.5;
+  pts.forEach(p => {
+    const cx = ml + (p.x / 2500) * pw;
+    const cy = (h - mb) - (p.y / 400) * ph;
+    ctx.beginPath();
+    ctx.moveTo(cx - 5, cy - 5); ctx.lineTo(cx + 5, cy + 5);
+    ctx.moveTo(cx + 5, cy - 5); ctx.lineTo(cx - 5, cy + 5);
+    ctx.stroke();
+  });
+
+  // Pink Straight Line
+  ctx.strokeStyle = '#f43f5e'; ctx.lineWidth = 3;
+  ctx.beginPath();
+  const lx1 = ml + (200 / 2500) * pw, ly1 = (h - mb) - (80 / 400) * ph;
+  const lx2 = ml + (2400 / 2500) * pw, ly2 = (h - mb) - (360 / 400) * ph;
+  ctx.moveTo(lx1, ly1); ctx.lineTo(lx2, ly2);
+  ctx.stroke();
+
+  // Blue Curved Polynomial
+  ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 3.5;
+  ctx.beginPath();
+  for (let sx = 200; sx <= 2450; sx += 25) {
+    // Curve formula: rises then gently bends
+    const sy = 60 + 0.19 * sx - 0.000032 * (sx * sx);
+    const px = ml + (sx / 2500) * pw;
+    const py = (h - mb) - (sy / 400) * ph;
+    if (sx === 200) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+
+  // Projections at x = 750
+  const projX = ml + (750 / 2500) * pw;
+  const projY_line = (h - mb) - (150 / 400) * ph;
+  const projY_poly = (h - mb) - (200 / 400) * ph;
+
+  ctx.setLineDash([4, 4]); ctx.lineWidth = 1.8;
+  ctx.strokeStyle = '#fbbf24';
+  ctx.beginPath();
+  ctx.moveTo(projX, h - mb); ctx.lineTo(projX, projY_poly);
+  ctx.moveTo(projX, projY_line); ctx.lineTo(ml, projY_line);
+  ctx.moveTo(projX, projY_poly); ctx.lineTo(ml, projY_poly);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Badges at 150k and 200k
+  ctx.fillStyle = '#f43f5e'; ctx.beginPath(); ctx.arc(projX, projY_line, 5, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#38bdf8'; ctx.beginPath(); ctx.arc(projX, projY_poly, 5, 0, Math.PI*2); ctx.fill();
+
+  ctx.font = 'bold 12px sans-serif';
+  ctx.fillStyle = '#f43f5e'; ctx.fillText('Line: ~$150k', projX + 10, projY_line + 4);
+  ctx.fillStyle = '#38bdf8'; ctx.fillText('Curve: ~$200k', projX + 10, projY_poly - 6);
+}
+
+function drawCanvasTheta(id, theta0, theta1) {
+  const c = $(id); if (!c) return;
+  const ctx = c.getContext('2d');
+  const w = c.width, h = c.height;
+  ctx.clearRect(0, 0, w, h);
+
+  const ml = 45, mr = 20, mt = 20, mb = 40;
+  const pw = w - ml - mr, ph = h - mt - mb;
+
+  // Axes
+  ctx.strokeStyle = '#334155'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(ml, mt); ctx.lineTo(ml, h - mb); ctx.lineTo(w - mr, h - mb);
+  ctx.stroke();
+
+  // Ticks 0..3
+  ctx.font = '11px sans-serif'; ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
+  [0, 1, 2, 3].forEach(v => {
+    const x = ml + (v / 3) * pw;
+    ctx.fillText(v, x, h - mb + 16);
+    ctx.beginPath(); ctx.moveTo(x, h - mb); ctx.lineTo(x, h - mb - 4); ctx.stroke();
+  });
+  ctx.textAlign = 'right';
+  [0, 1, 2, 3].forEach(v => {
+    const y = (h - mb) - (v / 3) * ph;
+    ctx.fillText(v, ml - 6, y + 4);
+    ctx.beginPath(); ctx.moveTo(ml, y); ctx.lineTo(ml + 4, y); ctx.stroke();
+  });
+
+  // Plot line h(x) = theta0 + theta1 * x
+  const xStart = 0, yStart = theta0 + theta1 * 0;
+  const xEnd = 3, yEnd = theta0 + theta1 * 3;
+
+  const px1 = ml + (xStart / 3) * pw, py1 = (h - mb) - (yStart / 3) * ph;
+  const px2 = ml + (xEnd / 3) * pw, py2 = (h - mb) - (yEnd / 3) * ph;
+
+  ctx.strokeStyle = '#34d399'; ctx.lineWidth = 3.5;
+  ctx.beginPath(); ctx.moveTo(px1, py1); ctx.lineTo(px2, py2); ctx.stroke();
+
+  // Highlight intercept
+  const iy = (h - mb) - (theta0 / 3) * ph;
+  ctx.fillStyle = '#fbbf24'; ctx.beginPath(); ctx.arc(ml, iy, 4.5, 0, Math.PI*2); ctx.fill();
+}
+
+function drawCanvasBestfit() {
+  const c = $('canvas-bestfit'); if (!c) return;
+  const ctx = c.getContext('2d');
+  const w = c.width, h = c.height;
+  ctx.clearRect(0, 0, w, h);
+
+  const ml = 50, mr = 30, mt = 25, mb = 45;
+  const pw = w - ml - mr, ph = h - mt - mb;
+
+  // Axes
+  ctx.strokeStyle = '#334155'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(ml, mt); ctx.lineTo(ml, h - mb); ctx.lineTo(w - mr, h - mb);
+  ctx.stroke();
+
+  // 6 Points
+  const pts = [
+    {x: 1, y: 1.3}, {x: 2, y: 1.8}, {x: 3, y: 3.2},
+    {x: 4, y: 3.5}, {x: 5, y: 5.2}, {x: 6, y: 5.5}
+  ];
+
+  // Fitted Line h(x) = 0.5 + 0.9x
+  const f = x => 0.5 + 0.9 * x;
+
+  // Draw Fitted Blue Line
+  const lx1 = ml + (0.5 / 7) * pw, ly1 = (h - mb) - (f(0.5) / 6.5) * ph;
+  const lx2 = ml + (6.5 / 7) * pw, ly2 = (h - mb) - (f(6.5) / 6.5) * ph;
+  ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(lx1, ly1); ctx.lineTo(lx2, ly2); ctx.stroke();
+
+  // Draw Residual Error Bars (Amber Dashed)
+  ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
+  pts.forEach(p => {
+    const px = ml + (p.x / 7) * pw;
+    const py = (h - mb) - (p.y / 6.5) * ph;
+    const lpy = (h - mb) - (f(p.x) / 6.5) * ph;
+
+    ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px, lpy); ctx.stroke();
+  });
+  ctx.setLineDash([]);
+
+  // Red Points
+  ctx.strokeStyle = '#f87171'; ctx.lineWidth = 2.5;
+  pts.forEach(p => {
+    const px = ml + (p.x / 7) * pw;
+    const py = (h - mb) - (p.y / 6.5) * ph;
+    ctx.beginPath();
+    ctx.moveTo(px - 5, py - 5); ctx.lineTo(px + 5, py + 5);
+    ctx.moveTo(px + 5, py - 5); ctx.lineTo(px - 5, py + 5);
+    ctx.stroke();
+  });
+}
+
+function drawAlphaCanvases() {
+  ['canvas-alpha-small', 'canvas-alpha-large', 'canvas-alpha-converge'].forEach(id => {
+    const c = $(id); if (!c) return;
+    const ctx = c.getContext('2d');
+    const w = c.width, h = c.height;
+    ctx.clearRect(0, 0, w, h);
+
+    // Draw Parabola J(theta1)
+    const cx = w / 2, cy = h - 35, a = 0.0022;
+    ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 3;
+    ctx.beginPath();
+    for (let x = 30; x <= w - 30; x += 4) {
+      const y = cy - a * Math.pow(x - cx, 2) * 1.5;
+      if (x === 30) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    if (id === 'canvas-alpha-small') {
+      // Tiny blue arrows inching slowly
+      ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2;
+      let currX = 55;
+      for (let step = 0; step < 7; step++) {
+        let nxtX = currX + 16;
+        let y1 = cy - a * Math.pow(currX - cx, 2) * 1.5;
+        let y2 = cy - a * Math.pow(nxtX - cx, 2) * 1.5;
+        ctx.beginPath(); ctx.moveTo(currX, y1); ctx.lineTo(nxtX, y2); ctx.stroke();
+        currX = nxtX;
+      }
+    } else if (id === 'canvas-alpha-large') {
+      // Wild zig-zag arrows overshooting
+      ctx.strokeStyle = '#f87171'; ctx.lineWidth = 2.5;
+      const pts = [
+        {x: 65, y: cy - a * Math.pow(65 - cx, 2) * 1.5},
+        {x: 275, y: cy - a * Math.pow(275 - cx, 2) * 1.5 - 15},
+        {x: 40, y: cy - a * Math.pow(40 - cx, 2) * 1.5 - 35}
+      ];
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      ctx.lineTo(pts[1].x, pts[1].y);
+      ctx.lineTo(pts[2].x, pts[2].y);
+      ctx.stroke();
+    } else if (id === 'canvas-alpha-converge') {
+      // Steps automatically shrinking
+      const colors = ['#f43f5e', '#fbbf24', '#34d399', '#00f3ff', '#38bdf8'];
+      let stepsX = [50, 100, 135, 155, 168, 175];
+      for (let i = 0; i < stepsX.length - 1; i++) {
+        let x1 = stepsX[i], x2 = stepsX[i+1];
+        let y1 = cy - a * Math.pow(x1 - cx, 2) * 1.5;
+        let y2 = cy - a * Math.pow(x2 - cx, 2) * 1.5;
+        ctx.strokeStyle = colors[i % colors.length]; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      }
+    }
+  });
+}
+
+function drawCanvasContours() {
+  const c = $('canvas-contours'); if (!c) return;
+  const ctx = c.getContext('2d');
+  const w = c.width, h = c.height;
+  ctx.clearRect(0, 0, w, h);
+
+  // Left: Unscaled Skinny Contours
+  const c1x = 130, c1y = h / 2;
+  ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)'; ctx.lineWidth = 1.5;
+  [15, 30, 48, 70, 95].forEach(rx => {
+    ctx.beginPath();
+    ctx.ellipse(c1x, c1y, rx, rx * 0.35, Math.PI / 4, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+  // Zig-zag path
+  ctx.strokeStyle = '#f87171'; ctx.lineWidth = 2;
+  const zPath = [{x: 55, y: 70}, {x: 180, y: 155}, {x: 85, y: 110}, {x: 155, y: 145}, {x: 115, y: 130}, {x: 130, y: 138}];
+  ctx.beginPath();
+  ctx.moveTo(zPath[0].x, zPath[0].y);
+  for (let i = 1; i < zPath.length; i++) ctx.lineTo(zPath[i].x, zPath[i].y);
+  ctx.stroke();
+
+  ctx.font = 'bold 12px sans-serif'; ctx.fillStyle = '#f87171'; ctx.textAlign = 'center';
+  ctx.fillText('Unscaled: Oscillates', c1x, h - 14);
+
+  // Divider
+  ctx.strokeStyle = '#334155'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(w / 2, 20); ctx.lineTo(w / 2, h - 20); ctx.stroke();
+
+  // Right: Scaled Circular Contours
+  const c2x = w - 140, c2y = h / 2;
+  ctx.strokeStyle = 'rgba(52, 211, 153, 0.5)'; ctx.lineWidth = 1.5;
+  [18, 36, 56, 78, 100].forEach(r => {
+    ctx.beginPath(); ctx.arc(c2x, c2y, r, 0, Math.PI * 2); ctx.stroke();
+  });
+  // Direct path
+  ctx.strokeStyle = '#34d399'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(c2x - 85, c2y - 65); ctx.lineTo(c2x, c2y); ctx.stroke();
+
+  ctx.fillStyle = '#34d399'; ctx.fillText('Scaled: Direct to Min!', c2x, h - 14);
+}
+
+function drawCanvasGDDiagnostics() {
+  // Good canvas
+  const c1 = $('canvas-gd-good');
+  if (c1) {
+    const ctx = c1.getContext('2d');
+    const w = c1.width, h = c1.height;
+    ctx.clearRect(0, 0, w, h);
+    ctx.strokeStyle = '#334155'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(35, 20); ctx.lineTo(35, h - 35); ctx.lineTo(w - 20, h - 35); ctx.stroke();
+
+    // Smooth descent curve
+    ctx.strokeStyle = '#34d399'; ctx.lineWidth = 3;
+    ctx.beginPath();
+    for (let x = 35; x <= w - 25; x += 3) {
+      const norm = (x - 35) / (w - 60);
+      const y = (h - 45) - 130 * Math.exp(-norm * 4);
+      if (x === 35) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.font = '11px sans-serif'; ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'center';
+    ctx.fillText('Iterations &rarr;', w / 2, h - 14);
+  }
+
+  // Bad canvas
+  const c2 = $('canvas-gd-bad');
+  if (c2) {
+    const ctx = c2.getContext('2d');
+    const w = c2.width, h = c2.height;
+    ctx.clearRect(0, 0, w, h);
+    ctx.strokeStyle = '#334155'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(35, 20); ctx.lineTo(35, h - 35); ctx.lineTo(w - 20, h - 35); ctx.stroke();
+
+    // Rising curve (red)
+    ctx.strokeStyle = '#f87171'; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    for (let x = 35; x <= w - 25; x += 3) {
+      const norm = (x - 35) / (w - 60);
+      const y = (h - 45) - 30 * Math.exp(norm * 1.5);
+      if (x === 35) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Oscillating wave (amber)
+    ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    for (let x = 35; x <= w - 25; x += 3) {
+      const norm = (x - 35) / (w - 60);
+      const y = (h - 90) + Math.sin(norm * 16) * (20 + norm * 35);
+      if (x === 35) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+}
+
+function drawCanvasLandArea() {
+  const c = $('canvas-land-area'); if (!c) return;
+  const ctx = c.getContext('2d');
+  const w = c.width, h = c.height;
+  ctx.clearRect(0, 0, w, h);
+
+  // Isometric Lot
+  const ox = 120, oy = 250;
+  const fw = 280, fd = 130; // frontage and depth vectors
+
+  // Green Lot Polygon
+  ctx.fillStyle = 'rgba(52, 211, 153, 0.15)';
+  ctx.strokeStyle = '#34d399'; ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(ox, oy);
+  ctx.lineTo(ox + fw, oy);
+  ctx.lineTo(ox + fw + fd * 0.7, oy - fd * 0.7);
+  ctx.lineTo(ox + fd * 0.7, oy - fd * 0.7);
+  ctx.closePath();
+  ctx.fill(); ctx.stroke();
+
+  // House footprint inside lot
+  ctx.fillStyle = 'rgba(56, 189, 248, 0.35)';
+  ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2;
+  const hx = ox + 90, hy = oy - 25;
+  ctx.fillRect(hx, hy - 60, 110, 60);
+  ctx.strokeRect(hx, hy - 60, 110, 60);
+
+  // Roof
+  ctx.fillStyle = 'rgba(251, 191, 36, 0.4)';
+  ctx.strokeStyle = '#fbbf24';
+  ctx.beginPath();
+  ctx.moveTo(hx, hy - 60); ctx.lineTo(hx + 55, hy - 95); ctx.lineTo(hx + 110, hy - 60);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+
+  // Frontage Dimension Line
+  ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.moveTo(ox, oy + 22); ctx.lineTo(ox + fw, oy + 22); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.font = 'bold 15px sans-serif'; ctx.fillStyle = '#fbbf24'; ctx.textAlign = 'center';
+  ctx.fillText('Frontage (x₁)', ox + fw / 2, oy + 42);
+
+  // Depth Dimension Line
+  ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(ox + fw + 20, oy);
+  ctx.lineTo(ox + fw + fd * 0.7 + 20, oy - fd * 0.7);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#38bdf8';
+  ctx.fillText('Depth (x₂)', ox + fw + fd * 0.35 + 50, oy - fd * 0.35);
+
+  // Center Area Banner
+  ctx.fillStyle = '#f8fafc'; ctx.font = 'bold 18px sans-serif';
+  ctx.fillText('Area = x₁ &times; x₂ = frontage &times; depth', w / 2, 45);
+}
+
+function drawCanvasPoly() {
+  const c = $('canvas-poly'); if (!c) return;
+  const ctx = c.getContext('2d');
+  const w = c.width, h = c.height;
+  ctx.clearRect(0, 0, w, h);
+
+  const ml = 50, mr = 25, mt = 25, mb = 45;
+  const pw = w - ml - mr, ph = h - mt - mb;
+
+  // Axes
+  ctx.strokeStyle = '#334155'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(ml, mt); ctx.lineTo(ml, h - mb); ctx.lineTo(w - mr, h - mb);
+  ctx.stroke();
+
+  // Scatter points
+  const pts = [
+    {x: 0.1, y: 0.15}, {x: 0.25, y: 0.35}, {x: 0.4, y: 0.52},
+    {x: 0.6, y: 0.68}, {x: 0.75, y: 0.74}, {x: 0.9, y: 0.78}
+  ];
+
+  ctx.strokeStyle = '#f87171'; ctx.lineWidth = 2.5;
+  pts.forEach(p => {
+    const px = ml + p.x * pw;
+    const py = (h - mb) - p.y * ph;
+    ctx.beginPath();
+    ctx.moveTo(px - 4, py - 4); ctx.lineTo(px + 4, py + 4);
+    ctx.moveTo(px + 4, py - 4); ctx.lineTo(px - 4, py + 4);
+    ctx.stroke();
+  });
+
+  // Curve 1: Quadratic (Blue) - curves down on right!
+  ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  for (let x = 0; x <= 1.0; x += 0.02) {
+    const y = 0.05 + 1.8 * x - 1.2 * (x * x);
+    const px = ml + x * pw, py = (h - mb) - y * ph;
+    if (x === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+
+  // Curve 2: Cubic (Green) - curves up
+  ctx.strokeStyle = '#34d399'; ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  for (let x = 0; x <= 1.0; x += 0.02) {
+    const y = 0.08 + 0.6 * x + 0.35 * Math.pow(x, 3);
+    const px = ml + x * pw, py = (h - mb) - y * ph;
+    if (x === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+
+  // Curve 3: Square Root (Magenta) - rises and flattens
+  ctx.strokeStyle = '#f43f5e'; ctx.lineWidth = 3;
+  ctx.beginPath();
+  for (let x = 0; x <= 1.0; x += 0.02) {
+    const y = 0.82 * Math.sqrt(x);
+    const px = ml + x * pw, py = (h - mb) - y * ph;
+    if (x === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+
+  // Legend
+  ctx.font = '12px sans-serif'; ctx.textAlign = 'left';
+  ctx.fillStyle = '#38bdf8'; ctx.fillText('— Quadratic (bends down)', ml + 15, mt + 15);
+  ctx.fillStyle = '#34d399'; ctx.fillText('— Cubic (sharp rise)', ml + 15, mt + 32);
+  ctx.fillStyle = '#f43f5e'; ctx.fillText('— Square Root (ideal flatten)', ml + 15, mt + 49);
+}
+
+// ==========================================================================
+// 5. NAVIGATION & SLIDE PROGRESSION ENGINE
+// ==========================================================================
+const slides = [...document.querySelectorAll('section.slide')];
+let slideIndex = 0;
+let stepIndex = 0;
+let traceIndexes = { cost: 0, gd: 0, scaling: 0 };
+
+function maxSteps(slide) {
+  if (slide.dataset.live === 'cost') return COST_TRACE.length - 1;
+  if (slide.dataset.live === 'gd') return GD_TRACE.length - 1;
+  if (slide.dataset.live === 'scaling') return SCALE_TRACE.length - 1;
+  return Number(slide.dataset.steps || 0);
+}
+
+function updateNavUI() {
+  $('counter').textContent = `${slideIndex + 1} / ${slides.length}`;
+  $('btn-prev').disabled = (slideIndex === 0 && stepIndex === 0);
+
+  const cur = slides[slideIndex];
+  if (cur.dataset.live) {
+    const type = cur.dataset.live;
+    $('step-info').textContent = `Live Trace Step ${traceIndexes[type]} / ${maxSteps(cur)}`;
+  } else if (cur.dataset.steps) {
+    $('step-info').textContent = `Step ${stepIndex} / ${maxSteps(cur)}`;
+  } else {
+    $('step-info').textContent = 'Overview';
+  }
+}
+
+function renderActiveSlide() {
+  const slide = slides[slideIndex];
+  slide.querySelectorAll('.reveal').forEach(el => {
+    el.classList.toggle('shown', Number(el.dataset.step) <= stepIndex);
+  });
+
+  if (slide.dataset.live === 'cost') renderCostLive(traceIndexes.cost);
+  if (slide.dataset.live === 'gd') renderGDLive(traceIndexes.gd);
+  if (slide.dataset.live === 'scaling') renderScaleLive(traceIndexes.scaling);
+
+  // Trigger Slide Canvas Drawings
+  if (slideIndex === 1) drawCanvasHousingIntro();
+  if (slideIndex === 4) { drawCanvasTheta('canvas-theta-1', 1.5, 0); drawCanvasTheta('canvas-theta-2', 0, 0.5); drawCanvasTheta('canvas-theta-3', 1, 0.5); }
+  if (slideIndex === 5) drawCanvasBestfit();
+  if (slideIndex === 8) drawAlphaCanvases();
+  if (slideIndex === 14) drawCanvasContours();
+  if (slideIndex === 16) drawCanvasGDDiagnostics();
+  if (slideIndex === 17) drawCanvasLandArea();
+  if (slideIndex === 18) drawCanvasPoly();
+
+  updateNavUI();
+}
+
+function showSlide(n, atEnd = false) {
+  slideIndex = Math.max(0, Math.min(slides.length - 1, n));
+  const cur = slides[slideIndex];
+  if (cur.dataset.live) {
+    const type = cur.dataset.live;
+    traceIndexes[type] = atEnd ? maxSteps(cur) : 0;
+  } else {
+    stepIndex = atEnd ? maxSteps(cur) : 0;
+  }
+
+  slides.forEach((s, idx) => s.classList.toggle('active', idx === slideIndex));
+  renderActiveSlide();
+}
+
+function next() {
+  const cur = slides[slideIndex];
+  if (cur.dataset.live) {
+    const type = cur.dataset.live;
+    if (traceIndexes[type] < maxSteps(cur)) {
+      traceIndexes[type]++;
+      renderActiveSlide();
+      return;
+    }
+  } else if (cur.dataset.steps) {
+    if (stepIndex < maxSteps(cur)) {
+      stepIndex++;
+      renderActiveSlide();
+      return;
+    }
+  }
+
+  if (slideIndex < slides.length - 1) {
+    showSlide(slideIndex + 1, false);
+  }
+}
+
+function previous() {
+  const cur = slides[slideIndex];
+  if (cur.dataset.live) {
+    const type = cur.dataset.live;
+    if (traceIndexes[type] > 0) {
+      traceIndexes[type]--;
+      renderActiveSlide();
+      return;
+    }
+  } else if (cur.dataset.steps) {
+    if (stepIndex > 0) {
+      stepIndex--;
+      renderActiveSlide();
+      return;
+    }
+  }
+
+  if (slideIndex > 0) {
+    showSlide(slideIndex - 1, true);
+  }
+}
+
+function fit() {
+  const scale = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
+  document.documentElement.style.setProperty('--scale', scale);
+}
+
+// Touch swipe support
+let touchStartX = 0;
+window.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
+window.addEventListener('touchend', e => {
+  const touchEndX = e.changedTouches[0].screenX;
+  if (touchEndX < touchStartX - 50) next();
+  else if (touchEndX > touchStartX + 50) previous();
+}, {passive: true});
+
+// Keyboard controls
+window.addEventListener('keydown', e => {
+  if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(e.key)) {
+    e.preventDefault(); next();
+  } else if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) {
+    e.preventDefault(); previous();
+  } else if (e.key === 'Home') {
+    e.preventDefault(); showSlide(0);
+  } else if (e.key === 'End') {
+    e.preventDefault(); showSlide(slides.length - 1, true);
+  }
+});
+
+$('btn-prev').addEventListener('click', previous);
+$('btn-next').addEventListener('click', next);
+window.addEventListener('resize', fit);
+
+// Boot sequence
+window.addEventListener('load', () => {
+  fit();
+  showSlide(0);
+});
+</script>
+</body>
+</html>
