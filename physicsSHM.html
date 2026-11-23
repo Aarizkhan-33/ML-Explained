@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Circular Motion and Simple Harmonic Motion (S.H.M.)</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<main id="stage" aria-label="Circular Motion and Simple Harmonic Motion Presentation">
+
+  <!-- ======================================================================
+       SLIDE 1: Cover Slide
+       ====================================================================== -->
+  <section class="slide active cover-slide">
+    <p class="label">PHYSICS GRADE XI &bull; UNIT 7: OSCILLATION (SECTION 7.4)</p>
+    <h1 class="blue">Circular Motion &amp; Simple Harmonic Motion</h1>
+    <p class="lead" style="font-size:26px; max-width:1150px;">
+      How Uniform Circular Motion Projects into Back-and-Forth S.H.M. &mdash; Geometry, Acceleration Proof, Velocity &amp; Sinusoidal Waveforms
+    </p>
+
+    <div class="card neon" style="margin-top:24px; padding:20px 36px; max-width:1100px;">
+      <p style="font-size:22px; color:var(--ink); line-height:1.5;">
+        <strong>Core Question:</strong> How can an object moving smoothly in a circle at constant speed mathematically describe a vibrating mass on a spring or swinging pendulum?
+      </p>
+    </div>
+
+    <div style="display:flex; gap:16px; margin-top:28px;">
+      <span class="info-box blue" style="padding:8px 18px; margin:0; font-size:16px; font-weight:700;">Reference Circle</span>
+      <span class="info-box green" style="padding:8px 18px; margin:0; font-size:16px; font-weight:700;">Projection Q on AB</span>
+      <span class="info-box amber" style="padding:8px 18px; margin:0; font-size:16px; font-weight:700;">Proof: a<sub>x</sub> = -&omega;&sup2;x</span>
+      <span class="info-box pink" style="padding:8px 18px; margin:0; font-size:16px; font-weight:700;">v<sub>x</sub> = &omega;&radic;(r&sup2; - x&sup2;)</span>
+      <span class="info-box" style="padding:8px 18px; margin:0; font-size:16px; font-weight:700; border-left-color:var(--neon);">Sinusoidal Waveform</span>
+    </div>
+
+    <p style="color:var(--muted); margin-top:35px; font-size:17px;">
+      Use Left/Right Arrows, Spacebar, or the navigation buttons below to step through the lecture.
+    </p>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 2: The Shadow Analogy
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>The Shadow Analogy: Circle Meets Oscillation</h2>
+    <p class="lead">A particle moving in a circle casts a shadow that vibrates back and forth in Simple Harmonic Motion.</p>
+
+    <div class="columns">
+      <div>
+        <div class="info-box reveal" data-step="1">
+          <span class="badge">Definition &mdash; Circular Motion &amp; S.H.M.</span>
+          <p style="margin-bottom:10px;">
+            When a particle of mass <em>m</em> whirls in a horizontal circle of radius <em>r</em> with uniform angular velocity <em>&omega;</em>, a distant parallel light source casts a shadow of the particle onto a flat screen or wall.
+          </p>
+          <p style="color:var(--muted);">
+            While the real particle travels smoothly in a 2D circle at constant speed, its 1D shadow moves back and forth along a straight line&mdash;slowing down at the edges, speeding up through the center, and executing Simple Harmonic Motion (S.H.M.).
+          </p>
+        </div>
+
+        <div class="card amber reveal" data-step="2">
+          <h4 class="amber">Why Study S.H.M. Using a Circle?</h4>
+          <ul>
+            <li>Circular motion is easy to track using a single steady angle &theta; = &omega;t.</li>
+            <li>Projecting that circular motion onto a diameter gives us exact formulas for displacement (x), velocity (v<sub>x</sub>), acceleration (a<sub>x</sub>), time period (T), and phase (&phi;) without needing calculus!</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="divider reveal" data-step="1">
+        <h3>Turntable &amp; Overhead Lamps Visual</h3>
+        <div class="curve-visual">
+          <canvas id="canvas-shadow" width="560" height="380"></canvas>
+          <div class="canvas-caption">
+            Overhead lamps project circular motion of mass m onto a screen. The shadow oscillates between -r and +r about mean position O.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 3: Geometric Setup & Core Notation
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>The Reference Circle &amp; Standard Notation</h2>
+    <p class="lead">Replacing the physical lamps with clean geometry: projecting point P onto diameter AB.</p>
+
+    <div class="columns">
+      <div class="reveal" data-step="1">
+        <h3>Reference Circle Diagram</h3>
+        <div class="curve-visual">
+          <canvas id="canvas-setup" width="560" height="400"></canvas>
+          <div class="canvas-caption">
+            Particle P moves counterclockwise on a circle of radius r. Foot of perpendicular Q moves back and forth along diameter AB.
+          </div>
+        </div>
+      </div>
+
+      <div class="divider">
+        <div class="reveal" data-step="2">
+          <h3>Core Symbols (Term-by-Term)</h3>
+          <ul>
+            <li><strong>P (Reference Particle):</strong> Mass <em>m</em> rotating counterclockwise on the circle at uniform angular velocity <em>&omega;</em>.</li>
+            <li><strong>Q (Projection / Shadow):</strong> The foot of the perpendicular dropped from P onto diameter AB. Q executes S.H.M.</li>
+            <li><strong>O (Mean Position):</strong> Center of the circle where displacement <em>x = 0</em>.</li>
+            <li><strong>r (Radius = Amplitude x<sub>0</sub>):</strong> The maximum distance Q can reach from O (at points A and B).</li>
+          </ul>
+        </div>
+
+        <div class="card green reveal" data-step="3" style="margin-top:20px;">
+          <h4 class="green">Connecting Angle to Displacement</h4>
+          <p style="margin-bottom:10px;">
+            In right-angled triangle &Delta;OQP, the horizontal distance of projection Q from the center O is the adjacent side:
+          </p>
+          <div class="math-board" style="padding:12px 18px; margin-bottom:10px;">
+            <div class="formula-main" style="font-size:24px;">
+              cos &theta; = <span class="fraction-block"><span class="fraction-top">x</span><span class="fraction-bottom">r</span></span>
+              &nbsp;&nbsp;&implies;&nbsp;&nbsp;
+              x = r cos &theta; = r cos(&omega;t)
+            </div>
+          </div>
+          <p style="font-size:18px; color:var(--muted);">
+            Because &theta; increases steadily as &theta; = &omega;t, the projection x oscillates smoothly between +r and -r.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 4: The Projection Pipeline & Amplitude
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>From Uniform Rotation to 1D Oscillation</h2>
+    <p class="lead">How one steady circular rotation produces all three kinematic quantities of S.H.M.</p>
+
+    <div class="flow-container reveal" data-step="1">
+      <div class="flow-box amber">Uniform Circular Motion<br><span style="font-size:16px; color:var(--muted); font-weight:normal;">P, radius r, speed &omega;</span></div>
+      <div class="flow-arrow">&rightarrow;</div>
+      <div class="flow-box neon">Orthogonal Projection<br><span style="font-size:16px; color:var(--muted); font-weight:normal;">Drop &perp; to Diameter AB</span></div>
+      <div class="flow-arrow">&rightarrow;</div>
+      <div class="flow-box blue">1D S.H.M. of Q<br><span style="font-size:16px; color:var(--muted); font-weight:normal;">x, v<sub>x</sub>, a<sub>x</sub> along x-axis</span></div>
+    </div>
+
+    <div class="columns">
+      <div class="reveal" data-step="2">
+        <div class="math-board">
+          <div class="formula-main" style="font-size:36px;">x = r cos(&omega;t)</div>
+          <div style="color:var(--muted); font-size:22px; margin-top:8px;">r = x<sub>0</sub> (Amplitude)</div>
+        </div>
+
+        <div class="info-box">
+          <span class="badge">What is Amplitude (x<sub>0</sub>)?</span>
+          <p>
+            Amplitude is the maximum displacement of the oscillating projection Q from the mean position O on either side. Since P never moves farther horizontally than the circle's radius <em>r</em>, the radius of the reference circle <strong>IS</strong> the amplitude of S.H.M. (r = x<sub>0</sub>).
+          </p>
+        </div>
+      </div>
+
+      <div class="divider reveal" data-step="3">
+        <h3>Why Constant Speed &ne; Constant Projection Speed</h3>
+        <div class="card pink">
+          <h4 class="pink">Crucial Distinction</h4>
+          <p style="margin-bottom:12px;">
+            Particle P moves along the circular rim at a constant tangential speed <strong>v = r&omega;</strong>. However, its shadow Q does <strong>NOT</strong> move at constant speed!
+          </p>
+          <ul>
+            <li>Near the edges (A or B), P moves almost vertically (perpendicular to the screen), so its horizontal shadow Q momentarily stops (<strong>v<sub>x</sub> = 0</strong>).</li>
+            <li>Near the center (O), P moves horizontally (parallel to the screen), so Q zips past at full speed (<strong>v<sub>x</sub> = r&omega;</strong>).</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 5: Three Key Positions Around the Circle
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>Visualizing Projection Q at Three Key Angles</h2>
+    <p class="lead">Watch how displacement x, velocity v<sub>x</sub>, and acceleration a<sub>x</sub> trade off as P rotates.</p>
+
+    <div class="columns-3">
+      <!-- Card 1 -->
+      <div class="card green reveal" data-step="1">
+        <h4 class="green">Case 1: Extreme Position (&theta; = 0&deg;)</h4>
+        <div class="curve-visual" style="height:210px; margin-bottom:12px;">
+          <canvas id="canvas-pos-1" width="360" height="190"></canvas>
+        </div>
+        <div class="math-board" style="padding:10px 14px; margin-bottom:10px;">
+          <div class="formula-main" style="font-size:20px;">x = +r, &nbsp;v<sub>x</sub> = 0, &nbsp;a<sub>x</sub> = -&omega;&sup2;r (Max)</div>
+        </div>
+        <p style="font-size:18px;">
+          Q is at the right extreme A. Motion reverses here, so velocity is zero while restoring acceleration pulling back toward O is maximum.
+        </p>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="card blue reveal" data-step="2">
+        <h4 class="blue">Case 2: Intermediate (&theta; = 60&deg;)</h4>
+        <div class="curve-visual" style="height:210px; margin-bottom:12px;">
+          <canvas id="canvas-pos-2" width="360" height="190"></canvas>
+        </div>
+        <div class="math-board" style="padding:10px 14px; margin-bottom:10px;">
+          <div class="formula-main" style="font-size:20px;">x = +0.5r, &nbsp;v<sub>x</sub> = -0.866 r&omega;, &nbsp;a<sub>x</sub> = -0.5&omega;&sup2;r</div>
+        </div>
+        <p style="font-size:18px;">
+          As P climbs from A toward top, Q moves left toward O. Both velocity and restoring acceleration point left (negative x).
+        </p>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="card amber reveal" data-step="3">
+        <h4 class="amber">Case 3: Mean Position (&theta; = 90&deg;)</h4>
+        <div class="curve-visual" style="height:210px; margin-bottom:12px;">
+          <canvas id="canvas-pos-3" width="360" height="190"></canvas>
+        </div>
+        <div class="math-board" style="padding:10px 14px; margin-bottom:10px;">
+          <div class="formula-main" style="font-size:20px;">x = 0, &nbsp;v<sub>x</sub> = -r&omega; (Max), &nbsp;a<sub>x</sub> = 0</div>
+        </div>
+        <p style="font-size:18px;">
+          P is directly above O. Shadow Q passes through equilibrium at maximum speed, and net horizontal acceleration is momentarily zero.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 6: Proving S.H.M. — Acceleration of Projection
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>Proof That Projection Q Executes S.H.M.</h2>
+    <p class="lead">Resolving the centripetal acceleration of P along the diameter proves a<sub>x</sub> &prop; -x.</p>
+
+    <div class="columns">
+      <div>
+        <div class="math-board reveal" data-step="1">
+          <div class="formula-main" style="font-size:24px; line-height:1.7;">
+            a<sub>c</sub> = <span class="fraction-block"><span class="fraction-top">v&sup2;</span><span class="fraction-bottom">r</span></span> = r&omega;&sup2; &nbsp;&nbsp;(directed toward O)<br>
+            a<sub>x</sub> = -a<sub>c</sub> cos &theta; = -r&omega;&sup2; cos &theta;<br>
+            <span style="color:var(--muted); font-size:19px;">Since cos &theta; = x / r:</span><br>
+            a<sub>x</sub> = -r&omega;&sup2; (<span class="fraction-block"><span class="fraction-top">x</span><span class="fraction-bottom">r</span></span>) = <strong style="color:var(--red); font-size:28px;">-&omega;&sup2; x</strong>
+          </div>
+        </div>
+
+        <div class="info-box reveal" data-step="2">
+          <span class="badge">Why the Minus Sign?</span>
+          <p style="margin-bottom:8px;">
+            Displacement <em>x</em> is measured outward from the mean position O, while centripetal acceleration <em>a<sub>c</sub></em> always points inward toward O. Therefore, the horizontal component <strong>a<sub>x</sub> always points opposite to x</strong> (restoring Q back toward equilibrium).
+          </p>
+          <p style="color:var(--green); font-weight:600;">
+            Because &omega; is constant, &omega;&sup2; is constant, giving a<sub>x</sub> = -(constant) x, or <span style="color:var(--neon); font-size:22px;">a<sub>x</sub> &prop; -x</span> &mdash; the exact defining condition of Simple Harmonic Motion!
+          </p>
+        </div>
+      </div>
+
+      <div class="divider reveal" data-step="1">
+        <h3>Resolving Centripetal Acceleration</h3>
+        <div class="curve-visual">
+          <canvas id="canvas-accel" width="560" height="350"></canvas>
+          <div class="canvas-caption">
+            In &Delta;OQP, cos &theta; = x / r. Vector a<sub>c</sub> points inward from P to O, so its horizontal projection a<sub>x</sub> = a<sub>c</sub> cos &theta; always points toward O.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 7: Time Period (T) and Frequency (f)
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>Time Period (T) and Frequency (f) from Circular Motion</h2>
+    <p class="lead">One complete circular revolution of P corresponds to exactly one complete vibration of Q.</p>
+
+    <div class="columns">
+      <div>
+        <div class="card blue reveal" data-step="1">
+          <h4 class="blue">1. Time Period (T)</h4>
+          <p style="margin-bottom:8px;">
+            <strong>Definition:</strong> The time required for projection Q to complete one full back-and-forth vibration (e.g., A &rarr; O &rarr; B &rarr; O &rarr; A).
+          </p>
+          <p style="margin-bottom:12px; color:var(--muted);">
+            In that same time, particle P sweeps through one full circle of angle 2&pi; radians (arc length s = 2&pi;r) at angular velocity &omega;:
+          </p>
+          <div class="math-board" style="padding:12px 18px;">
+            <div class="formula-main" style="font-size:30px;">
+              T = <span class="fraction-block"><span class="fraction-top">2&pi;</span><span class="fraction-bottom">&omega;</span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card green reveal" data-step="2">
+          <h4 class="green">2. Frequency (f) &amp; Angular Velocity (&omega;)</h4>
+          <p style="margin-bottom:8px;">
+            <strong>Definition:</strong> The number of complete vibrations executed per second (unit: Hertz, Hz). It is the reciprocal of Time Period:
+          </p>
+          <div class="math-board" style="padding:12px 18px;">
+            <div class="formula-main" style="font-size:28px;">
+              f = <span class="fraction-block"><span class="fraction-top">1</span><span class="fraction-bottom">T</span></span> = <span class="fraction-block"><span class="fraction-top">&omega;</span><span class="fraction-bottom">2&pi;</span></span>
+              &nbsp;&nbsp;&implies;&nbsp;&nbsp;
+              &omega; = 2&pi;f
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider reveal" data-step="1">
+        <h3>One Full Vibration = One Revolution</h3>
+        <div class="curve-visual">
+          <canvas id="canvas-period" width="560" height="340"></canvas>
+          <div class="canvas-caption">
+            Total circular path s = 2&pi;r swept in time t = T corresponds to one complete oscillation of Q from +r to -r and back.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 8: Live Trace 1 — Full Cycle Trace
+       ====================================================================== -->
+  <section class="slide live-slide" data-live="cycle">
+    <h2>Live Trace: Tracking One Complete Cycle Around the Circle</h2>
+    <p class="lead">Follow particle P (r = 0.10 m, &omega; = 2.0 rad/s) through 7 checkpoints from &theta; = 0&deg; to 360&deg;.</p>
+
+    <div class="live-grid">
+      <!-- Left: Table & Math Evaluation -->
+      <div class="table-container">
+        <table class="stats-table" id="cycle-table"></table>
+
+        <div class="math-board" style="margin-top:auto;">
+          <div style="font-size:20px; color:var(--muted);">
+            x = 0.10 cos &theta; (m) &nbsp;&bull;&nbsp; a<sub>x</sub> = -(2.0)&sup2; x = -4.0 x (m/s&sup2;)
+          </div>
+          <div id="cycle-math-eval" class="formula-main" style="font-size:22px; margin-top:8px; color:var(--amber);">
+            Evaluating cycle checkpoints...
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Live Teacher Explanation & Canvas Visual -->
+      <div class="calc-pane">
+        <div class="live-explanation" id="cycle-explanation" aria-live="polite"></div>
+
+        <div class="curve-visual" style="padding:10px; margin-top:auto;">
+          <canvas id="canvas-live-cycle" width="520" height="230"></canvas>
+          <div class="canvas-caption" id="cycle-canvas-cap">Live position on reference circle and 1D projection track</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 9: Deriving Velocity of Projection
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>Velocity of Projection in S.H.M.</h2>
+    <p class="lead">Resolving tangential circular velocity v = r&omega; along the diameter AB.</p>
+
+    <div class="columns">
+      <div>
+        <div class="reveal" data-step="1">
+          <h3>Step-by-Step Derivation</h3>
+          <p style="margin-bottom:8px;">
+            Particle P moves tangent to the circle with constant speed <strong>v = r&omega;</strong>. Resolving vector v into rectangular components:
+          </p>
+          <ul>
+            <li><strong>v<sub>x</sub> = v sin &theta;</strong> (horizontal component along diameter AB &mdash; moves projection Q)</li>
+            <li><strong>v<sub>y</sub> = v cos &theta;</strong> (vertical component &mdash; perpendicular to AB, ignored by Q)</li>
+          </ul>
+        </div>
+
+        <div class="math-board reveal" data-step="2" style="margin-top:14px;">
+          <div class="formula-main" style="font-size:23px; line-height:1.65;">
+            From sin&sup2;&theta; + cos&sup2;&theta; = 1 and cos &theta; = x / r:<br>
+            sin &theta; = &radic;(1 - x&sup2;/r&sup2;) = <span class="fraction-block"><span class="fraction-top">&radic;(r&sup2; - x&sup2;)</span><span class="fraction-bottom">r</span></span><br>
+            Substitute sin &theta; and v = r&omega; into v<sub>x</sub> = v sin &theta;:<br>
+            v<sub>x</sub> = (r&omega;) &middot; <span class="fraction-block"><span class="fraction-top">&radic;(r&sup2; - x&sup2;)</span><span class="fraction-bottom">r</span></span> = <strong style="color:var(--green); font-size:27px;">&omega; &radic;(r&sup2; - x&sup2;)</strong><br>
+            <span style="color:var(--neon); font-size:21px;">In amplitude notation (r = x<sub>0</sub>): &nbsp;v = &omega; &radic;(x<sub>0</sub>&sup2; - x&sup2;)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider reveal" data-step="1">
+        <h3>Velocity Resolution &amp; Extremes Check</h3>
+        <div class="curve-visual">
+          <canvas id="canvas-velocity" width="560" height="290"></canvas>
+          <div class="canvas-caption">
+            Tangential velocity v is perpendicular to radius OP, making angle (90&deg; - &theta;) with x-axis, so its horizontal component is v sin &theta;.
+          </div>
+        </div>
+
+        <div class="card green" style="margin-top:14px; margin-bottom:0;">
+          <h4 class="green">Checking the Two Extremes</h4>
+          <p style="margin-bottom:6px;"><strong>&bull; At Mean Position (x = 0):</strong> v<sub>max</sub> = &omega;&radic;(r&sup2; - 0) = <strong>r&omega;</strong></p>
+          <p><strong>&bull; At Extreme Positions (x = &plusmn;r):</strong> v<sub>min</sub> = &omega;&radic;(r&sup2; - r&sup2;) = <strong>0</strong></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 10: Live Trace 2 — Numerical Kinematics
+       ====================================================================== -->
+  <section class="slide live-slide" data-live="kinematics">
+    <h2>Live Trace: Calculating Position, Velocity &amp; Acceleration</h2>
+    <p class="lead">Worked example: A particle rotates with radius r = 0.50 m and angular velocity &omega; = 4.0 rad/s. Find v<sub>x</sub> and a<sub>x</sub> at three positions.</p>
+
+    <div class="live-grid">
+      <!-- Left: Table & Live Evaluation -->
+      <div class="table-container">
+        <table class="stats-table" id="kin-table"></table>
+
+        <div class="math-board" style="margin-top:auto;">
+          <div id="kin-math-eval" class="formula-main" style="font-size:22px;">
+            Evaluating at x = 0.00 m, 0.30 m, 0.50 m...
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Explanation & Summary Card -->
+      <div class="calc-pane">
+        <div class="live-explanation" id="kin-explanation" aria-live="polite"></div>
+
+        <div class="card amber" style="margin-top:auto; margin-bottom:0;">
+          <h4 class="amber">Key Physics Takeaway</h4>
+          <p id="kin-summary-text" style="font-size:18px;">
+            Step through to compare mean, intermediate, and extreme values.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 11: Waveform of S.H.M. & Phase
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>Waveform of S.H.M. &amp; Phase (&theta; = &omega;t)</h2>
+    <p class="lead">Unrolling circular motion against time produces the classic sine/cosine wave.</p>
+
+    <div class="reveal" data-step="1">
+      <div class="curve-visual" style="padding:10px;">
+        <canvas id="canvas-waveform" width="1440" height="310"></canvas>
+        <div class="canvas-caption">
+          Left: Particle P rotating on reference circle of radius r = x<sub>0</sub>. Right: Projection x plotted against &theta; = &omega;t traces a smooth sinusoidal curve over period T (2&pi; radians).
+        </div>
+      </div>
+    </div>
+
+    <div class="columns" style="margin-top:16px;">
+      <div class="info-box reveal" data-step="2" style="margin-bottom:0;">
+        <span class="badge">What is Phase (&theta; = &omega;t + &phi;)?</span>
+        <p style="font-size:19px;">
+          Phase is the angle <strong>&theta; = &omega;t</strong> (or more generally <em>&omega;t + &phi;</em>) that specifies <strong>BOTH the instantaneous displacement x AND the direction of motion</strong> of the oscillating particle at any instant.
+        </p>
+      </div>
+
+      <div class="card blue reveal" data-step="3" style="margin-bottom:0;">
+        <h4 class="blue">Reading the Waveform</h4>
+        <ul>
+          <li>Starting at mean position (y = r sin &omega;t) vs starting at extreme position (x = r cos &omega;t) simply shifts the wave by a phase constant &phi; = 90&deg; (&pi;/2 rad).</li>
+          <li>Every full cycle of 2&pi; radians spans exactly one Time Period T.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       SLIDE 12: Exam Recap & Common Pitfalls
+       ====================================================================== -->
+  <section class="slide" data-steps="3">
+    <h2>Exam Recap: Circular Motion &amp; S.H.M. Cheat-Sheet</h2>
+    <p class="lead">All core equations, extremes, and common traps in one place.</p>
+
+    <div class="columns-3">
+      <!-- Card 1 -->
+      <div class="card blue reveal" data-step="1">
+        <h4 class="blue">1. Core Equations</h4>
+        <ul>
+          <li><strong>Displacement:</strong> x = r cos(&omega;t)</li>
+          <li><strong>Acceleration:</strong> a<sub>x</sub> = -&omega;&sup2;x</li>
+          <li><strong>Velocity:</strong> v<sub>x</sub> = &omega; &radic;(r&sup2; - x&sup2;)</li>
+          <li><strong>Period &amp; Freq:</strong> T = 2&pi;/&omega;, &nbsp;&omega; = 2&pi;f</li>
+        </ul>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="card green reveal" data-step="2">
+        <h4 class="green">2. Mean vs. Extreme Table</h4>
+        <ul>
+          <li><strong>At Mean (x = 0):</strong> v<sub>x</sub> is MAX (r&omega;), a<sub>x</sub> = 0</li>
+          <li><strong>At Extreme (x = &plusmn;r):</strong> v<sub>x</sub> = 0, |a<sub>x</sub>| is MAX (&omega;&sup2;r)</li>
+          <li><strong>Direction:</strong> a<sub>x</sub> ALWAYS points toward O (opposite to x).</li>
+        </ul>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="card pink reveal" data-step="3">
+        <h4 class="pink">3. Three Common Mistakes</h4>
+        <ul>
+          <li><strong>Dropping the minus sign:</strong> Writing a<sub>x</sub> = &omega;&sup2;x misses why the motion is restoring S.H.M.</li>
+          <li><strong>Mixing sin &amp; cos:</strong> x and a<sub>x</sub> use cos &theta;, while v<sub>x</sub> uses sin &theta; (velocity is 90&deg; ahead of displacement).</li>
+          <li><strong>Degrees vs. Radians:</strong> Always convert rpm or degrees into rad/s (&omega; = 2&pi;f) before computing formulas.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card neon reveal" data-step="3" style="text-align:center; padding:16px 28px; margin-top:20px; margin-bottom:0;">
+      <h3 style="color:var(--neon); margin-bottom:4px; font-size:24px;">Unit 7.4 Complete &mdash; Circular Motion &amp; Simple Harmonic Motion</h3>
+      <p style="color:var(--muted); font-size:18px;">Grade XI Physics (KP Textbook Board) &bull; Interactive Visual Lecture</p>
+    </div>
+  </section>
+
+</main>
+
+<!-- ======================================================================
+     BOTTOM NAVIGATION BAR
+     ====================================================================== -->
+<footer id="nav">
+  <button id="btn-prev" class="nav-btn" onclick="previous()">
+    <span>&larr;</span> Previous
+  </button>
+
+  <div class="nav-center">
+    <span id="counter" class="slide-number">1 / 12</span>
+    <span id="step-info" class="step-indicator">Step 1 / 1</span>
+  </div>
+
+  <button id="btn-next" class="nav-btn" onclick="next()">
+    Next <span>&rarr;</span>
+  </button>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
